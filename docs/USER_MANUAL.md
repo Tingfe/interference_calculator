@@ -75,7 +75,7 @@ Ar Cl As O H
 
 如果元素很多，可以换行输入；文本框支持自动换行和滚动。
 
-![全元素输入示例](images/elements_zh.png)
+![全元素输入示例](images/main_zh.png)
 
 ## 7. 添加常用元素组合
 

@@ -60,6 +60,7 @@ setup(
     ],
     extras_require = {
         'data': ['requests'],
+        'export': ['openpyxl'],
     },
     entry_points = {
         'gui_scripts': ['interference_calculator=interference_calculator.ui:run']
