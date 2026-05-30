@@ -1836,6 +1836,10 @@ class MainWidget(widgets.QWidget):
 
 def run():
     """ Run the gui. """
+    # Enable high-DPI scaling for 2K/4K displays.
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
     app = widgets.QApplication([])
     mainwindow = MainWindow()
     mainwindow.move(200,100)
