@@ -31,7 +31,7 @@ import sys, re
 from importlib import resources
 from pyparsing import ParseException
 from interference_calculator.inorganic import inorganic_interference
-from interference_calculator.main import interference, standard_ratio
+from interference_calculator.main import standard_ratio
 from interference_calculator.molecule import Molecule, periodic_table
 from interference_calculator.ui_help import *
 from interference_calculator import __version__
@@ -142,7 +142,6 @@ _UI_TEXT = {
         'ions': 'ions',
         'max_size': 'max size',
         'instrument_mrp': 'instrument MRP',
-        'general_scan': 'General scan',
         'add_set_empty': 'add set...',
         'all_inorganic_elements': 'all inorganic elements',
         'ar_background': 'Ar plasma background',
@@ -154,15 +153,12 @@ _UI_TEXT = {
         'off': 'off',
         'calculate': 'Calculate',
         'ratios': 'Ratios',
-        'general_atoms_placeholder': 'C H O Si Ca',
-        'general_target_placeholder': 'number or formula: 26.0 or 12C 14N',
         'convert_invalid_target': 'Enter a valid target before converting the window unit.',
         'convert_target_required': 'Enter a target peak before converting the window unit.',
         'empty_atoms': 'Enter at least one element or isotope.',
         'missing_element': '{} is not an element or missing from the periodic table.',
         'ppm_requires_target': 'A ppm window requires a target peak.',
         'invalid_target': 'Enter target as a number or as a molecular formula.',
-        'long_warning': 'Long calculation warning',
         'candidate_count': '{} candidate peaks',
         'isotope_count': '{} isotope rows',
         'help_title': 'Interference calculator help',
@@ -209,7 +205,6 @@ _UI_TEXT = {
         'ions': '离子',
         'max_size': '最大原子数',
         'instrument_mrp': '仪器 MRP',
-        'general_scan': '通用扫描',
         'add_set_empty': '添加组合...',
         'all_inorganic_elements': '全元素（无机质谱）',
         'ar_background': 'Ar 等离子体背景',
@@ -221,15 +216,12 @@ _UI_TEXT = {
         'off': '关闭',
         'calculate': '计算',
         'ratios': '同位素比',
-        'general_atoms_placeholder': 'C H O Si Ca',
-        'general_target_placeholder': '数值或分子式：26.0 或 12C 14N',
         'convert_invalid_target': '切换窗口单位前，请先输入有效目标峰。',
         'convert_target_required': '切换窗口单位前，请先输入目标峰。',
         'empty_atoms': '请至少输入一个元素或同位素。',
         'missing_element': '{} 不是有效元素，或当前同位素库中缺少该元素。',
         'ppm_requires_target': 'ppm 窗口需要先输入目标峰。',
         'invalid_target': '目标峰请输入数值或分子式。',
-        'long_warning': '长时间计算提示',
         'candidate_count': '{} 个候选峰',
         'isotope_count': '{} 行同位素数据',
         'help_title': '软件介绍',
@@ -1258,7 +1250,6 @@ class MainWidget(widgets.QWidget):
         self.mode_input.addItem('GDMS', 'gdms')
         self.mode_input.addItem('ICP-MS', 'icp-ms')
         self.mode_input.addItem('SIMS', 'sims')
-        self.mode_input.addItem(_text(self.language, 'general_scan'), None)
 
         self.atoms_input = ElementInput(parent=self)
         self.atoms_input.setPlaceholderText('Fe Ni Cu Zn Ar O H C N Cl S')
@@ -1589,7 +1580,6 @@ class MainWidget(widgets.QWidget):
         if window is not None:
             window.setWindowTitle(self._tr('window_title'))
 
-        self.mode_input.setItemText(3, self._tr('general_scan'))
         self.element_set_input.setItemText(0, self._tr('add_set_empty'))
         self.element_set_input.setItemText(1, self._tr('all_inorganic_elements'))
         self.element_set_input.setItemText(2, self._tr('ar_background'))
@@ -1624,9 +1614,6 @@ class MainWidget(widgets.QWidget):
         self.spectrum_button.setAccessibleName(self._tr('open_spectrum'))
         self.help_button.setAccessibleName(self._tr('open_help'))
 
-        if not self.MODE_PRESETS.get(self.mode_input.currentText()):
-            self.atoms_input.setPlaceholderText(self._tr('general_atoms_placeholder'))
-            self.mz_input.setPlaceholderText(self._tr('general_target_placeholder'))
         self.set_tooltips()
         self.spectrum_window.set_language(self.language)
         self.refresh_table_language()
