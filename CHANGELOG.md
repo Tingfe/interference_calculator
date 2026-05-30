@@ -1,6 +1,13 @@
 
 ## [2.0.6] - 2026-05-30
 
+### Fixed
+- Spectrum window on Windows now positions within the visible screen area
+  instead of rendering off-screen (was ~560px past the right edge on 1920px
+  displays). The window is clamped to the available screen geometry and falls
+  back to vertical stacking if horizontal space is insufficient.
+
+
 ### Changed
 - CI workflow now installs UPX on macOS (brew) and Windows (choco) runners
   to compress final executables, reducing download size significantly.

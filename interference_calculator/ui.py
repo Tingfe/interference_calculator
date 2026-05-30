@@ -2078,14 +2078,35 @@ def run():
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
-    app = widgets.QApplication([])
+    app = widgets.QApplication(sys.argv)
     mainwindow = MainWindow()
-    mainwindow.move(200,100)
+    mainwindow.move(200, 100)
     mainwindow.show()
-    pos = mainwindow.pos()
-    pos.setX(pos.x() + mainwindow.frameGeometry().width())
-    mainwindow.centralWidget().spectrum_window.move(pos)
+
+    # Place spectrum window next to the main window,
+    # but clamp it to stay within the available screen area.
+    spec_win = mainwindow.centralWidget().spectrum_window
+    screen = app.primaryScreen()
+    sg = screen.availableGeometry() if screen else None
+
+    mw_geo = mainwindow.frameGeometry()
+    sx = mw_geo.x() + mw_geo.width()
+    sy = mw_geo.y()
+
+    if sg is not None:
+        spec_w = spec_win.width()
+        spec_h = spec_win.height()
+        # Clamp to screen
+        sx = max(sg.left(), min(sx, sg.right() - spec_w))
+        sy = max(sg.top(), min(sy, sg.bottom() - spec_h))
+        # If the main window + spectrum don't fit in one row, stack vertically
+        if spec_w > sg.width() - 100:
+            sx = sg.left() + 50
+            sy = mw_geo.y() + mw_geo.height() + 30
+
+    spec_win.move(sx, sy)
     sys.exit(app.exec_())
 
-if __name__ == '__main__':
+
+if __name__ == '__main__' or getattr(sys, 'frozen', False):
     run()
