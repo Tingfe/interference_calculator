@@ -1,3 +1,13 @@
+
+## [2.0.6] - 2026-05-30
+
+### Changed
+- CI workflow now installs UPX on macOS (brew) and Windows (choco) runners
+  to compress final executables, reducing download size significantly.
+- macOS build uses `--strip` to strip debug symbols from binaries.
+- Both builds exclude 30+ unused PyQt5 submodules (Network, WebEngine,
+  Multimedia, Qml, Quick, Sql, Xml, etc.) to reduce bundled size.
+
 ## [2.0.5] - 2026-05-30
 
 ### Changed
@@ -85,6 +95,7 @@
 - Modernised the codebase to Python 3.9+.
 - Periodic table data cleaned up and re-generated.
 
+[2.0.6]: https://github.com/Tingfe/interference_calculator/compare/v2.0.5...v2.0.6
 [2.0.5]: https://github.com/Tingfe/interference_calculator/compare/v2.0.4...v2.0.5
 [2.0.4]: https://github.com/Tingfe/interference_calculator/compare/v2.0.3...v2.0.4
 [2.0.3]: https://github.com/Tingfe/interference_calculator/compare/v2.0.2...v2.0.3
