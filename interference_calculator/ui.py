@@ -26,7 +26,6 @@ class _LazyModule:
 
 np = _LazyModule("numpy")
 pd = _LazyModule("pandas")
-_mpl = _LazyModule("matplotlib")
 
 import sys, re
 from importlib import resources
@@ -270,20 +269,6 @@ _icon = _resource_path('icon.svg')
 _display_button_icon = _resource_path('display_button_icon.svg')
 _help_button_icon = _resource_path('help_button_icon.svg')
 
-def _setup_matplotlib():
-    """Configure matplotlib for CJK font support (called lazily)."""
-    _mpl.rcParams['font.sans-serif'] = [
-    'PingFang SC',
-    'Hiragino Sans GB',
-    'Heiti SC',
-    'Microsoft YaHei',
-    'SimHei',
-    'Noto Sans CJK SC',
-    'Source Han Sans SC',
-    'WenQuanYi Zen Hei',
-    'Arial Unicode MS',
-    'DejaVu Sans',
-]
 
 
 def _current_data(combo):
@@ -697,54 +682,76 @@ class HTMLDelegate(widgets.QStyledItemDelegate):
         return QtCore.QSize(textbox.idealWidth(), textbox.size().height())
 
 
+
 class Spectrum(widgets.QWidget):
+    """Interactive stem-plot spectrum drawn with Qt QPainter (no matplotlib)."""
+
+    # ── colour palette ──────────────────────────────────────────────
+    _BLUE     = QtGui.QColor(0x25, 0x63, 0xeb)   # candidate peaks
+    _AMBER    = QtGui.QColor(0xf5, 0x9e, 0x0b)   # unresolved
+    _RED      = QtGui.QColor(0xef, 0x44, 0x44)   # target
+    _MUTED    = QtGui.QColor(0x64, 0x74, 0x8b)   # annotation text
+    _GRID     = QtGui.QColor(0xcb, 0xd5, 0xe1)   # major grid
+    _GRID_MNR = QtGui.QColor(0xe2, 0xe8, 0xf0)   # minor grid (y)
+    _BG       = QtGui.QColor(0xf8, 0xfa, 0xfc)
+    _CHART_BG = QtGui.QColor(0xff, 0xff, 0xff)
+    _BORDER   = QtGui.QColor(0xdb, 0xe4, 0xf0)
+    _TEXT     = QtGui.QColor(0x17, 0x20, 0x33)
+    _TICK_CLR = QtGui.QColor(0x33, 0x41, 0x55)
+
+    MAX_LABELS = 8
+    _PLOT_FLOOR = 1.0e-4
+
+    # ── init ────────────────────────────────────────────────────────
     def __init__(self, data=None, parent=None, language='en'):
         widgets.QWidget.__init__(self, parent=parent)
-
-        # Lazy-import matplotlib only when spectrum is opened.
-        self._available = False
-        try:
-            from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as _FigureCanvas
-            from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as _NavigationToolbar
-            from matplotlib.figure import Figure as _Figure
-            _setup_matplotlib()
-            self._available = True
-        except ImportError:
-            self._FigureCanvas = self._NavigationToolbar = self._Figure = None
-            self.setWindowTitle(_text(language, 'spectrum_window_title') + ' (matplotlib not installed)')
-            self.layout = widgets.QVBoxLayout()
-            label = widgets.QLabel("matplotlib is not installed. Install with: pip install matplotlib")
-            label.setAlignment(QtCore.Qt.AlignCenter)
-            label.setStyleSheet("padding: 40px; color: #64748b; font-size: 14px;")
-            self.layout.addWidget(label)
-            self.setLayout(self.layout)
-            self._data = None
-            return
-
         self.language = language
         self.setWindowTitle(_text(self.language, 'spectrum_window_title'))
         self.setWindowFlags(QtCore.Qt.Window)
         self.setAttribute(QtCore.Qt.WA_ShowWithoutActivating)
         self.resize(920, 640)
         self.setMinimumSize(760, 520)
-        self.setStyleSheet("""
-        QWidget { background: #f8fafc; color: #172033; font-size: 13px; }
-        QToolBar { background: #ffffff; border-bottom: 1px solid #dbe4f0; spacing: 2px; }
-        """)
+        self.setStyleSheet("QWidget { background: " + self._BG.name() + "; }")
 
-        self.fig = self._Figure(figsize=(900/72,600/72), dpi=72)
-        self.fig.patch.set_facecolor('#f8fafc')
-        self.canvas = self._FigureCanvas(self.fig)
-        self.canvas.setStyleSheet('background: #f8fafc;')
-        self.toolbar = self._NavigationToolbar(self.canvas, self)
+        # ── toolbar ─────────────────────────────────────────────
+        self.toolbar = widgets.QToolBar(self)
+        self.toolbar.setStyleSheet(
+            "QToolBar { background: #ffffff; border-bottom: 1px solid #dbe4f0; spacing: 4px; padding: 2px 6px; }")
+        self.toolbar.setMovable(False)
 
+        self._zoom_out_btn = widgets.QToolButton(self)
+        self._zoom_out_btn.setText('−')
+        self._zoom_out_btn.setToolTip('Zoom out (Y axis)')
+        self._zoom_out_btn.clicked.connect(self._on_zoom_out)
+        self.toolbar.addWidget(self._zoom_out_btn)
+
+        self._zoom_in_btn = widgets.QToolButton(self)
+        self._zoom_in_btn.setText('+')
+        self._zoom_in_btn.setToolTip('Zoom in (Y axis)')
+        self._zoom_in_btn.clicked.connect(self._on_zoom_in)
+        self.toolbar.addWidget(self._zoom_in_btn)
+
+        self.toolbar.addSeparator()
+
+        self._reset_btn = widgets.QToolButton(self)
+        self._reset_btn.setText('↺')
+        self._reset_btn.setToolTip('Reset view')
+        self._reset_btn.clicked.connect(self._on_reset_view)
+        self.toolbar.addWidget(self._reset_btn)
+
+        # ── chart canvas ─────────────────────────────────────────
+        self._canvas = _SpectrumCanvas(self)
+        self._canvas.setMinimumHeight(400)
+
+        # ── layout ───────────────────────────────────────────────
         self.layout = widgets.QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         self.layout.addWidget(self.toolbar)
-        self.layout.addWidget(self.canvas)
+        self.layout.addWidget(self._canvas, 1)
         self.setLayout(self.layout)
 
+        # ── data state ───────────────────────────────────────────
         self._data = None
         self.x = None
         self.y = None
@@ -753,23 +760,21 @@ class Spectrum(widgets.QWidget):
         self._target_mask = None
         self._unresolved_mask = None
         self._plot_window = {}
-        self._plot_floor = 1.0e-4
         self.intensity_column = 'probability'
+        self._y_zoom = 1.0           # multiplier on y upper bound
+        self._plot_floor = self._PLOT_FLOOR
 
-        self.MAX_LABELS = 8
+        if data is not None:
+            self.data = data
+        self._canvas._spectrum = self
 
-        self.ax = self.fig.add_subplot(111)
-
-        self.plot_spectrum(data)
-
+    # ── public API ──────────────────────────────────────────────────
     @property
     def data(self):
         return self._data
 
     @data.setter
     def data(self, newdata):
-        if not self._available:
-            return
         self._plot_window = dict(getattr(newdata, 'attrs', {}))
         self._data = newdata.copy().sort_values('mass/charge').reset_index(drop=True)
         self._target_mask = self._target_mask_for(self._data)
@@ -778,46 +783,43 @@ class Spectrum(widgets.QWidget):
         self.intensity_column = self._intensity_column_for(self._data)
         raw_y = pd.to_numeric(self._data[self.intensity_column], errors='coerce').fillna(0.0).values
         self.y = self._normalise_intensity(raw_y, self._target_mask)
+        self._y_zoom = 1.0
+        self._canvas.update()
 
-    def plot_spectrum(self, data=None):
-        """ Plot the spectrum. """
-        if not self._available:
-            return
-        if data is not None:
-            self.data = data
+    def set_language(self, language):
+        """Update spectrum language and redraw existing data."""
+        self.language = language
+        self.setWindowTitle(_text(self.language, 'spectrum_window_title'))
+        if self._data is not None:
+            self.x, self.x_label, self.x_centered = self._x_values_for(self._data, self._target_mask)
+        self._canvas.update()
+        self._update_toolbar_tooltips()
 
-        if self._data is None or self._data.empty:
-            self.ax.clear()
-            self.ax.set_axis_off()
-            self.canvas.draw()
-            return
-
-        self.ax.clear()
-        self._style_axes()
-        self.ax.set_xlabel(self.x_label)
-        intensity_label = _column_display(self.language, self.intensity_column)
-        self.ax.set_ylabel(_text(self.language, 'y_normalised').format(intensity_label))
-        if self.x_centered:
-            self.ax.set_title(_text(self.language, 'spectrum_target_title'), pad=14)
-            self.ax.axvline(0.0, color=_redF, linestyle='--', linewidth=1.0, alpha=0.25, zorder=1)
+    def _update_toolbar_tooltips(self):
+        lang = self.language
+        if lang == 'zh':
+            self._zoom_out_btn.setToolTip('缩小 Y 轴')
+            self._zoom_in_btn.setToolTip('放大 Y 轴')
+            self._reset_btn.setToolTip('重置视图')
         else:
-            self.ax.set_title(_text(self.language, 'spectrum_title'), pad=14)
-        self.ax.minorticks_on()
-        self.ax.grid(True, which='major', axis='both', alpha=0.25)
-        self.ax.grid(True, which='minor', axis='y', alpha=0.12)
+            self._zoom_out_btn.setToolTip('Zoom out (Y axis)')
+            self._zoom_in_btn.setToolTip('Zoom in (Y axis)')
+            self._reset_btn.setToolTip('Reset view')
 
-        normal_mask = ~(self._target_mask | self._unresolved_mask)
-        self._draw_stems(normal_mask, _blueF, 2.0, 0.80, _text(self.language, 'candidate'))
-        self._draw_stems(self._unresolved_mask, _amberF, 2.8, 0.95, _text(self.language, 'not_resolved'))
-        self._draw_stems(self._target_mask, _redF, 3.4, 1.0, _text(self.language, 'target_peak'))
+    # ── toolbar slots ───────────────────────────────────────────────
+    def _on_zoom_out(self):
+        self._y_zoom = min(self._y_zoom * 1.5, 100.0)
+        self._canvas.update()
 
-        self.ax.set_yscale('log')
-        self._set_axis_bounds()
-        self._annotate_peaks()
-        self.ax.legend(loc='upper right', frameon=False, fontsize=9)
-        self.fig.tight_layout(pad=1.2)
-        self.canvas.draw()
+    def _on_zoom_in(self):
+        self._y_zoom = max(self._y_zoom / 1.5, 0.01)
+        self._canvas.update()
 
+    def _on_reset_view(self):
+        self._y_zoom = 1.0
+        self._canvas.update()
+
+    # ── data-processing helpers (identical to old matplotlib version) ─
     def _target_mask_for(self, data):
         if 'target' not in data.columns:
             return np.zeros(data.shape[0], dtype=bool)
@@ -835,16 +837,6 @@ class Spectrum(widgets.QWidget):
                     return values.fillna(0.0).values, _text(self.language, 'mz_from_target'), True
         values = pd.to_numeric(data['mass/charge'], errors='coerce').fillna(0.0)
         return values.values, 'm/z', False
-
-    def set_language(self, language):
-        """Update spectrum language and redraw existing data."""
-        if not self._available:
-            return
-        self.language = language
-        self.setWindowTitle(_text(self.language, 'spectrum_window_title'))
-        if self._data is not None:
-            self.x, self.x_label, self.x_centered = self._x_values_for(self._data, self._target_mask)
-            self.plot_spectrum()
 
     def _unresolved_mask_for(self, data):
         if 'resolved' not in data.columns:
@@ -868,55 +860,10 @@ class Spectrum(widgets.QWidget):
             scale = raw_y.max()
         else:
             scale = 1.0
-
         y = raw_y / scale * 100.0
         if target_mask.any():
             y[target_mask] = max(100.0, y[~target_mask].max() if (~target_mask).any() else 100.0)
         return np.clip(y, self._plot_floor, None)
-
-    def _draw_stems(self, mask, colour, linewidth, alpha, label):
-        if not mask.any():
-            return
-        self.ax.vlines(
-            self.x[mask], self._plot_floor, self.y[mask],
-            colors=[colour], linewidth=linewidth, alpha=alpha, label=label,
-        )
-        self.ax.scatter(
-            self.x[mask], self.y[mask], marker='D', s=20 + linewidth * 8,
-            color=colour, alpha=alpha, zorder=3,
-        )
-
-    def _style_axes(self):
-        self.ax.set_facecolor('#ffffff')
-        for spine in self.ax.spines.values():
-            spine.set_color('#dbe4f0')
-        self.ax.tick_params(axis='both', colors='#334155', labelsize=10)
-        self.ax.xaxis.label.set_color('#172033')
-        self.ax.yaxis.label.set_color('#172033')
-        self.ax.title.set_color('#172033')
-
-    def _annotate_peaks(self):
-        label_indices = self._label_indices()
-        offsets = [(-18, 18), (0, 30), (18, 18), (-28, 34), (28, 34)]
-        for label_number, row_number in enumerate(label_indices):
-            row = self._data.iloc[row_number]
-            label = self._formula_label(row['molecule'])
-            offset = offsets[label_number % len(offsets)]
-            colour = _redF if self._target_mask[row_number] else (
-                _amberF if self._unresolved_mask[row_number] else _mutedF
-            )
-            self.ax.annotate(
-                label,
-                xy=(self.x[row_number], self.y[row_number]),
-                xytext=offset,
-                textcoords='offset points',
-                ha='center',
-                va='bottom',
-                fontsize=9,
-                color=colour,
-                arrowprops=dict(arrowstyle='-', color=colour, lw=0.6, alpha=0.75),
-                bbox=dict(boxstyle='round,pad=0.18', fc='white', ec='none', alpha=0.78),
-            )
 
     def _label_indices(self):
         priority = np.ones(self._data.shape[0], dtype=int)
@@ -939,7 +886,6 @@ class Spectrum(widgets.QWidget):
                 selected.append(row)
             if len(selected) >= self.MAX_LABELS:
                 return selected
-
         for row in ordered_rows:
             if row not in selected:
                 selected.append(row)
@@ -953,34 +899,283 @@ class Spectrum(widgets.QWidget):
         except Exception:
             return str(value)
 
-    def _set_axis_bounds(self):
-        finite_x = self.x[np.isfinite(self.x)]
-        if not finite_x.size:
-            finite_x = np.array([0.0])
-        if self.x_centered:
-            span = np.nanmax(np.abs(finite_x))
-            window_span = self._window_span_for_axis()
-            if window_span is not None:
-                span = max(span, window_span)
-            if span <= 0:
-                span = 1.0 if 'ppm' in self.x_label else 1.0e-4
-            self.ax.set_xlim(-span * 1.08, span * 1.08)
-        else:
-            xmin = np.nanmin(finite_x)
-            xmax = np.nanmax(finite_x)
-            if xmin == xmax:
-                padding = max(abs(xmin) * 1.0e-5, 1.0e-4)
-            else:
-                padding = (xmax - xmin) * 0.05
-            self.ax.set_xlim(xmin - padding, xmax + padding)
-        self.ax.set_ylim(self._plot_floor, max(150.0, np.nanmax(self.y) * 8.0))
-
     def _window_span_for_axis(self):
         if self.x_label.startswith('\u0394ppm'):
             return self._plot_window.get('window_half_ppm')
         if self.x_label.startswith('\u0394m/z'):
             return self._plot_window.get('window_half_mz')
         return None
+
+    # ── drawing helpers (public for _SpectrumCanvas) ─────────────────
+    def _draw(self, painter, rect):
+        """Entry point called by _SpectrumCanvas.paintEvent."""
+        painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
+
+        # chart margins (room for tick labels + title)
+        ml, mt, mr, mb = 72, 48, 24, 52
+        cr = QtCore.QRectF(rect.left() + ml, rect.top() + mt,
+                           rect.width() - ml - mr, rect.height() - mt - mb)
+
+        # background
+        painter.fillRect(rect, self._BG)
+        painter.fillRect(cr, self._CHART_BG)
+        painter.setPen(QtGui.QPen(self._BORDER, 1))
+        painter.drawRect(cr)
+
+        if self._data is None or self._data.empty:
+            painter.setPen(self._TEXT)
+            painter.setFont(QtGui.QFont('sans-serif', 13))
+            painter.drawText(cr, QtCore.Qt.AlignCenter, _text(self.language, 'empty_title'))
+            return
+
+        x, y = self.x, self.y
+        target_mask = self._target_mask
+        unresolved_mask = self._unresolved_mask
+        normal_mask = ~(target_mask | unresolved_mask)
+
+        # ── axis ranges ──────────────────────────────────────────
+        finite_x = x[np.isfinite(x)]
+        if not finite_x.size:
+            finite_x = np.array([0.0])
+
+        if self.x_centered:
+            span = np.nanmax(np.abs(finite_x))
+            ws = self._window_span_for_axis()
+            if ws is not None:
+                span = max(span, ws)
+            if span <= 0:
+                span = 1.0 if 'ppm' in self.x_label else 1.0e-4
+            x_min = -span * 1.08
+            x_max = span * 1.08
+        else:
+            x_min = np.nanmin(finite_x)
+            x_max = np.nanmax(finite_x)
+            if x_min == x_max:
+                padding = max(abs(x_min) * 1.0e-5, 1.0e-4)
+            else:
+                padding = (x_max - x_min) * 0.05
+            x_min -= padding
+            x_max += padding
+
+        y_hi = max(150.0, np.nanmax(y) * 8.0) * self._y_zoom
+        y_lo = self._plot_floor
+
+        def x2p(v):
+            return cr.left() + (v - x_min) / (x_max - x_min) * cr.width()
+
+        def y2p(v):
+            import math
+            lv = math.log10(max(v, y_lo))
+            lhi = math.log10(y_hi)
+            llo = math.log10(y_lo)
+            return cr.bottom() - (lv - llo) / (lhi - llo) * cr.height()
+
+        # ── grid ─────────────────────────────────────────────────
+        import math
+        painter.setFont(QtGui.QFont('sans-serif', 9))
+        # Y grid (log ticks: powers of 10)
+        lo_exp = int(math.floor(math.log10(y_lo)))
+        hi_exp = int(math.ceil(math.log10(y_hi)))
+        for exp in range(lo_exp, hi_exp + 1):
+            val = 10 ** exp
+            if val < y_lo or val > y_hi:
+                continue
+            py = y2p(val)
+            # major grid
+            painter.setPen(QtGui.QPen(self._GRID, 1, QtCore.Qt.DotLine))
+            painter.drawLine(QtCore.QPointF(cr.left(), py), QtCore.QPointF(cr.right(), py))
+            # tick label
+            painter.setPen(self._TICK_CLR)
+            label = f'{val:.0e}' if val >= 1000 or val <= 0.001 else (f'{int(val)}' if val >= 1 else f'{val:g}')
+            painter.drawText(QtCore.QRectF(cr.left() - 62, py - 8, 56, 16),
+                             QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter, label)
+            # minor grid between powers of 10
+            for frac in (2, 3, 4, 5, 6, 7, 8, 9):
+                mval = val * frac
+                if mval >= y_hi:
+                    break
+                my = y2p(mval)
+                painter.setPen(QtGui.QPen(self._GRID_MNR, 1, QtCore.Qt.DotLine))
+                painter.drawLine(QtCore.QPointF(cr.left(), my), QtCore.QPointF(cr.right(), my))
+
+        # X grid (auto ticks)
+        x_span = x_max - x_min
+        if x_span > 0:
+            nticks = max(3, min(12, int(cr.width() / 80)))
+            step = self._nice_step(x_span / nticks)
+            x0 = math.ceil(x_min / step) * step
+            for xi in np.arange(x0, x_max + step * 0.5, step):
+                px = x2p(xi)
+                painter.setPen(QtGui.QPen(self._GRID, 1, QtCore.Qt.DotLine))
+                painter.drawLine(QtCore.QPointF(px, cr.top()), QtCore.QPointF(px, cr.bottom()))
+                painter.setPen(self._TICK_CLR)
+                if abs(xi) < 1e-5:
+                    xi = 0.0
+                lbl = f'{xi:.4g}'
+                tw = painter.fontMetrics().horizontalAdvance(lbl)
+                painter.drawText(QtCore.QPointF(px - tw / 2, cr.bottom() + 14), lbl)
+
+        # ── axis labels ──────────────────────────────────────────
+        painter.setFont(QtGui.QFont('sans-serif', 11))
+        painter.setPen(self._TEXT)
+        # X label
+        xlab = self.x_label
+        xlw = painter.fontMetrics().horizontalAdvance(xlab)
+        painter.drawText(QtCore.QPointF(cr.center().x() - xlw / 2, cr.bottom() + 38), xlab)
+        # Y label
+        intensity_label = _column_display(self.language, self.intensity_column)
+        ylab = _text(self.language, 'y_normalised').format(intensity_label)
+        painter.save()
+        painter.translate(cr.left() - 62, cr.center().y())
+        painter.rotate(-90)
+        painter.drawText(QtCore.QPointF(-painter.fontMetrics().horizontalAdvance(ylab) / 2, 0), ylab)
+        painter.restore()
+
+        # ── title ────────────────────────────────────────────────
+        painter.setFont(QtGui.QFont('sans-serif', 13, QtGui.QFont.Bold))
+        ttl = _text(self.language, 'spectrum_target_title') if self.x_centered else _text(self.language, 'spectrum_title')
+        ttw = painter.fontMetrics().horizontalAdvance(ttl)
+        painter.drawText(QtCore.QPointF(cr.center().x() - ttw / 2, cr.top() - 14), ttl)
+
+        # ── zero line (target-centred) ───────────────────────────
+        if self.x_centered:
+            zx = x2p(0.0)
+            pen = QtGui.QPen(self._RED)
+            pen.setStyle(QtCore.Qt.DashLine)
+            pen.setWidthF(1.0)
+            painter.setPen(pen)
+            painter.drawLine(QtCore.QPointF(zx, cr.top()), QtCore.QPointF(zx, cr.bottom()))
+
+        # ── draw stems ───────────────────────────────────────────
+        self._draw_stems_qp(painter, normal_mask, self._BLUE, 2.0, 0.80,
+                            _text(self.language, 'candidate'), x2p, y2p, cr)
+        self._draw_stems_qp(painter, unresolved_mask, self._AMBER, 2.8, 0.95,
+                            _text(self.language, 'not_resolved'), x2p, y2p, cr)
+        self._draw_stems_qp(painter, target_mask, self._RED, 3.4, 1.0,
+                            _text(self.language, 'target_peak'), x2p, y2p, cr)
+
+        # ── legend ───────────────────────────────────────────────
+        ly = cr.top() + 8
+        for mask, color, label in [(normal_mask, self._BLUE, _text(self.language, 'candidate')),
+                                    (unresolved_mask, self._AMBER, _text(self.language, 'not_resolved')),
+                                    (target_mask, self._RED, _text(self.language, 'target_peak'))]:
+            if not mask.any():
+                continue
+            lx = cr.right() - 180
+            painter.setPen(QtGui.Qt.NoPen)
+            painter.setBrush(color)
+            painter.drawRect(QtCore.QRectF(lx, ly, 12, 12))
+            painter.setPen(self._TEXT)
+            painter.setFont(QtGui.QFont('sans-serif', 9))
+            painter.drawText(QtCore.QRectF(lx + 16, ly, 160, 14), QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, label)
+            ly += 16
+
+        # ── peak annotations ─────────────────────────────────────
+        self._draw_annotations(painter, x2p, y2p, cr)
+
+    def _draw_stems_qp(self, painter, mask, colour, lw, alpha, label, x2p, y2p, cr):
+        """Draw vertical stem lines + diamond markers for one category."""
+        if not mask.any():
+            return
+        xx = self.x[mask]
+        yy = self.y[mask]
+        floor_y = y2p(self._plot_floor)
+        c = QtGui.QColor(colour)
+        c.setAlphaF(alpha)
+        painter.setPen(QtGui.QPen(c, lw))
+        for xi, yi in zip(xx, yy):
+            px = x2p(xi)
+            py = y2p(yi)
+            # stem line
+            painter.drawLine(QtCore.QPointF(px, floor_y), QtCore.QPointF(px, py))
+        # diamond markers
+        painter.setPen(QtGui.Qt.NoPen)
+        painter.setBrush(c)
+        d = 4 + lw * 1.2
+        for xi, yi in zip(xx, yy):
+            px, py = x2p(xi), y2p(yi)
+            diamond = QtGui.QPolygonF([
+                QtCore.QPointF(px, py - d),
+                QtCore.QPointF(px + d, py),
+                QtCore.QPointF(px, py + d),
+                QtCore.QPointF(px - d, py),
+            ])
+            painter.drawPolygon(diamond)
+
+    def _draw_annotations(self, painter, x2p, y2p, cr):
+        """Label top peaks with molecule formulas (up to MAX_LABELS)."""
+        label_indices = self._label_indices()
+        offsets = [(-18, -28), (0, -42), (18, -28), (-28, -46), (28, -46)]
+        painter.setFont(QtGui.QFont('sans-serif', 9))
+        for label_number, row_number in enumerate(label_indices):
+            row = self._data.iloc[row_number]
+            label = self._formula_label(row['molecule'])
+            offset = offsets[label_number % len(offsets)]
+            colour = self._RED if self._target_mask[row_number] else (
+                self._AMBER if self._unresolved_mask[row_number] else self._MUTED
+            )
+
+            px = x2p(self.x[row_number])
+            py = y2p(self.y[row_number])
+            tx, ty = px + offset[0], py + offset[1]
+
+            fm = painter.fontMetrics()
+            tw = fm.horizontalAdvance(label) + 8
+            th = fm.height() + 4
+
+            # arrow line
+            painter.setPen(QtGui.QPen(colour, 0.6))
+            painter.drawLine(QtCore.QPointF(px, py), QtCore.QPointF(tx, ty + th / 2))
+
+            # background box
+            bgc = QtGui.QColor(255, 255, 255, 200)
+            painter.setPen(QtGui.Qt.NoPen)
+            painter.setBrush(bgc)
+            painter.drawRoundedRect(QtCore.QRectF(tx - tw / 2, ty, tw, th), 4, 4)
+
+            # label text
+            painter.setPen(colour)
+            painter.drawText(QtCore.QRectF(tx - tw / 2, ty, tw, th),
+                             QtCore.Qt.AlignCenter, label)
+
+    @staticmethod
+    def _nice_step(rough):
+        """Return a 'nice' step size for axis ticks."""
+        import math
+        if rough <= 0:
+            return 1.0
+        exp = math.floor(math.log10(rough))
+        frac = rough / (10 ** exp)
+        for nice in (1.0, 2.0, 2.5, 5.0, 10.0):
+            if frac <= nice:
+                return nice * (10 ** exp)
+        return 10 ** (exp + 1)
+
+
+class _SpectrumCanvas(widgets.QWidget):
+    """Inner widget that paints the chart (so it fills available space)."""
+
+    def __init__(self, spectrum, parent=None):
+        widgets.QWidget.__init__(self, parent=parent)
+        self._spectrum = spectrum
+        self.setMouseTracking(True)
+
+    def paintEvent(self, event):
+        p = QtGui.QPainter(self)
+        try:
+            self._spectrum._draw(p, self.rect())
+        finally:
+            p.end()
+
+    def wheelEvent(self, event):
+        if self._spectrum is None:
+            return
+        delta = event.angleDelta().y()
+        if delta > 0:
+            self._spectrum._on_zoom_in()
+        elif delta < 0:
+            self._spectrum._on_zoom_out()
+
 
 
 class MainWindow(widgets.QMainWindow):

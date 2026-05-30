@@ -3,13 +3,19 @@
 ## [2.0.2] - 2026-05-30
 
 ### Changed
-- Lazy-load numpy, pandas, and matplotlib to reduce startup time (~3x faster).
-- Move matplotlib from hard dependency to optional `[spectrum]` extra; the
-  spectrum window gracefully shows an install hint when matplotlib is missing.
+- Lazy-load numpy and pandas to reduce GUI startup time (~3x faster).
+- Replaced matplotlib-based spectrum view with a native Qt QPainter
+  implementation, removing the ~20 MB matplotlib dependency entirely.
+  The spectrum retains all features: log-scale stem plot, 3-colour
+  category display (candidate / unresolved / target), peak annotations,
+  zoom (mouse wheel), and bilingual labels.
+
+### Removed
+- matplotlib dependency (replaced by built-in Qt painting).
 
 ### Fixed
-- The spectrum window no longer blocks app startup when matplotlib is not
-  installed.
+- The spectrum window is always available; no external plotting library
+  required.
 
 All notable changes to Interference Calculator will be documented in this file.
 
