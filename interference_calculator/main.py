@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """ Calculate isotopic interference and standard ratios. """
 
-import pandas as pd
 import itertools
+import numpy as np
+import pandas as pd
 from interference_calculator.molecule import Molecule, mass_electron, periodic_table
 
 def interference(atoms, target, targetrange=0.3, maxsize=5, charge=[1],
@@ -45,11 +46,13 @@ def interference(atoms, target, targetrange=0.3, maxsize=5, charge=[1],
         sample and the natural abundances of the isotopes.
     """
     if isinstance(charge, (int, float, str)):
-        charge = tuple(int(charge))
+        charge = (int(charge),)
     elif isinstance(charge, (tuple, list)):
         charge = tuple(int(c) for c in charge)
     else:
         raise ValueError('charge must be given as a number or a list of numbers.')
+    if not charge:
+        raise ValueError('charge must contain at least one value.')
 
     if chargesign not in ('+', '-', 'o', '0'):
         raise ValueError('chargesign must be either "+", "-", "o", or "0".')
@@ -81,10 +84,10 @@ def interference(atoms, target, targetrange=0.3, maxsize=5, charge=[1],
             if m.charge:
                 target_charge = m.charge
             else:
-                target_charge = charge[0]
+                target_charge = 0 if target_chargesign in ('o', '0') else charge[0]
                 inferred_charge = True
             # If no charge was specified on target,
-            # push the inferred charge back to target
+            # push the inferred charge back to target and recalculate m/z.
             if inferred_charge:
                 if target_charge == 0:
                     pass
@@ -92,6 +95,7 @@ def interference(atoms, target, targetrange=0.3, maxsize=5, charge=[1],
                     target += ' {}'.format(target_chargesign)
                 else:
                     target += ' {}{}'.format(target_charge, target_chargesign)
+                m = Molecule(target)
             target_mz = m.mass
             target_abun = m.abundance
             if m.charge > 0:
@@ -151,7 +155,7 @@ def interference(atoms, target, targetrange=0.3, maxsize=5, charge=[1],
         data['MRP'] = target_mz/data['mass/charge diff'].abs()
     else:
         data['mass/charge diff'] = 0.0
-        data['MRP'] = pd.np.inf
+        data['MRP'] = np.inf
 
     molec = []
     abun = []
@@ -168,11 +172,11 @@ def interference(atoms, target, targetrange=0.3, maxsize=5, charge=[1],
         'charge': target_charge,
         'mass/charge': target_mz,
         'mass/charge diff': 0,
-        'MRP': pd.np.inf,
+        'MRP': np.inf,
         'probability': target_abun,
         'target': True
     }
-    data = data.append(target_data, ignore_index=True)
+    data = pd.concat([data, pd.DataFrame([target_data])], ignore_index=True)
     return data[['molecule', 'charge', 'mass/charge',
                  'mass/charge diff', 'MRP', 'probability', 'target']]
 

@@ -1,122 +1,294 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Stand-alone script to fetch CIAAW/IUPAC data on isotope mass and abundance.
-    This script will recreate the periodic_table database used by the rest of the
-    interference_calculator package.
-"""
+"""Rebuild the isotope database from CIAAW 2024 and AME2020 data."""
+
+import argparse
+import re
+from html import unescape
+from html.parser import HTMLParser
+from pathlib import Path
 
 import pandas as pd
-import requests
 
-mass_url = 'http://ciaaw.org/atomic-masses.htm'
-abun_url = ' https://www.degruyter.com/table/j/pac.2016.88.issue-3/pac-2015-0503/pac-2015-0503.xml?id=j_pac-2015-0503_tab_001'
-output = 'periodic_table.csv'
 
-# Set to True to read from local files, useful for debugging.
-_debug = False
+PACKAGE_DIR = Path(__file__).resolve().parent
+DEFAULT_OUTPUT = PACKAGE_DIR / 'periodic_table.csv'
+DEFAULT_EXISTING = PACKAGE_DIR / 'periodic_table.csv'
 
-### Mass table
+MASS_URL = 'https://ciaaw.org/data/IUPAC-atomic-masses.csv'
+ABUNDANCE_URL = 'https://ciaaw.org/isotopic-abundances.htm'
+ABUNDANCE_SOURCE = 'CIAAW 2024'
+MASS_SOURCE = 'AME2020'
 
-if _debug:
-    mass = pd.read_html('devel/mass_ciaaw.html', encoding='utf-8')[0]
-else:
-    req = requests.get(mass_url)
-    mass = pd.read_html(req.text, encoding=req.encoding)[0]
-mass = mass.drop(mass.index[-1])
 
-# HTML table has rowspans, read_html does not handle it correctly.
-# First 3 columns should be empty (NaN) for minor isotopes of the
-# same parent element, but A and mass are in columns 0 and 1, resp.
-# Split into two based on symbol == NaN, reorganize, concat back together.
-mass.columns = ['atomic number', 'element', 'element name', 'atomic mass', 'mass']
+class _CIAAWTableParser(HTMLParser):
+    """Small HTML table parser that tolerates CIAAW's rowspans."""
 
-partA = mass[mass['element name'].isnull()]
-partA = partA[['element name', 'atomic mass', 'mass', 'atomic number', 'element']]
-partA.columns = ['atomic number', 'element', 'element name', 'atomic mass', 'mass']
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.in_table = False
+        self.in_row = False
+        self.in_cell = False
+        self.rows = []
+        self.row = []
+        self.cell = []
 
-partB = mass[mass['element name'].notnull()]
-mass = pd.concat([partA, partB]).sort_index()
-mass = mass.fillna(method='pad')
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'table' and attrs.get('id') == 'mytable':
+            self.in_table = True
+        elif self.in_table and tag == 'tr':
+            self.in_row = True
+            self.row = []
+        elif self.in_row and tag in ('td', 'th'):
+            self.in_cell = True
+            self.cell = []
 
-mass['atomic number'] = pd.to_numeric(mass['atomic number'])
-mass['atomic mass'] = pd.to_numeric(mass['atomic mass'].str.strip('*'))
-# \xa0 is utf-8 encoded non-breaking space
-mass['mass'] = pd.to_numeric(mass['mass'].str.split('(').str[0].str.replace('\xa0', ''))
+    def handle_endtag(self, tag):
+        if self.in_cell and tag in ('td', 'th'):
+            text = unescape(''.join(self.cell)).replace('\xa0', ' ').strip()
+            text = re.sub(r'\s+', ' ', text)
+            self.row.append(text)
+            self.in_cell = False
+        elif self.in_table and tag == 'tr':
+            if self.row:
+                self.rows.append(self.row)
+            self.in_row = False
+        elif self.in_table and tag == 'table':
+            self.in_table = False
 
-# Add isotope column
-atomic_mass = mass['atomic mass'].values
-element = mass['element'].values
-isotope = [str(am) + el for am, el in zip(atomic_mass, element)]
-mass['isotope'] = isotope
+    def handle_data(self, data):
+        if self.in_cell:
+            self.cell.append(data)
 
-### Abundance table
 
-if _debug:
-    abun = pd.read_html('devel/abun_ciaaw.html', encoding='utf-8')[0]
-else:
-    req = requests.get(abun_url)
-    abun = pd.read_html(req.text, encoding=req.encoding)[0]
+def _read_text(url=None, filename=None):
+    if filename:
+        return Path(filename).read_text(encoding='utf-8')
+    import requests
 
-abun.columns = ['atomic number', 'element', 'atomic mass', 'interval', 'annotation', 'abundance', 'reference', 'standard', 'interval2']
-abun = abun[['atomic number', 'element', 'atomic mass', 'abundance', 'standard']]
+    response = requests.get(url, timeout=60)
+    response.raise_for_status()
+    response.encoding = response.encoding or 'utf-8'
+    return response.text
 
-# No data for Po, At, Rn, Fr, Ra, Ac, also missing from mass table.
-abun = abun.drop(abun[abun['element'].isin(['Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac'])].index)
-abun.index = range(abun.shape[0])
-# No data for Tc and Pm, but want to keep.
-idx = abun[abun['element'] == 'Tc'].index
-abun.loc[idx] = [43, 'Tc', 98, '0.0', '']
-idx = abun[abun['element'] == 'Pm'].index
-abun.loc[idx] = [61, 'Pm', 145, '0.0', '']
 
-abun = abun.fillna(method='pad')
-abun['atomic number'] = pd.to_numeric(abun['atomic number'])
-abun['atomic mass'] = pd.to_numeric(abun['atomic mass'])
-abun['abundance'] = pd.to_numeric(abun['abundance'].str.split('(').str[0].str.replace(' ', ''))
-# \xe2\x80\x93 is utf-8 encoded en-dash
-abun['standard'] = abun['standard'].str.strip('*').str.replace(b'\xe2\x80\x93'.decode('utf-8'), '')
+def _load_existing_abundances(filename):
+    if not filename or not Path(filename).exists():
+        return {}
+    data = pd.read_csv(filename, comment='#')
+    return data.set_index('isotope')['abundance'].to_dict()
 
-# U233 missing, but listed in mass data, add.
-u = abun.iloc[-1].copy()
-u['atomic mass'] = 233
-u['abundance'] = 0
-abun = abun.append(u)
-abun = abun.sort_values(['atomic number', 'atomic mass'])
-abun.index = range(abun.shape[0])
 
-### Merge
+def _parse_abundance_table(html, existing_abundances=None):
+    # A few CIAAW rows begin with <td rowspan=...> without an opening <tr>.
+    html = re.sub(r'\n<td rowspan=', '\n<tr><td rowspan=', html)
+    parser = _CIAAWTableParser()
+    parser.feed(html)
 
-# Before merging, check that index, symbol, Z, and A are same.
-if not mass.shape[0] == abun.shape[0]:
-    raise ValueError('Mass and abundance tables have different length.')
-if not (mass.index == abun.index).all():
-    raise ValueError('Indices are not the same while merging mass and abundance tables.')
-if not (mass['atomic number'] == abun['atomic number']).all():
-    raise ValueError('Atomic number (Z) not same for all entries while merging mass and abundance tables.')
-if not (mass['atomic mass'] == abun['atomic mass']).all():
-    raise ValueError('Atomic mass (A) not same for all entries while merging mass and abundance tables.')
-if not (mass['element'] == abun['element']).all():
-    raise ValueError('Element symbols are not same for all entries while merging mass and abundance tables.')
+    rows = []
+    last_z = last_symbol = last_name = ''
+    for row in parser.rows:
+        if row and row[0] == 'Z':
+            continue
+        if len(row) >= 5:
+            if len(row) == 5:
+                z, symbol, name, mass_number, composition = row
+                notes = ''
+            else:
+                z, symbol, name, mass_number, composition, notes = row[:6]
+            if not composition:
+                composition = '1'
+            if not z.isdigit():
+                continue
+            last_z, last_symbol, last_name = z, symbol, name
+        elif len(row) >= 2:
+            z, symbol, name = last_z, last_symbol, last_name
+            mass_number, composition = row[:2]
+            notes = row[2] if len(row) > 2 else ''
+            if not z or not z.isdigit():
+                continue
+        else:
+            continue
 
-mass['abundance'] = abun['abundance']
-mass['standard'] = abun['standard']
+        digits = re.sub(r'[^0-9]', '', mass_number)
+        if not digits:
+            continue
+        atomic_mass = int(digits)
+        isotope = '{}{}'.format(atomic_mass, symbol)
+        info = _parse_composition(composition)
+        abundance = _representative_abundance(
+            isotope, info, existing_abundances or {}
+        )
+        rows.append({
+            'atomic number': int(z),
+            'element': symbol,
+            'element name': name,
+            'isotope': isotope,
+            'atomic mass': atomic_mass,
+            'abundance': abundance,
+            'abundance low': info['low'],
+            'abundance high': info['high'],
+            'abundance uncertainty': info['uncertainty'],
+            'abundance kind': info['kind'],
+            'abundance source': ABUNDANCE_SOURCE,
+            'standard': ABUNDANCE_SOURCE,
+            'notes': notes,
+        })
 
-### Major isotope
-# For each element, determine the major isotope, the isotope with the highest abundance.
-elements = mass['element'].unique()
-major_isotope = []
+    data = pd.DataFrame(rows)
+    data = data.drop_duplicates('isotope', keep='last')
+    data = data.sort_values(['atomic number', 'atomic mass']).reset_index(drop=True)
+    data = _normalise_element_abundances(data)
+    return data
 
-for el in elements:
-    el_slice = mass[mass['element'] == el]
-    major_mass = el_slice.sort_values('abundance', ascending=False).iloc[0].loc['atomic mass']
-    number_of_isotopes = el_slice.shape[0]
-    major_isotope.extend([str(major_mass) + el] * number_of_isotopes)
 
-mass['major isotope'] = major_isotope
+def _parse_composition(composition):
+    raw = composition.strip()
+    compact = raw.replace(' ', '')
+    if compact == '-':
+        return {
+            'value': 1.0,
+            'low': pd.NA,
+            'high': pd.NA,
+            'uncertainty': pd.NA,
+            'kind': 'radioactive',
+        }
+    if compact == '1':
+        return {
+            'value': 1.0,
+            'low': 1.0,
+            'high': 1.0,
+            'uncertainty': 0.0,
+            'kind': 'exact',
+        }
 
-# Reorder columns
-mass = mass[['atomic number', 'element', 'element name', 'major isotope',
-             'isotope', 'atomic mass', 'mass', 'abundance', 'standard']]
+    interval = re.match(r'^\[(.*?),(.*?)\]$', compact)
+    if interval:
+        low = float(interval.group(1))
+        high = float(interval.group(2))
+        return {
+            'value': (low + high) / 2.0,
+            'low': low,
+            'high': high,
+            'uncertainty': pd.NA,
+            'kind': 'interval',
+        }
 
-with open(output, mode='wt', encoding='utf-8') as fh:
-    mass.to_csv(fh, index=False)
+    value = re.match(r'^([0-9.]+)(?:\(([0-9]+)\))?$', compact)
+    if value:
+        nominal = float(value.group(1))
+        uncertainty = _expanded_uncertainty(value.group(1), value.group(2))
+        return {
+            'value': nominal,
+            'low': pd.NA,
+            'high': pd.NA,
+            'uncertainty': uncertainty,
+            'kind': 'value',
+        }
+
+    raise ValueError('Could not parse isotopic composition: {}'.format(raw))
+
+
+def _expanded_uncertainty(value_text, digits):
+    if not digits:
+        return pd.NA
+    if '.' in value_text:
+        places = len(value_text.split('.', 1)[1])
+    else:
+        places = 0
+    return int(digits) * 10 ** (-places)
+
+
+def _representative_abundance(isotope, info, existing_abundances):
+    if info['kind'] == 'interval':
+        old_value = existing_abundances.get(isotope)
+        if old_value is not None and info['low'] <= old_value <= info['high']:
+            return old_value
+    return info['value']
+
+
+def _normalise_element_abundances(data):
+    data = data.copy()
+    for element, idx in data.groupby('element').groups.items():
+        total = data.loc[idx, 'abundance'].sum()
+        if total > 0:
+            data.loc[idx, 'abundance'] = data.loc[idx, 'abundance'] / total
+    return data
+
+
+def _parse_mass_table(text):
+    from io import StringIO
+
+    data = pd.read_csv(StringIO(text), skiprows=2)
+    data = data.rename(columns={'nuclide': 'isotope'})
+    data['mass'] = pd.to_numeric(data['mass'], errors='raise')
+    data['mass uncertainty'] = pd.to_numeric(data['uncertainty'], errors='coerce')
+    data['mass source year'] = (
+        data['Year/link'].astype(str)
+        .str.extract(r'>(\d{4})</a>$')
+        .astype(int)
+    )
+    data = data.sort_values(['isotope', 'mass source year'])
+    data = data.drop_duplicates('isotope', keep='last')
+    data['mass source'] = MASS_SOURCE
+    return data[['isotope', 'mass', 'mass uncertainty',
+                 'mass source year', 'mass source']]
+
+
+def build_periodic_table(mass_text, abundance_html, existing=None):
+    existing_abundances = _load_existing_abundances(existing)
+    abundance = _parse_abundance_table(abundance_html, existing_abundances)
+    mass = _parse_mass_table(mass_text)
+    data = abundance.merge(mass, on='isotope', how='left')
+
+    missing = data[data['mass'].isna()]['isotope'].tolist()
+    if missing:
+        raise ValueError('Missing AME masses for: {}'.format(', '.join(missing)))
+
+    data = _add_major_isotope(data)
+    data = data[[
+        'atomic number', 'element', 'element name', 'major isotope',
+        'isotope', 'atomic mass', 'mass', 'mass uncertainty',
+        'mass source year', 'mass source', 'abundance', 'abundance low',
+        'abundance high', 'abundance uncertainty', 'abundance kind',
+        'abundance source', 'standard', 'notes',
+    ]]
+    return data.sort_values(['atomic number', 'atomic mass']).reset_index(drop=True)
+
+
+def _add_major_isotope(data):
+    data = data.copy()
+    major = {}
+    for element, element_data in data.groupby('element'):
+        row = element_data.sort_values(
+            ['abundance', 'atomic mass'], ascending=[False, True]
+        ).iloc[0]
+        major[element] = row['isotope']
+    data['major isotope'] = data['element'].map(major)
+    return data
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--mass-file', help='Local CIAAW/AME mass CSV.')
+    parser.add_argument('--abundance-file', help='Local CIAAW abundance HTML.')
+    parser.add_argument('--existing-file', default=str(DEFAULT_EXISTING),
+                        help='Existing table used for interval representatives.')
+    parser.add_argument('--output', default=str(DEFAULT_OUTPUT),
+                        help='Output periodic_table.csv path.')
+    args = parser.parse_args(argv)
+
+    mass_text = _read_text(MASS_URL, args.mass_file)
+    abundance_html = _read_text(ABUNDANCE_URL, args.abundance_file)
+    table = build_periodic_table(
+        mass_text, abundance_html, existing=args.existing_file
+    )
+    output = Path(args.output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    table.to_csv(output, index=False)
+    print('Wrote {} rows to {}'.format(table.shape[0], output))
+
+
+if __name__ == '__main__':
+    main()

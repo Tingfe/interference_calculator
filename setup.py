@@ -35,25 +35,33 @@ setup(
     url = __url__,
     author = __author__,
     author_email = 'me@example.com',
+    maintainer = __maintainer__,
     license = __license__,
     classifiers = [
         'License :: OSI Approved :: BSD License',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Development Status :: 4 - Beta',
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering'
     ],
     keywords = 'interference mass-spectrometry isotope element standard ratio',
+    python_requires = '>=3.9',
 
     install_requires = [
         'matplotlib',
+        'numpy',
         'pandas',
         'pyparsing',
         pyqtdep,
-        'scipy'
     ],
+    extras_require = {
+        'data': ['requests'],
+    },
     entry_points = {
         'gui_scripts': ['interference_calculator=interference_calculator.ui:run']
     },

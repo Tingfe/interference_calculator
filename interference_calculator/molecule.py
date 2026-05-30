@@ -4,18 +4,19 @@
     The chemical formula can be output in a number of ways, including custom
     formatting using simple templates.
 """
+from importlib import resources
+from math import factorial, prod
+import re
+
 import pandas as pd
 import pyparsing as pp
-import pkg_resources
 
-from numpy import prod
-from scipy.misc import factorial
+_periodic_table_file = resources.files('interference_calculator').joinpath('periodic_table.csv')
+with _periodic_table_file.open(mode='r', encoding='utf-8') as fh:
+    periodic_table = pd.read_csv(fh, comment='#')
 
-_periodic_table_file = pkg_resources.resource_filename(__name__, 'periodic_table.csv')
-periodic_table = pd.read_csv(_periodic_table_file, comment='#')
-
-# CODATA 2014, http://physics.nist.gov/cgi-bin/cuu/Value?me
-mass_electron = 0.0005485799090
+# CODATA 2022, NIST value for electron mass in u.
+mass_electron = 0.000548579909065
 
 # parser elements used by all forms
 _opt_int = pp.Optional(pp.Word(pp.nums))
@@ -35,7 +36,6 @@ _charged = pp.oneOf('+ -')
 # molecule    ::= one or more units + [charge]
 #
 
-_in_delimiter = pp.CharsNotIn(pp.alphanums + '+-').setParseAction(pp.replaceWith(','))
 _in_comma = pp.Optional(pp.Suppress(','))
 _in_unit = pp.OneOrMore(pp.Group(
                 _opt_int('atomic_mass') + _element('element') + _opt_int('count') + _in_comma
@@ -174,6 +174,7 @@ class Molecule(object):
         """
         self.input = molecule
         self.mass = 0.0
+        self.mass_uncertainty = 0.0
         self.abundance = 1.0
         self.charge = 0
         self.chargesign = ''
@@ -184,6 +185,7 @@ class Molecule(object):
         self.atomic_numbers = []
         self.atomic_masses = []
         self.masses = []
+        self.mass_uncertainties = []
         self.abundances = []
 
         self.parse()
@@ -201,12 +203,17 @@ class Molecule(object):
             return
         self.input = self.input.strip()
 
-        # Parse input string into pyparsing.ParseResult objects
-        try:
-            molec = _mn_molecule.parseString(self.input, parseAll=True)
-        except pp.ParseException:
-            delim_string = _in_delimiter.transformString(self.input)
-            molec = _in_molecule.parseString(delim_string, parseAll=True)
+        # Parse input string into pyparsing.ParseResult objects.
+        # Inputs with separators are isotope notation; molecular notation has no spaces.
+        if re.search(r'[^A-Za-z0-9\[\]+-]', self.input):
+            delim_string = re.sub(r'[^A-Za-z0-9+-]+', ',', self.input)
+            molec = _in_molecule.parse_string(delim_string, parse_all=True)
+        else:
+            try:
+                molec = _mn_molecule.parse_string(self.input, parse_all=True)
+            except pp.ParseException:
+                delim_string = re.sub(r'[^A-Za-z0-9+-]+', ',', self.input)
+                molec = _in_molecule.parse_string(delim_string, parse_all=True)
 
         # Collect data from ParseResult objects,
         # merge mulitple occurances of same element.
@@ -222,7 +229,9 @@ class Molecule(object):
             else:
                 data[label]['count'] += int(unit.get('count', 1))
 
-        # Sort and split data into lists.
+        # Sort, normalize aliases, and split data into lists.
+        normalized_units = []
+        normalized_by_isotope = {}
         for k in sorted(data.keys()):
             am = data[k]['atomic_mass']
             el = data[k]['element']
@@ -236,21 +245,42 @@ class Molecule(object):
                 # no atomic mass given, find major isotope, e.g. C -> 12C
                 am = periodic_table[periodic_table['element'] == el].iloc[0].loc['major isotope']
                 am = int(am.strip(el))
-            self.atomic_masses.append(am)
-            self.elements.append(el)
-            self.isotopes.append(str(am) + el)
-            self.counts.append(data[k]['count'])
+
+            isotope = str(am) + el
+            if isotope in normalized_by_isotope:
+                normalized_by_isotope[isotope]['count'] += data[k]['count']
+            else:
+                unit = {
+                    'atomic_mass': am,
+                    'element': el,
+                    'isotope': isotope,
+                    'count': data[k]['count'],
+                }
+                normalized_by_isotope[isotope] = unit
+                normalized_units.append(unit)
+
+        for unit in normalized_units:
+            self.atomic_masses.append(unit['atomic_mass'])
+            self.elements.append(unit['element'])
+            self.isotopes.append(unit['isotope'])
+            self.counts.append(unit['count'])
 
         # Retrieve additional information from periodic table
         for i in self.isotopes:
             isotope = periodic_table[periodic_table['isotope'] == i].iloc[0]
             self.atomic_numbers.append(isotope['atomic number'])
             self.masses.append(isotope['mass'])
+            self.mass_uncertainties.append(isotope.get('mass uncertainty', 0.0))
             self.abundances.append(isotope['abundance'])
 
         # Calculate total mass of molecule
         for m, c in zip(self.masses, self.counts):
             self.mass += m * c
+        uncertainty_terms = []
+        for u, c in zip(self.mass_uncertainties, self.counts):
+            if pd.notna(u):
+                uncertainty_terms.append((u * c) ** 2)
+        self.mass_uncertainty = sum(uncertainty_terms) ** 0.5
 
         # Find charge and sign
         self.chargesign = molec.get('charge_sign', '')
@@ -298,7 +328,7 @@ class Molecule(object):
         # for 16O: xi = 2, for 18O: xi = 1
         # for 16O: pi = 0.9976 for 18O: pi = 0.002 (and 0.0004 for 17O)
 
-        data = periodic_table[periodic_table['isotope'].isin(self.isotopes)].copy()
+        data = periodic_table.set_index('isotope').loc[self.isotopes].reset_index().copy()
         data['count'] = self.counts
 
         parents = data['major isotope'].value_counts().to_dict()
@@ -311,7 +341,8 @@ class Molecule(object):
                 # Simple case of single isotope, even if it occurs n times
                 abun = d['abundance'].iat[0] ** n
             else:
-                abun = factorial(n)/factorial(d['count']).prod() * (d['abundance'] ** d['count']).prod()
+                count_factorial = prod(factorial(int(c)) for c in d['count'])
+                abun = factorial(int(n))/count_factorial * (d['abundance'] ** d['count']).prod()
 
             abun_per_el.append(abun)
         self.abundance = prod(abun_per_el)

@@ -1,108 +1,217 @@
 .. image:: interference_calculator/icon.svg
-    :width: 128px
-    :height: 128px
+    :width: 96px
+    :height: 96px
     :align: right
-    :alt: icon.svg
+    :alt: Interference calculator icon
 
-***********************
-Interference calculator
-***********************
+*******************************
+Interference Calculator 2.0
+*******************************
 
-Interference calculator calculates all molecules that can be formed (the interferences) from a combination of a list of atoms (sample composition), given a target mass and range. The calculation considers all isotopes of the sample atoms and build molecules up to a given size. The results are displayed in both a table and a mass spectrum.
+Interference Calculator is a scientific desktop tool for mass-spectrometry peak
+interference screening. Version 2.0 turns the original general molecular
+interference calculator into a modern inorganic mass-spectrometry workflow for
+GDMS, ICP-MS, and SIMS.
 
-.. image:: screenshot_1.png
+The application now combines a bilingual PyQt GUI, GDMS-first defaults,
+template-based inorganic interference generation, CIAAW 2024 / AME2020 isotope
+data, ppm or absolute m/z windows, target-centered spectra, and a compact
+data-dense results table.
+
+.. image:: docs/images/main_zh.png
     :align: center
-    :alt: screenshot-1
+    :alt: Chinese UI screenshot
 
-The program can also display the standard ratios of the isotopes for any given element. The results include the natural abundance, standard ratio, inverse ratio, and the standard material in which the isotopic ratios where measured.
+What Changed In 2.0
+-------------------
 
-.. image:: screenshot_2.png
-    :align: center
-    :alt: screenshot-2
+Version 2.0 is a major project iteration:
+
+* Modern scientific-tool GUI with a clearer control panel, result summary chips,
+  empty state, improved table density, and bilingual language switching.
+* GDMS, ICP-MS, and SIMS presets with practical defaults for charge state,
+  target window, risk model, and instrument mass resolving power.
+* Common inorganic element sets, including an all-elements set tuned for
+  inorganic MS screening.
+* GDMS default target window is ``2000 ppm`` as a full window width, equivalent
+  to ``±1000 ppm`` around the calibrated target peak.
+* New inorganic mass-spectrometry algorithm using interference templates for
+  atomic ions, doubly charged ions, oxides, hydrides, hydroxides, nitrides,
+  carbides, sulfides, halides, plasma adducts, background molecules, and small
+  matrix clusters.
+* ``relative risk`` ranking based on isotope probability and method-specific
+  formation factors. It is a screening score, not a quantitative correction.
+* Target-centered spectrum display using ``Δppm`` or ``Δm/z`` when a target peak
+  is present.
+* Updated isotope database generated from CIAAW 2024 isotopic compositions and
+  AME2020 atomic masses, including uncertainty and abundance interval metadata.
+* Python 3 modernization and focused unit tests for core molecule parsing,
+  interference search, inorganic screening, and data schema.
+
+Project Metadata
+----------------
+
+Current version: ``2.0.0``
+
+Original author: Zan Peeters
+
+Current maintainer and latest contributor: Tingfe
+
+Repository: https://github.com/Tingfe/interference_calculator
 
 Installation
-============
+------------
 
-To use interference_calculator, first you need to have Python installed. Download Python `here <https://www.python.org>`_. Once Python is installed, open a terminal window (command window on Windows) and type:
-
-.. code-block:: bash
-
-    $ pip install interference_calculator
-
-on the command line to install interference calculator.
-
-Running
-=======
-
-To start the program, simply run the ui.py script.
+Use Python 3.9 or newer.
 
 .. code-block:: bash
 
-    $ python interference_calculator/ui.py
+    python3 -m venv .venv
+    . .venv/bin/activate
+    pip install -e .
 
-Use in IPython
-==============
+If installing from PyPI after a release:
 
-Interference_calculator can also be used from an interactive interpreter or in another Python script. For example, to calculate the mass interference around iron (Fe, mass 56), given a sample that consists of Si, Ca, O, and H, use it like this. ::
+.. code-block:: bash
 
-    >>> import interference_calculator as ic
-    >>> ic.interference(['Ca', 'O', 'H', 'Si'], 'Fe')
-             molecule  charge  mass/charge  mass/charge diff          MRP  \
-    0          O Ca -       1    55.958054          0.023118  2419.529988
-    1           Si2 -       1    55.954402          0.019466  2873.520086
-    2        18O3 D -       1    56.012129          0.077193   724.609657
-    3       18O3 H2 -       1    56.013677          0.078741   710.361726
-    4  17O 18O2 H D -       1    56.019926          0.084990   658.132608
-    5       D4 48Ca -       1    56.009478          0.074542   750.376520
-    6     O 18O2 D2 -       1    56.021986          0.087050   642.561143
-    7   17O2 18O D2 -       1    56.026175          0.091239   613.057735
-    8            Fe -       1    55.934936          0.000000          inf
+    pip install interference_calculator
 
-        probability  target
-    0  9.671034e-01   False
-    1  8.506314e-01   False
-    2  7.556442e-15   False
-    3  3.999731e-06   False
-    4  1.103164e-13   False
-    5  1.100126e-18   False
-    6  3.721482e-09   False
-    7  1.103556e-16   False
-    8  9.175400e-01    True
+Running The GUI
+---------------
 
-    >>> ic.standard_ratio(['Ca', 'O'])
-       isotope       mass  abundance     ratio  inverse ratio      standard
-    13     16O  15.994915   0.997621  1.000000       1.000000         VSMOW
-    14     17O  16.999132   0.000379  0.000380    2632.244327         VSMOW
-    15     18O  17.999160   0.002000  0.002005     498.710558         VSMOW
-    41    40Ca  39.962591   0.969410  1.000000       1.000000  NIST SRM 915
-    42    42Ca  41.958618   0.006470  0.006674     149.831530  NIST SRM 915
-    43    43Ca  42.958766   0.001350  0.001393     718.081481  NIST SRM 915
-    44    44Ca  43.955482   0.020860  0.021518      46.472196  NIST SRM 915
-    45    46Ca  45.953690   0.000040  0.000041   24235.250000  NIST SRM 915
-    46    48Ca  47.952523   0.001870  0.001929     518.401070  NIST SRM 915
+From the source checkout:
 
-There is also a class ``Molecule``, that can parse strings with molecular formulas. After parsing, it holds information about the molecule, such as mass, elements, isotopes, and relative abundance. ``Molecule.formula()`` can be used to typeset the molecular formula in various ways.::
+.. code-block:: bash
 
-    >>> m = ic.Molecule('C2 15N O3 2+')
-    >>> m.elements
-    ['N', 'C', 'O']
+    python interference_calculator/ui.py
 
-    >>> m.isotopes
-    ['15N', '12C', '16O']
+After installation, the console entry point is:
 
-    >>> m.masses
-    [15.000108899, 12.0, 15.99491462]
+.. code-block:: bash
 
-    >>> m.mass
-    86.985949918818
+    interference_calculator
 
-    >>> m.abundances
-    [0.003663, 0.988922, 0.9976206]
+Quick GDMS Workflow
+-------------------
 
-    >>> m.abundance
-    1.317443808955884e-05
+1. Select ``GDMS`` mode.
+2. Enter a target peak such as ``75As`` or ``56Fe``.
+3. Keep the default ``2000 ppm`` full window or switch to absolute ``m/z``.
+4. Enter sample, matrix, plasma, and background elements, for example
+   ``Ar Cl As O H``, or add the all-elements inorganic preset for a broad screen.
+5. Set ion model and instrument MRP if needed.
+6. Click ``Calculate``.
+7. Review candidate peaks, ``Δppm``, required MRP, relative risk, and whether
+   each candidate is resolvable.
+8. Open the spectrum view to inspect a target-centered peak display.
 
-    >>> m.formula(style='latex')
-    '$\\mathrm{{}^{15}{N}{C}_{2}{O}_{3}{}^{2-}}$'
+.. image:: docs/images/spectrum_zh.png
+    :align: center
+    :alt: Target-centered spectrum screenshot
 
-See the docstrings for detailed help and options.
+User Manual
+-----------
+
+The illustrated user manual is available here:
+
+`docs/USER_MANUAL.md <docs/USER_MANUAL.md>`_
+
+Core Concepts
+-------------
+
+Window Width
+~~~~~~~~~~~~
+
+The GUI uses full window width because this matches common instrument settings.
+For example, ``2000 ppm`` means the calculation searches ``1000 ppm`` below and
+``1000 ppm`` above the target peak. When a valid target peak exists, switching
+between ``ppm`` and ``m/z`` converts the displayed value.
+
+Instrument MRP
+~~~~~~~~~~~~~~
+
+Instrument MRP does not change candidate generation. It is applied after mass
+calculation to mark whether a candidate peak is resolvable from the target.
+Candidates that require higher resolving power than the instrument setting are
+highlighted as unresolved.
+
+Relative Risk
+~~~~~~~~~~~~~
+
+``relative risk`` is a qualitative prioritization score:
+
+.. code-block:: text
+
+    relative risk = isotope probability × formation factor
+
+It helps sort likely interferences for review. It should not be used as a
+quantitative abundance correction without method-specific calibration.
+
+Data Sources
+------------
+
+Atomic masses are based on AME2020, published in ``Chinese Physics C`` 45,
+030002 and 030003. Isotopic compositions are based on CIAAW 2024. Electron mass
+uses CODATA 2022.
+
+The packaged isotope table stores representative abundances as well as interval
+bounds where CIAAW reports normal-material abundance ranges.
+
+Python API
+----------
+
+Inorganic screening:
+
+.. code-block:: python
+
+    import interference_calculator as ic
+
+    data = ic.inorganic_interference(
+        ['Ar', 'Cl', 'As', 'O', 'H'],
+        '75As',
+        targetrange=0.074921,   # half-window in m/z
+        charge=[1, 2],
+        maxsize=3,
+        risk_preset='gdms',
+    )
+
+General molecular enumeration is still available:
+
+.. code-block:: python
+
+    import interference_calculator as ic
+
+    data = ic.interference(
+        ['Ca', 'O', 'H', 'Si'],
+        'Fe',
+        targetrange=0.3,
+        maxsize=4,
+        charge=[1],
+        chargesign='+',
+    )
+
+Isotope ratio table:
+
+.. code-block:: python
+
+    ratios = ic.standard_ratio(['Ca', 'O'])
+
+Development
+-----------
+
+Run the test suite:
+
+.. code-block:: bash
+
+    python -m unittest discover -s tests -v
+
+Update the isotope database:
+
+.. code-block:: bash
+
+    python interference_calculator/update_periodic_table.py
+
+License
+-------
+
+BSD 3-Clause Clear. See ``LICENSE.rst``.
