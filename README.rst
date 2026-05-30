@@ -4,9 +4,13 @@
    :align: right
    :alt: 干扰计算器图标
 
+.. _chinese-section:
+
 ================================
 干扰计算器 / Interference Calculator 2.0
 ================================
+
+`English <english-section_>`_ | **中文**
 
 **干扰计算器** 是一款用于质谱峰干扰筛查的科学桌面工具。2.0 版将原本通用分子干扰计算器升级为面向 GDMS、ICP-MS 和 SIMS 的现代化无机质谱分析工作流。
 
@@ -189,9 +193,13 @@ BSD 3-Clause Clear。详见 ``LICENSE.rst``。
 
 ----
 
+.. _english-section:
+
 ================================
 Interference Calculator 2.0
 ================================
+
+**English** | `中文 <chinese-section_>`_
 
 Interference Calculator is a scientific desktop tool for mass-spectrometry peak
 interference screening. Version 2.0 turns the original general molecular
