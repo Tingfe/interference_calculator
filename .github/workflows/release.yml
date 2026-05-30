@@ -48,20 +48,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: "Interference Calculator ${{ github.ref_name }}"
-          body: |
-            ## Interference Calculator ${{ github.ref_name }}
-
-            ### Installation
-
-            ```bash
-            pip install interference_calculator
-            ```
-
-            Or download the wheel below and install manually:
-
-            ```bash
-            pip install interference_calculator-*.whl
-            ```
+          body_path: CHANGELOG.md
           files: |
             *.tar.gz
             *.whl
