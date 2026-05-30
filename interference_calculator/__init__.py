@@ -4,7 +4,7 @@ from interference_calculator.molecule import Molecule, periodic_table, mass_elec
 from interference_calculator.main import interference, standard_ratio
 from interference_calculator.inorganic import inorganic_interference
 
-__version__ = '2.0.0'
+__version__ = '2.0.3'
 __name__ = 'interference_calculator'
 __author__ = 'Zan Peeters'
 __maintainer__ = 'Tingfe'

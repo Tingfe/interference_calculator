@@ -69,6 +69,8 @@ setup(
     package_data = {'interference_calculator': [
         'periodic_table.csv',
         'icon.svg',
+        'icon.ico',
+        'icon.icns',
         'display_button_icon.svg',
         'help_button_icon.svg']
     },

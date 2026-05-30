@@ -39,6 +39,21 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version changelog
+        run: |
+          V="${{ github.ref_name }}"     # e.g. v2.0.3
+          VNUM="${V#v}"                  # strip 'v' prefix
+          awk -v ver="$VNUM" '
+            BEGIN { found=0 }
+            $0 ~ "^## \\[" ver "\\]" { found=1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release_body.md
+          echo "=== release body ==="
+          cat release_body.md
+
       - name: Download packages
         uses: actions/download-artifact@v4
         with:
@@ -48,7 +63,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: "Interference Calculator ${{ github.ref_name }}"
-          body_path: CHANGELOG.md
+          body_path: release_body.md
           files: |
             *.tar.gz
             *.whl

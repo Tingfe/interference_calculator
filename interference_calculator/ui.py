@@ -488,15 +488,17 @@ class TableModel(QtCore.QAbstractTableModel):
             if role == QtCore.Qt.DisplayRole:
                 colname = self._data.columns[index.column()]
                 value = self._data.iloc[index.row(), index.column()]
+                if index.row() < 2 and index.column() == 0:
+                    print(f"[DEBUG] data() row={index.row()} col=0 colname={colname!r} value={value!r} table={self.table}")
                 if self.table == 'interference':
                     if colname in ('molecule', 'ion'):
                         # formula
                         try:
                             m = Molecule(value)
                         except ParseException:
-                            return value
+                            return str(value)
                         else:
-                            return m.formula(style='html', all_isotopes=True)
+                            return re.sub(r'<[^>]+>', '', m.formula(style='html', all_isotopes=True))
                     elif colname in ('mass/charge', 'm/z'):
                         return '{:.6f}'.format(value)
                     elif colname in ('mass/charge diff', '\u0394mass/charge', '\u0394m/z'):
@@ -526,8 +528,12 @@ class TableModel(QtCore.QAbstractTableModel):
                 elif self.table == 'std_ratios':
                     if colname == 'isotope':
                         # formula
-                        m = Molecule(value)
-                        return m.formula(style='html', all_isotopes=True)
+                        try:
+                            m = Molecule(value)
+                        except Exception:
+                            return str(value)
+                        else:
+                            return re.sub(r'<[^>]+>', '', m.formula(style='html', all_isotopes=True))
                     elif colname == 'mass':
                         return '{:.6f}'.format(value)
                     elif colname in ('abundance', 'ratio'):
@@ -786,6 +792,11 @@ class Spectrum(widgets.QWidget):
         self._y_zoom = 1.0
         self._canvas.update()
 
+    def plot_spectrum(self, data=None):
+        """Set spectrum data and trigger redraw (kept for backward compat)."""
+        if data is not None:
+            self.data = data
+
     def set_language(self, language):
         """Update spectrum language and redraw existing data."""
         self.language = language
@@ -891,13 +902,20 @@ class Spectrum(widgets.QWidget):
                 selected.append(row)
             if len(selected) >= self.MAX_LABELS:
                 break
-        return selected
-
     def _formula_label(self, value):
+        """Return a plain-text formula label suitable for QPainter rendering."""
         try:
-            return Molecule(value).formula(all_isotopes=True, style='latex')
+            formula = Molecule(value).formula(all_isotopes=True, style='html')
+            # Strip HTML tags for QPainter plain-text rendering
+            formula = re.sub(r'<[^>]+>', '', formula)
+            return formula
         except Exception:
             return str(value)
+
+
+
+
+
 
     def _window_span_for_axis(self):
         if self.x_label.startswith('\u0394ppm'):
@@ -1062,7 +1080,7 @@ class Spectrum(widgets.QWidget):
             if not mask.any():
                 continue
             lx = cr.right() - 180
-            painter.setPen(QtGui.Qt.NoPen)
+            painter.setPen(QtCore.Qt.NoPen)
             painter.setBrush(color)
             painter.drawRect(QtCore.QRectF(lx, ly, 12, 12))
             painter.setPen(self._TEXT)
@@ -1089,7 +1107,7 @@ class Spectrum(widgets.QWidget):
             # stem line
             painter.drawLine(QtCore.QPointF(px, floor_y), QtCore.QPointF(px, py))
         # diamond markers
-        painter.setPen(QtGui.Qt.NoPen)
+        painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(c)
         d = 4 + lw * 1.2
         for xi, yi in zip(xx, yy):
@@ -1129,7 +1147,7 @@ class Spectrum(widgets.QWidget):
 
             # background box
             bgc = QtGui.QColor(255, 255, 255, 200)
-            painter.setPen(QtGui.Qt.NoPen)
+            painter.setPen(QtCore.Qt.NoPen)
             painter.setBrush(bgc)
             painter.drawRoundedRect(QtCore.QRectF(tx - tw / 2, ty, tw, th), 4, 4)
 
@@ -1309,7 +1327,7 @@ class MainWidget(widgets.QWidget):
         self.spectrum_button.setIcon(QtGui.QIcon(_display_button_icon))
 
         # Table and spectrum output
-        self.table_output = TableView(html_cols=0)
+        self.table_output = TableView(html_cols=None)
         self.spectrum_window = Spectrum(parent=self)
 
         # Show input errors on statusbar

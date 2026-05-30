@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.3] - 2026-05-30
+
+### Added
+- Application icon files rendered from the same vector source: `icon.ico`
+  (Windows, 16/32/48/256 px) and `icon.icns` (macOS, up to 1024 px).
+
 ## [2.0.2] - 2026-05-30
 
 ### Changed
@@ -16,11 +22,6 @@
 ### Fixed
 - The spectrum window is always available; no external plotting library
   required.
-
-All notable changes to Interference Calculator will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [2.0.1] - 2026-05-30
 
@@ -65,5 +66,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Modernised the codebase to Python 3.9+.
 - Periodic table data cleaned up and re-generated.
 
+[2.0.2]: https://github.com/Tingfe/interference_calculator/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/Tingfe/interference_calculator/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Tingfe/interference_calculator/releases/tag/v2.0.0
