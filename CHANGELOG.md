@@ -1,3 +1,14 @@
+## [2.0.4] - 2026-05-30
+
+### Added
+- GitHub Actions now builds and publishes standalone applications for
+  Windows (single ``.exe``) and macOS (``.dmg``) automatically on every
+  version tag push.
+
+### Changed
+- README usage section now recommends ``pip install`` and the
+  ``interference_calculator`` CLI entry point as the primary workflow.
+
 # Changelog
 
 ## [2.0.3] - 2026-05-30
@@ -66,6 +77,7 @@
 - Modernised the codebase to Python 3.9+.
 - Periodic table data cleaned up and re-generated.
 
+[2.0.3]: https://github.com/Tingfe/interference_calculator/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/Tingfe/interference_calculator/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/Tingfe/interference_calculator/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Tingfe/interference_calculator/releases/tag/v2.0.0

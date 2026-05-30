@@ -10,32 +10,118 @@ permissions:
   contents: write
 
 jobs:
-  build:
+
+  # ── sdist + wheel (cross-platform) ──────────────────────────────────
+
+  build-sdist:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
       - name: Install build tools
         run: |
           python -m pip install --upgrade pip
           pip install build
-
       - name: Build sdist and wheel
         run: python -m build
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: packages
+          name: sdist-packages
           path: dist/*
 
+  # ── macOS .app (PyInstaller) ────────────────────────────────────────
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller PyQt5 numpy pandas pyparsing
+
+      - name: Build macOS app bundle
+        run: |
+          pyinstaller \
+            --name "Interference Calculator" \
+            --windowed \
+            --icon interference_calculator/icon.icns \
+            --add-data "interference_calculator/periodic_table.csv:interference_calculator" \
+            --add-data "interference_calculator/icon.svg:interference_calculator" \
+            --add-data "interference_calculator/icon.ico:interference_calculator" \
+            --add-data "interference_calculator/icon.icns:interference_calculator" \
+            --add-data "interference_calculator/display_button_icon.svg:interference_calculator" \
+            --add-data "interference_calculator/help_button_icon.svg:interference_calculator" \
+            --hidden-import PyQt5.QtSvg \
+            interference_calculator/ui.py
+
+      - name: Package as DMG
+        run: |
+          hdiutil create \
+            -volname "Interference Calculator" \
+            -srcfolder "dist/Interference Calculator.app" \
+            -ov -format UDZO \
+            "dist/InterferenceCalculator-macOS-${{ github.ref_name }}.dmg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-app
+          path: dist/InterferenceCalculator-macOS-*.dmg
+
+  # ── Windows .exe (PyInstaller) ─────────────────────────────────────
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller PyQt5 numpy pandas pyparsing
+
+      - name: Build Windows executable
+        run: |
+          pyinstaller `
+            --name "InterferenceCalculator" `
+            --onefile `
+            --windowed `
+            --icon interference_calculator/icon.ico `
+            --add-data "interference_calculator/periodic_table.csv;interference_calculator" `
+            --add-data "interference_calculator/icon.svg;interference_calculator" `
+            --add-data "interference_calculator/icon.ico;interference_calculator" `
+            --add-data "interference_calculator/icon.icns;interference_calculator" `
+            --add-data "interference_calculator/display_button_icon.svg;interference_calculator" `
+            --add-data "interference_calculator/help_button_icon.svg;interference_calculator" `
+            --hidden-import PyQt5.QtSvg `
+            interference_calculator/ui.py
+
+      - name: Rename with version tag
+        run: |
+          Rename-Item `
+            -Path "dist/InterferenceCalculator.exe" `
+            -NewName "InterferenceCalculator-Windows-${{ github.ref_name }}.exe"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: dist/InterferenceCalculator-Windows-*.exe
+
+  # ── GitHub Release ─────────────────────────────────────────────────
+
   release:
-    needs: [build]
+    needs: [build-sdist, build-macos, build-windows]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
@@ -43,8 +129,8 @@ jobs:
 
       - name: Extract version changelog
         run: |
-          V="${{ github.ref_name }}"     # e.g. v2.0.3
-          VNUM="${V#v}"                  # strip 'v' prefix
+          V="${{ github.ref_name }}"
+          VNUM="${V#v}"
           awk -v ver="$VNUM" '
             BEGIN { found=0 }
             $0 ~ "^## \\[" ver "\\]" { found=1; next }
@@ -54,18 +140,29 @@ jobs:
           echo "=== release body ==="
           cat release_body.md
 
-      - name: Download packages
+      - name: Download sdist/wheel
         uses: actions/download-artifact@v4
         with:
-          name: packages
+          name: sdist-packages
+          path: dist/
+
+      - name: Download macOS app
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-app
+          path: dist/
+
+      - name: Download Windows exe
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-exe
+          path: dist/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: "Interference Calculator ${{ github.ref_name }}"
           body_path: release_body.md
-          files: |
-            *.tar.gz
-            *.whl
+          files: dist/*
           draft: false
           prerelease: false

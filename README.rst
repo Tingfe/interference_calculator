@@ -38,7 +38,7 @@
 项目信息
 --------
 
-当前版本：``2.0.3``
+当前版本：``2.0.4``
 
 原作者：Zan Peeters
 
@@ -250,7 +250,7 @@ Version 2.0 is a major project iteration:
 Project Metadata
 ----------------
 
-Current version: ``2.0.3``
+Current version: ``2.0.4``
 
 Original author: Zan Peeters
 
