@@ -51,32 +51,38 @@
 
 需要 Python 3.9 或更高版本。
 
-.. code-block:: bash
-
-   python3 -m venv .venv
-   . .venv/bin/activate
-   pip install -e .
-
-若从 PyPI 安装：
+**推荐方式：通过 PyPI 安装**
 
 .. code-block:: bash
 
    pip install interference_calculator
 
-启动界面
---------
-
-从源码目录启动：
+也可从 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_ 下载 wheel 包手动安装：
 
 .. code-block:: bash
 
-   python interference_calculator/ui.py
+   pip install interference_calculator-*.whl
 
-安装后使用控制台入口：
+**开发者方式：从源码安装**
+
+.. code-block:: bash
+
+   git clone https://github.com/Tingfe/interference_calculator.git
+   cd interference_calculator
+   python3 -m venv .venv
+   . .venv/bin/activate
+   pip install -e .
+
+启动界面
+--------
+
+安装完成后，在终端中运行：
 
 .. code-block:: bash
 
    interference_calculator
+
+即可启动图形界面。无需手动执行 Python 脚本。
 
 GDMS 快速工作流
 ---------------
@@ -257,32 +263,41 @@ Installation
 
 Use Python 3.9 or newer.
 
-.. code-block:: bash
-
-   python3 -m venv .venv
-   . .venv/bin/activate
-   pip install -e .
-
-If installing from PyPI:
+**Recommended: install from PyPI**
 
 .. code-block:: bash
 
    pip install interference_calculator
 
-Running the GUI
----------------
-
-From the source checkout:
+You can also download a wheel from
+`GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
+and install it manually:
 
 .. code-block:: bash
 
-   python interference_calculator/ui.py
+   pip install interference_calculator-*.whl
 
-After installation:
+**Developer install: from source**
+
+.. code-block:: bash
+
+   git clone https://github.com/Tingfe/interference_calculator.git
+   cd interference_calculator
+   python3 -m venv .venv
+   . .venv/bin/activate
+   pip install -e .
+
+Running the GUI
+---------------
+
+Once installed, launch from the terminal:
 
 .. code-block:: bash
 
    interference_calculator
+
+The graphical interface opens directly — no need to invoke Python scripts
+manually.
 
 Quick GDMS workflow
 -------------------
