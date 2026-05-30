@@ -1,3 +1,11 @@
+## [2.0.5] - 2026-05-30
+
+### Changed
+- README installation section now features three tiers: standalone app
+  (downloadable ``.exe`` / ``.dmg``, no Python required), ``pip install``,
+  and source install.
+- README running instructions updated accordingly for each installation path.
+
 ## [2.0.4] - 2026-05-30
 
 ### Added
@@ -77,6 +85,8 @@
 - Modernised the codebase to Python 3.9+.
 - Periodic table data cleaned up and re-generated.
 
+[2.0.5]: https://github.com/Tingfe/interference_calculator/compare/v2.0.4...v2.0.5
+[2.0.4]: https://github.com/Tingfe/interference_calculator/compare/v2.0.3...v2.0.4
 [2.0.3]: https://github.com/Tingfe/interference_calculator/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/Tingfe/interference_calculator/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/Tingfe/interference_calculator/compare/v2.0.0...v2.0.1

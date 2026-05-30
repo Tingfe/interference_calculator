@@ -49,21 +49,28 @@
 安装
 ----
 
-需要 Python 3.9 或更高版本。
+**方式一：免安装版（推荐，无需 Python）**
 
-**推荐方式：通过 PyPI 安装**
+从 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
+下载对应平台的免安装版本，直接运行：
+
+- **Windows**：下载 ``InterferenceCalculator-Windows-*.exe``，双击即可运行。
+- **macOS**：下载 ``InterferenceCalculator-macOS-*.dmg``，打开后将应用拖入 ``Applications`` 文件夹，首次打开需在「安全性与隐私」中允许。
+
+**方式二：通过 PyPI 安装（需要 Python 3.9+）**
 
 .. code-block:: bash
 
    pip install interference_calculator
 
-也可从 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_ 下载 wheel 包手动安装：
+也可从 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
+下载 wheel 包手动安装：
 
 .. code-block:: bash
 
    pip install interference_calculator-*.whl
 
-**开发者方式：从源码安装**
+**方式三：从源码安装（开发者）**
 
 .. code-block:: bash
 
@@ -76,13 +83,8 @@
 启动界面
 --------
 
-安装完成后，在终端中运行：
-
-.. code-block:: bash
-
-   interference_calculator
-
-即可启动图形界面。无需手动执行 Python 脚本。
+- **免安装版**：下载后直接双击 ``.exe``（Windows）或打开 ``.dmg`` 后点击应用（macOS）。
+- **PyPI 安装版**：在终端中运行 ``interference_calculator`` 即可启动图形界面。
 
 GDMS 快速工作流
 ---------------
@@ -261,23 +263,30 @@ Repository: https://github.com/Tingfe/interference_calculator
 Installation
 ------------
 
-Use Python 3.9 or newer.
+**Option A — Standalone app (recommended, no Python required)**
 
-**Recommended: install from PyPI**
+Download the platform-specific package from
+`GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
+and run directly:
+
+- **Windows**: download ``InterferenceCalculator-Windows-*.exe`` and double-click.
+- **macOS**: download ``InterferenceCalculator-macOS-*.dmg``, open it, and drag
+  the app to ``Applications``. On first launch you may need to allow the app in
+  "Security & Privacy".
+
+**Option B — pip install (requires Python 3.9+)**
 
 .. code-block:: bash
 
    pip install interference_calculator
 
-You can also download a wheel from
-`GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
-and install it manually:
+You can also install a downloaded wheel manually:
 
 .. code-block:: bash
 
    pip install interference_calculator-*.whl
 
-**Developer install: from source**
+**Option C — from source (developers)**
 
 .. code-block:: bash
 
@@ -290,14 +299,9 @@ and install it manually:
 Running the GUI
 ---------------
 
-Once installed, launch from the terminal:
-
-.. code-block:: bash
-
-   interference_calculator
-
-The graphical interface opens directly — no need to invoke Python scripts
-manually.
+- **Standalone app**: double-click the downloaded ``.exe`` (Windows) or open the
+  ``.dmg`` and click the app icon (macOS).
+- **pip install**: run ``interference_calculator`` from your terminal.
 
 Quick GDMS workflow
 -------------------
