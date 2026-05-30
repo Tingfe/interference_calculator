@@ -53,7 +53,6 @@ setup(
     python_requires = '>=3.9',
 
     install_requires = [
-        'matplotlib',
         'numpy',
         'pandas',
         'pyparsing',
@@ -61,6 +60,7 @@ setup(
     ],
     extras_require = {
         'data': ['requests'],
+        'spectrum': ['matplotlib'],
     },
     entry_points = {
         'gui_scripts': ['interference_calculator=interference_calculator.ui:run']

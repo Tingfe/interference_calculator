@@ -14,21 +14,20 @@ except ImportError:
     except ImportError:
         raise ImportError('You need to have either PyQt4 or PyQt5 installed.')
 
-try:
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-    from matplotlib.figure import Figure
-except ImportError:
-    try:
-        from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-        from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
-        from matplotlib.figure import Figure
-    except ImportError:
-        raise ImportError('You need to have either the qt5agg or the qt4agg matplotlib backend installed.')
+class _LazyModule:
+    __slots__ = ("_name", "_module")
+    def __init__(self, name):
+        self._name = name
+        self._module = None
+    def __getattr__(self, attr):
+        if self._module is None:
+            self._module = __import__(self._name)
+        return getattr(self._module, attr)
 
-import matplotlib as mpl
-import numpy as np
-import pandas as pd
+np = _LazyModule("numpy")
+pd = _LazyModule("pandas")
+_mpl = _LazyModule("matplotlib")
+
 import sys, re
 from importlib import resources
 from pyparsing import ParseException
@@ -271,7 +270,9 @@ _icon = _resource_path('icon.svg')
 _display_button_icon = _resource_path('display_button_icon.svg')
 _help_button_icon = _resource_path('help_button_icon.svg')
 
-mpl.rcParams['font.sans-serif'] = [
+def _setup_matplotlib():
+    """Configure matplotlib for CJK font support (called lazily)."""
+    _mpl.rcParams['font.sans-serif'] = [
     'PingFang SC',
     'Hiragino Sans GB',
     'Heiti SC',
@@ -283,9 +284,6 @@ mpl.rcParams['font.sans-serif'] = [
     'Arial Unicode MS',
     'DejaVu Sans',
 ]
-mpl.rcParams['axes.unicode_minus'] = False
-mpl.rcParams['mathtext.fontset'] = 'dejavusans'
-mpl.rc('font', family='sans-serif', size=14)
 
 
 def _current_data(combo):
@@ -702,6 +700,27 @@ class HTMLDelegate(widgets.QStyledItemDelegate):
 class Spectrum(widgets.QWidget):
     def __init__(self, data=None, parent=None, language='en'):
         widgets.QWidget.__init__(self, parent=parent)
+
+        # Lazy-import matplotlib only when spectrum is opened.
+        self._available = False
+        try:
+            from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as _FigureCanvas
+            from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as _NavigationToolbar
+            from matplotlib.figure import Figure as _Figure
+            _setup_matplotlib()
+            self._available = True
+        except ImportError:
+            self._FigureCanvas = self._NavigationToolbar = self._Figure = None
+            self.setWindowTitle(_text(language, 'spectrum_window_title') + ' (matplotlib not installed)')
+            self.layout = widgets.QVBoxLayout()
+            label = widgets.QLabel("matplotlib is not installed. Install with: pip install matplotlib")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("padding: 40px; color: #64748b; font-size: 14px;")
+            self.layout.addWidget(label)
+            self.setLayout(self.layout)
+            self._data = None
+            return
+
         self.language = language
         self.setWindowTitle(_text(self.language, 'spectrum_window_title'))
         self.setWindowFlags(QtCore.Qt.Window)
@@ -713,11 +732,11 @@ class Spectrum(widgets.QWidget):
         QToolBar { background: #ffffff; border-bottom: 1px solid #dbe4f0; spacing: 2px; }
         """)
 
-        self.fig = Figure(figsize=(900/72,600/72), dpi=72)
+        self.fig = self._Figure(figsize=(900/72,600/72), dpi=72)
         self.fig.patch.set_facecolor('#f8fafc')
-        self.canvas = FigureCanvas(self.fig)
+        self.canvas = self._FigureCanvas(self.fig)
         self.canvas.setStyleSheet('background: #f8fafc;')
-        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.toolbar = self._NavigationToolbar(self.canvas, self)
 
         self.layout = widgets.QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -749,6 +768,8 @@ class Spectrum(widgets.QWidget):
 
     @data.setter
     def data(self, newdata):
+        if not self._available:
+            return
         self._plot_window = dict(getattr(newdata, 'attrs', {}))
         self._data = newdata.copy().sort_values('mass/charge').reset_index(drop=True)
         self._target_mask = self._target_mask_for(self._data)
@@ -760,6 +781,8 @@ class Spectrum(widgets.QWidget):
 
     def plot_spectrum(self, data=None):
         """ Plot the spectrum. """
+        if not self._available:
+            return
         if data is not None:
             self.data = data
 
@@ -815,6 +838,8 @@ class Spectrum(widgets.QWidget):
 
     def set_language(self, language):
         """Update spectrum language and redraw existing data."""
+        if not self._available:
+            return
         self.language = language
         self.setWindowTitle(_text(self.language, 'spectrum_window_title'))
         if self._data is not None:

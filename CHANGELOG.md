@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.2] - 2026-05-30
+
+### Changed
+- Lazy-load numpy, pandas, and matplotlib to reduce startup time (~3x faster).
+- Move matplotlib from hard dependency to optional `[spectrum]` extra; the
+  spectrum window gracefully shows an install hint when matplotlib is missing.
+
+### Fixed
+- The spectrum window no longer blocks app startup when matplotlib is not
+  installed.
+
 All notable changes to Interference Calculator will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
