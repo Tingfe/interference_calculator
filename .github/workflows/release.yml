@@ -1,0 +1,133 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install .
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller `
+            --name "InterferenceCalculator" `
+            --onefile `
+            --windowed `
+            --add-data "interference_calculator/periodic_table.csv;interference_calculator" `
+            --add-data "interference_calculator/icon.svg;interference_calculator" `
+            --add-data "interference_calculator/display_button_icon.svg;interference_calculator" `
+            --add-data "interference_calculator/help_button_icon.svg;interference_calculator" `
+            --hidden-import PyQt5 `
+            --hidden-import matplotlib `
+            --hidden-import pandas `
+            --hidden-import numpy `
+            interference_calculator/ui.py
+
+      - name: Package artifact
+        run: Compress-Archive -Path dist/InterferenceCalculator.exe -DestinationPath InterferenceCalculator-Windows-x64.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: InterferenceCalculator-Windows-x64.zip
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install .
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller \
+            --name "InterferenceCalculator" \
+            --onefile \
+            --windowed \
+            --add-data "interference_calculator/periodic_table.csv:interference_calculator" \
+            --add-data "interference_calculator/icon.svg:interference_calculator" \
+            --add-data "interference_calculator/display_button_icon.svg:interference_calculator" \
+            --add-data "interference_calculator/help_button_icon.svg:interference_calculator" \
+            --hidden-import PyQt5 \
+            --hidden-import matplotlib \
+            --hidden-import pandas \
+            --hidden-import numpy \
+            interference_calculator/ui.py
+
+      - name: Package artifact
+        run: |
+          cd dist
+          zip -r ../InterferenceCalculator-macOS-x64.zip "InterferenceCalculator.app" 2>/dev/null || zip ../InterferenceCalculator-macOS-x64.zip InterferenceCalculator
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: InterferenceCalculator-macOS-x64.zip
+
+  release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+
+      - name: Download macOS build
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Interference Calculator ${{ github.ref_name }}"
+          body: |
+            ## Interference Calculator ${{ github.ref_name }}
+
+            ### Downloads
+
+            | Platform | File |
+            |---|---|
+            | Windows x64 | InterferenceCalculator-Windows-x64.zip |
+            | macOS x64/arm64 | InterferenceCalculator-macOS-x64.zip |
+
+            ### Installation
+
+            - **Windows**: Unzip and run InterferenceCalculator.exe.
+            - **macOS**: Unzip, drag InterferenceCalculator.app to Applications. If blocked, go to System Settings > Privacy & Security and click "Open Anyway".
+          files: |
+            InterferenceCalculator-Windows-x64.zip
+            InterferenceCalculator-macOS-x64.zip
+          draft: false
+          prerelease: false
