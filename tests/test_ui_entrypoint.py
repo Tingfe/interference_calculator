@@ -112,6 +112,46 @@ class UIImportedElementSetTests(unittest.TestCase):
         self.assertEqual(widget.element_set_input.currentIndex(), 0)
         window.close()
 
+    def test_target_element_selector_uses_periodic_order(self):
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+
+        first_symbols = [
+            widget._target_element_input.itemData(index)
+            for index in range(10)
+        ]
+
+        self.assertEqual(
+            first_symbols,
+            ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne'],
+        )
+        self.assertEqual(
+            self.ui._sort_elements_periodic(['U', 'B', 'Mg', 'Al']),
+            ['B', 'Mg', 'Al', 'U'],
+        )
+        window.close()
+
+    def test_imported_targets_use_periodic_order_then_mass_number(self):
+        from interference_calculator.gdms_import import GDMSProfile
+
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+        widget._gdms_import_profiles = self.ui._sort_profiles_periodic([
+            GDMSProfile('U{238}', 'U', 238, '238U', 4, 1, None, None, None, None),
+            GDMSProfile('Fe{57}', 'Fe', 57, '57Fe', 2, 1, None, None, None, None),
+            GDMSProfile('B{11}', 'B', 11, '11B', 3, 1, None, None, None, None),
+            GDMSProfile('Fe{56}', 'Fe', 56, '56Fe', 1, 1, None, None, None, None),
+        ])
+        widget._refresh_imported_target_labels()
+
+        labels = [
+            widget.imported_target_input.itemData(index).label
+            for index in range(1, widget.imported_target_input.count())
+        ]
+
+        self.assertEqual(labels, ['B{11}', 'Fe{56}', 'Fe{57}', 'U{238}'])
+        window.close()
+
 
 if __name__ == '__main__':
     unittest.main()

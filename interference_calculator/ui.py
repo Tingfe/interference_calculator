@@ -61,6 +61,40 @@ _COMMON_INORGANIC_ELEMENTS = (
     'Th', 'U',
 )
 
+_PERIODIC_ELEMENT_ORDER = (
+    periodic_table[['element', 'atomic number']]
+    .drop_duplicates('element')
+    .set_index('element')['atomic number']
+    .to_dict()
+)
+
+
+def _element_sort_key(element):
+    return (_PERIODIC_ELEMENT_ORDER.get(element, 9999), str(element))
+
+
+def _periodic_element_rows():
+    return (
+        periodic_table[['atomic number', 'element', 'element name']]
+        .drop_duplicates('element')
+        .sort_values('atomic number')
+    )
+
+
+def _sort_elements_periodic(elements):
+    return sorted(elements, key=_element_sort_key)
+
+
+def _sort_profiles_periodic(profiles):
+    return sorted(
+        profiles,
+        key=lambda profile: (
+            _PERIODIC_ELEMENT_ORDER.get(profile.element, 9999),
+            profile.mass_number,
+            profile.column,
+        ),
+    )
+
 # Qt uses 0-255 ints, Matplotlib uses 0-1 floats for RGB.
 # Palette follows a data-dense scientific tool system: blue for primary data,
 # amber for unresolved/risk states, red for destructive/error states.
@@ -1024,7 +1058,7 @@ class ElementInput(widgets.QWidget):
     def _available_element_rows(self):
         """Return periodic-table elements that are not already selected."""
         selected = set(self._elements)
-        all_elements = periodic_table[['element', 'element name']].drop_duplicates().sort_values('element')
+        all_elements = _periodic_element_rows()
         if not selected:
             return all_elements
         return all_elements[~all_elements['element'].isin(selected)]
@@ -2209,12 +2243,10 @@ class MainWidget(widgets.QWidget):
         self._target_element_input.setInsertPolicy(widgets.QComboBox.NoInsert)
         self._target_element_input.setPlaceholderText(_text(self.language, 'target_element_placeholder'))
         self._target_element_input.setToolTip(tooltip_text(self.language, 'mz'))
-        _sorted_elements = sorted(
-            periodic_table[['element', 'element name']].drop_duplicates().to_records(index=False),
-            key=lambda x: x[0]
-        )
-        for elem, name in _sorted_elements:
-            self._target_element_input.addItem(f'{elem}  ({name})', elem)
+        for _, row in _periodic_element_rows().iterrows():
+            self._target_element_input.addItem(
+                f"{row['element']}  ({row['element name']})", row['element']
+            )
         self._target_element_input.setCurrentIndex(-1)
         self._target_element_input.setMinimumWidth(130)
 
@@ -2914,9 +2946,9 @@ class MainWidget(widgets.QWidget):
             element for element in extract_profile_elements(profiles)
             if (periodic_table['element'] == element).any()
         ]
-        self._gdms_import_profiles = list(profiles)
-        self._gdms_import_elements = list(elements)
-        self.atoms_input.set_elements(elements)
+        self._gdms_import_profiles = _sort_profiles_periodic(profiles)
+        self._gdms_import_elements = _sort_elements_periodic(elements)
+        self.atoms_input.set_elements(self._gdms_import_elements)
         self._refresh_imported_element_set_option()
         self.manual_target_toggle.blockSignals(True)
         self.manual_target_toggle.setChecked(False)
