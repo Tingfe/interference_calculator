@@ -6,8 +6,8 @@
 
 #### Added
 - Defined the project branch model: `main` is the inorganic-materials
-  specialist edition, while the original-function maintenance line is kept for
-  conservative refactoring of the upstream-style calculator.
+  specialist edition, while `maintenance/original` is the modernized
+  general-scan maintenance line with refreshed data and dependencies.
 - Completed bilingual coverage for visible GUI text, tooltips, dialogs, status
   messages, filters, element selector controls, and help-related UI paths.
 - Added localization regression tests to keep Chinese and English UI keys in
@@ -37,7 +37,7 @@
 
 #### 新增
 - 明确项目分支模型：`main` 作为无机材料 / 无机质谱专用版主线，
-  原始功能维护线用于对接近上游形态的计算器做保守、可维护的重构。
+  `maintenance/original` 作为现代化通用扫描维护线，保留更新后的数据和依赖。
 - 完成可见 GUI 文本、工具提示、对话框、状态消息、筛选器、元素选择器控件
   以及帮助相关界面的中英文覆盖。
 - 增加本地化回归测试，确保中文和英文 UI key 保持同步。

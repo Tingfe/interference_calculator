@@ -12,7 +12,7 @@
 
 `English <english-section_>`_ | **中文**
 
-**干扰计算器** 是一款用于质谱峰干扰筛查的科学桌面工具。当前 ``main`` 分支是面向 GDMS、ICP-MS 和 SIMS 的无机材料专用工具；另设维护分支保留原作者通用计算器的功能边界，用于更保守的可维护重构。
+**干扰计算器** 是一款用于质谱峰干扰筛查的科学桌面工具。当前 ``main`` 分支是面向 GDMS、ICP-MS 和 SIMS 的无机材料专用工具；``maintenance/original`` 是已经现代化维护过的通用扫描分支，保留原作者通用元素 / 同位素组合扫描和同位素比功能，同时继续使用更新后的数据、依赖和打包流程。
 
 该应用整合了双语 PyQt 界面、以 GDMS 优先的默认设置、基于模板的无机干扰生成、CIAAW 2024 / AME2020 同位素数据、以 ``ppm`` 表示的完整窗口宽度、以目标峰为中心的交互式谱图，以及紧凑高效的干扰结果表格。
 
@@ -190,7 +190,7 @@ Python API
 分支策略：
 
 - ``main``：无机材料 / 无机质谱专用主线，包含 GDMS、ICP-MS、SIMS 工作流，是默认发布分支。
-- ``maintenance/original``：原始功能维护线，保留通用分子枚举和同位素比计算的产品边界，用于对原作者代码进行可维护重构。
+- ``maintenance/original``：现代化通用扫描维护线，保留通用分子枚举和同位素比计算，继续使用新同位素数据库、现代依赖和打包流程，但不包含无机专项预设、模板或风险模型。
 
 版本发布采用 GitHub Actions 自动化。更新 ``__version__`` 和中英文 ``CHANGELOG.md`` 后，推送 ``vX.Y.Z`` 标签会自动运行测试、构建源码包 / wheel、Windows ``.exe`` 和 macOS ``.dmg``，并用当前版本的中英文 changelog 生成 GitHub Release。
 
@@ -223,8 +223,10 @@ Interference Calculator 2.1
 
 Interference Calculator is a scientific desktop tool for mass-spectrometry peak
 interference screening. The current ``main`` branch is the inorganic-materials
-edition for GDMS, ICP-MS, and SIMS; a separate maintenance branch keeps the
-original general-calculator scope for conservative refactoring.
+edition for GDMS, ICP-MS, and SIMS; ``maintenance/original`` is the modernized
+general-scan maintenance line, preserving the original element /
+isotope-combination scan and isotope-ratio workflow while keeping refreshed
+data, dependencies, and packaging.
 
 The application combines a bilingual PyQt GUI, GDMS-first defaults,
 template-based inorganic interference generation, CIAAW 2024 / AME2020 isotope
@@ -436,9 +438,10 @@ Branch model:
 
 - ``main``: inorganic-materials / inorganic-MS specialist edition, including
   the GDMS, ICP-MS, and SIMS workflows. This is the default release branch.
-- ``maintenance/original``: original-function maintenance line, preserving the
-  general molecular enumeration and isotope-ratio product boundary while making
-  the upstream-style code easier to maintain.
+- ``maintenance/original``: modern general-scan maintenance line, preserving
+  general molecular enumeration and isotope-ratio calculation with the refreshed
+  isotope database, modern dependencies, and packaging, but without
+  inorganic-specific presets, templates, or risk models.
 
 Releases are automated with GitHub Actions. After updating ``__version__`` and
 the bilingual ``CHANGELOG.md``, pushing a ``vX.Y.Z`` tag runs tests, builds the

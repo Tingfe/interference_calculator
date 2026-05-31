@@ -33,17 +33,21 @@ Scope:
 
 ## `maintenance/original` - Original Function Maintenance
 
-`maintenance/original` keeps the original calculator's product boundary. It is
-for conservative refactoring and maintainability work around the upstream-style
-general molecular enumeration and isotope-ratio features.
+`maintenance/original` is the modern maintenance line for the original
+calculator's product boundary. It is not an old-code archive: it keeps the
+general molecular enumeration and isotope-ratio features while retaining the
+refreshed isotope database, modern Python/PyQt dependencies, tests, packaging,
+and compatibility fixes.
 
-`maintenance/original` 保留原作者软件的功能边界，主要用于对原始通用分子组合
-枚举和同位素比功能进行保守的可维护重构。
+`maintenance/original` 是原作者功能边界的现代化维护线，不是旧代码归档。它保留
+通用分子组合枚举和同位素比功能，同时继续使用更新后的同位素数据库、现代
+Python/PyQt 依赖、测试、打包流程和兼容性修复。
 
 Scope:
 
 - Preserve original general interference calculation behavior.
 - Preserve standard isotope-ratio workflows.
+- Keep modern isotope data, dependency updates, packaging, and tests.
 - Avoid adding inorganic-materials-specific presets, templates, or GUI concepts.
 - Accept bug fixes, compatibility updates, tests, and internal refactoring.
 
@@ -51,6 +55,7 @@ Scope:
 
 - 保留原始通用干扰计算行为。
 - 保留标准同位素比功能。
+- 保留现代同位素数据、依赖更新、打包流程和测试。
 - 不加入无机材料专用预设、模板或 GUI 概念。
 - 接收 bug 修复、兼容性更新、测试和内部重构。
 
