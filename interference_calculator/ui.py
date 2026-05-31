@@ -3,6 +3,14 @@
 """ GUI for interference calculator. """
 from __future__ import division
 
+import os
+import re
+import sys
+
+
+if __package__ in (None, '') and not getattr(sys, 'frozen', False):
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 try:
     from PyQt5 import QtCore, QtGui
     from PyQt5 import QtWidgets as widgets
@@ -27,7 +35,6 @@ class _LazyModule:
 np = _LazyModule("numpy")
 pd = _LazyModule("pandas")
 
-import os, sys, re
 from importlib import resources
 from pyparsing import ParseException
 from interference_calculator.gdms_import import (

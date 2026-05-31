@@ -89,6 +89,8 @@ GDMS Excel 导入和 Excel 导出所需的 ``openpyxl`` 已包含在默认依赖
 
 - **免安装版**：下载后直接双击 ``.exe``（Windows）或打开 ``.dmg`` 后点击应用（macOS）。
 - **PyPI 安装版**：在终端中运行 ``interference_calculator`` 即可启动图形界面。
+- **源码运行**：在项目根目录运行 ``python -m interference_calculator.ui``；直接运行
+  ``python interference_calculator/ui.py`` 也受支持。
 
 GDMS 快速工作流
 ---------------
@@ -332,6 +334,8 @@ Running the GUI
 - **Standalone app**: double-click the downloaded ``.exe`` (Windows) or open the
   ``.dmg`` and click the app icon (macOS).
 - **pip install**: run ``interference_calculator`` from your terminal.
+- **Source checkout**: run ``python -m interference_calculator.ui`` from the
+  project root; ``python interference_calculator/ui.py`` is also supported.
 
 Quick GDMS workflow
 -------------------
