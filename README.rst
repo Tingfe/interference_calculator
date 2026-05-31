@@ -6,13 +6,13 @@
 
 .. _chinese-section:
 
-==========================================
-干扰计算器 / Interference Calculator 2.3
-==========================================
+============================================================
+无机质谱峰干扰计算器 / Inorganic MS Interference Calculator 2.4
+============================================================
 
 `English <english-section_>`_ | **中文**
 
-**干扰计算器** 是一款用于质谱峰干扰筛查的科学桌面工具。当前 ``main`` 分支是面向 GDMS、ICP-MS 和 SIMS 的无机材料专用工具；``maintenance/original`` 是已经现代化维护过的通用扫描分支，保留原作者通用元素 / 同位素组合扫描和同位素比功能，同时继续使用更新后的数据、依赖和打包流程。
+**无机质谱峰干扰计算器** 是一款用于质谱峰干扰筛查的科学桌面工具。当前 ``main`` 分支是面向 GDMS、ICP-MS 和 SIMS 的无机材料专用工具；``maintenance/original`` 是已经现代化维护过的通用扫描分支，保留原作者通用元素 / 同位素组合扫描和同位素比功能，同时继续使用更新后的数据、依赖和打包流程。
 
 该应用整合了双语 PyQt 界面、以 GDMS 优先的默认设置、基于模板的无机干扰生成、CIAAW 2024 / AME2020 同位素数据、以 ``ppm`` 表示的完整窗口宽度、以目标峰为中心的交互式谱图，以及紧凑高效的干扰结果表格。
 
@@ -20,10 +20,10 @@
    :align: center
    :alt: 中文界面截图
 
-2.3 版更新内容
+2.4 版更新内容
 --------------
 
-2.x 是一次重大迭代，2.3 版在 2.1 的无机质谱主线基础上完成了 GDMS Excel
+2.x 是一次重大迭代，2.4 版在 2.1 的无机质谱主线基础上完成了 GDMS Excel
 谱图导入、目标峰选择、发布打包和启动体验的里程碑升级：
 
 * 现代化科学工具 GUI：更清晰的控制面板、结果概览标签、空状态提示、更紧凑的表格布局，并支持中英文界面切换。
@@ -40,7 +40,7 @@
 项目信息
 --------
 
-当前版本：``2.4.0``
+当前版本：``2.4.1``
 
 原作者：Zan Peeters
 
@@ -235,18 +235,18 @@ BSD 3-Clause Clear。详见 ``LICENSE.rst``。
 
 .. _english-section:
 
-===========================
-Interference Calculator 2.3
-===========================
+=========================================
+Inorganic MS Interference Calculator 2.4
+=========================================
 
 **English** | `中文 <chinese-section_>`_
 
-Interference Calculator is a scientific desktop tool for mass-spectrometry peak
-interference screening. The current ``main`` branch is the inorganic-materials
-edition for GDMS, ICP-MS, and SIMS; ``maintenance/original`` is the modernized
-general-scan maintenance line, preserving the original element /
-isotope-combination scan and isotope-ratio workflow while keeping refreshed
-data, dependencies, and packaging.
+Inorganic MS Interference Calculator is a scientific desktop tool for
+mass-spectrometry peak interference screening. The current ``main`` branch is
+the inorganic-materials edition for GDMS, ICP-MS, and SIMS;
+``maintenance/original`` is the modernized general-scan maintenance line,
+preserving the original element / isotope-combination scan and isotope-ratio
+workflow while keeping refreshed data, dependencies, and packaging.
 
 The application combines a bilingual PyQt GUI, GDMS-first defaults,
 template-based inorganic interference generation, CIAAW 2024 / AME2020 isotope
@@ -305,7 +305,7 @@ target selection, release packaging, and startup experience:
 Project Metadata
 ----------------
 
-Current version: ``2.4.0``
+Current version: ``2.4.1``
 
 Original author: Zan Peeters
 

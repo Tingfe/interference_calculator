@@ -10,6 +10,22 @@
 
 - 暂无未发布变更。
 
+## [2.4.1] - 2026-05-31
+
+### English
+
+#### Changed
+- Default the desktop interface to Chinese on startup while keeping English
+  available from the language selector.
+- Use the more specific documentation display name
+  `Inorganic MS Interference Calculator` for the inorganic edition.
+
+### 中文
+
+#### 变更
+- 桌面界面启动时默认使用中文，同时保留语言选择器中的英文切换。
+- 无机专用版本的文档展示名改为更贴切的“无机质谱峰干扰计算器”。
+
 ## [2.4.0] - 2026-05-31
 
 ### English
@@ -415,6 +431,8 @@
 - 代码库现代化到 Python 3.9+。
 - 清理并重新生成周期表数据。
 
+[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.4.1...HEAD
+[2.4.1]: https://github.com/Tingfe/interference_calculator/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/Tingfe/interference_calculator/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/Tingfe/interference_calculator/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/Tingfe/interference_calculator/compare/v2.1.0...v2.2.0

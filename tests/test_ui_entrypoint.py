@@ -94,6 +94,17 @@ class UIImportedElementSetTests(unittest.TestCase):
         except ImportError as exc:
             raise unittest.SkipTest(f'GUI imported element set tests require UI dependencies: {exc}')
 
+    def test_main_window_defaults_to_chinese_language(self):
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+
+        self.assertEqual(widget.language, 'zh')
+        self.assertEqual(widget.language_input.currentData(), 'zh')
+        self.assertEqual(window.windowTitle(), '无机质谱峰干扰计算器')
+        self.assertEqual(widget.interference_button.text(), '计算')
+        self.assertEqual(widget.language_input.itemData(0), 'zh')
+        window.close()
+
     def test_imported_element_set_restores_gdms_import_elements(self):
         window = self.ui.MainWindow()
         widget = window.centralWidget()
@@ -102,7 +113,7 @@ class UIImportedElementSetTests(unittest.TestCase):
 
         index = widget._find_imported_element_set_index()
         self.assertGreaterEqual(index, 0)
-        self.assertIn('(4)', widget.element_set_input.itemText(index))
+        self.assertIn('4', widget.element_set_input.itemText(index))
 
         widget.atoms_input.set_elements(['U'])
         widget.element_set_input.setCurrentIndex(index)
@@ -173,6 +184,7 @@ class UIImportedElementSetTests(unittest.TestCase):
 
         window = self.ui.MainWindow()
         widget = window.centralWidget()
+        widget.language_input.setCurrentIndex(widget._find_combo_data(widget.language_input, 'en'))
         profile = GDMSProfile(
             'Fe{56}', 'Fe', 56, '56Fe', 1, 20, 55.928, 1000.0, 55.9279, 0.0123
         )

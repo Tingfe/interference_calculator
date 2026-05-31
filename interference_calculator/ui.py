@@ -2673,7 +2673,7 @@ class MainWindow(widgets.QMainWindow):
     """ Main window for interference calculator ui. """
     def __init__(self):
         widgets.QMainWindow.__init__(self)
-        self.setWindowTitle(_text('en', 'window_title'))
+        self.setWindowTitle(_text('zh', 'window_title'))
         self.setWindowIcon(QtGui.QIcon(_icon))
         self.resize(1360, 780)
         self.setMinimumSize(1100, 680)
@@ -2718,7 +2718,7 @@ class MainWidget(widgets.QWidget):
 
     def __init__(self, parent=None):
         widgets.QWidget.__init__(self, parent=parent)
-        self.language = 'en'
+        self.language = 'zh'
         self.result_metrics = {'kind': 'ready'}
         self._filter_active = False
         self._result_count_base = ''
@@ -2830,8 +2830,8 @@ class MainWidget(widgets.QWidget):
         self.language_label = widgets.QLabel(_text(self.language, 'language'), parent=self)
         self.language_label.setObjectName('appSubtitle')
         self.language_input = widgets.QComboBox(parent=self)
-        self.language_input.addItem('English', 'en')
         self.language_input.addItem('中文', 'zh')
+        self.language_input.addItem('English', 'en')
 
         # Action button
         self.interference_button = widgets.QPushButton(_text(self.language, 'calculate'), parent=self)
@@ -4668,6 +4668,7 @@ def run():
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
     app = widgets.QApplication(sys.argv)
+    app.setApplicationName(_text('zh', 'window_title'))
     mainwindow = MainWindow()
     mainwindow.move(200, 100)
     mainwindow.show()
