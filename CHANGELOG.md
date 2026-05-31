@@ -8,6 +8,9 @@
 - Changed Windows release packaging from PyInstaller one-file `.exe` to a
   zipped app directory to avoid slow no-feedback startup while the runtime is
   extracted on every launch.
+- Changed macOS release packaging to publish an unsigned, non-notarized DMG
+  when Apple signing secrets are not configured, while still using Developer ID
+  signing and notarization automatically when the secrets are available.
 - Made imported GDMS profile targets the primary target-selection path and moved
   manual target selection behind an explicit manual override.
 - Simplified the GDMS profile import button label to `Import` / `导入`.
@@ -32,9 +35,6 @@
   installs.
 - Fixed direct source execution via `python interference_calculator/ui.py` so
   package imports resolve from the project root.
-- Hardened the macOS release pipeline so tagged releases require Developer ID
-  signing and Apple notarization instead of publishing ad-hoc signed DMG files
-  that Gatekeeper reports as damaged.
 - Set a valid macOS bundle identifier and synchronized the bundle version with
   the package version during CI packaging.
 
@@ -47,6 +47,8 @@
 #### 变更
 - Windows 发布包从 PyInstaller 单文件 `.exe` 改为 `.zip` 目录版应用，避免每次
   启动前解压运行时造成长时间无反馈。
+- macOS 发布包在未配置 Apple 签名 secrets 时会发布未签名、未公证的 DMG；
+  配置完整 secrets 后仍会自动使用 Developer ID 签名并提交 Apple 公证。
 - 将导入的 GDMS 谱图目标峰作为首选目标选择路径，手动目标选择改为显式手动覆盖。
 - 将 GDMS 谱图导入按钮文案简化为 `Import` / `导入`。
 - 将手动和导入的目标峰选择器改为按周期表顺序排列，同一元素内按同位素质量数排列。
@@ -63,8 +65,6 @@
 - 更新直接运行源码和 editable install 场景下的缺失依赖提示。
 - 修复通过 `python interference_calculator/ui.py` 直接运行源码时包导入路径无法
   解析的问题。
-- 加强 macOS 发布流程：tag 发布时必须使用 Developer ID 签名并通过 Apple 公证，
-  避免继续发布会被 Gatekeeper 判定为“已损坏”的 ad-hoc 签名 DMG。
 - 设置合法的 macOS bundle identifier，并在 CI 打包时同步应用 bundle 版本和
   包版本。
 

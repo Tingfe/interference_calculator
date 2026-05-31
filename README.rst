@@ -209,8 +209,10 @@ Python API
 
 版本发布采用 GitHub Actions 自动化。更新 ``__version__`` 和中英文 ``CHANGELOG.md`` 后，推送 ``vX.Y.Z`` 标签会自动运行测试、构建源码包 / wheel、Windows ``.zip`` 目录版应用和 macOS ``.dmg``，并用当前版本的中英文 changelog 生成 GitHub Release。
 
-macOS 正式发布包必须使用 Developer ID 签名并通过 Apple 公证。相关 secrets 和
-配置要求见 `docs/MACOS_SIGNING.md <docs/MACOS_SIGNING.md>`_。
+未配置 Apple 签名 secrets 时，发布流程会生成未签名、未公证的 macOS DMG
+（文件名包含 ``macOS-unsigned``）；配置完整 secrets 后会自动生成 Developer ID
+签名并通过 Apple 公证的正式 DMG。详见
+`docs/MACOS_SIGNING.md <docs/MACOS_SIGNING.md>`_。
 
 运行测试：
 
@@ -493,9 +495,11 @@ the bilingual ``CHANGELOG.md``, pushing a ``vX.Y.Z`` tag runs tests, builds the
 source package / wheel, Windows ``.zip`` app directory, and macOS ``.dmg``,
 then creates a GitHub Release from the matching bilingual changelog section.
 
-Official macOS release packages must be Developer ID signed and Apple-notarized.
-See `docs/MACOS_SIGNING.md <docs/MACOS_SIGNING.md>`_ for the required secrets
-and workflow configuration.
+When Apple signing secrets are not configured, the workflow publishes an
+unsigned, non-notarized macOS DMG with ``macOS-unsigned`` in the filename. With
+complete secrets, it automatically publishes a Developer ID signed and
+Apple-notarized DMG. See `docs/MACOS_SIGNING.md <docs/MACOS_SIGNING.md>`_ for
+the required secrets and workflow configuration.
 
 Run the test suite:
 

@@ -44,7 +44,9 @@ For each release tag, the workflow creates a GitHub Release with:
 - source distribution (`.tar.gz`);
 - Python wheel (`.whl`);
 - Windows standalone app directory (`InterferenceCalculator-Windows-vX.Y.Z.zip`);
-- macOS disk image (`InterferenceCalculator-macOS-vX.Y.Z.dmg`);
+- macOS disk image (`InterferenceCalculator-macOS-vX.Y.Z.dmg` when signed, or
+  `InterferenceCalculator-macOS-unsigned-vX.Y.Z.dmg` without Apple signing
+  secrets);
 - bilingual release notes extracted from the matching `CHANGELOG.md` section.
 
 ## 自动发布内容
@@ -54,7 +56,9 @@ For each release tag, the workflow creates a GitHub Release with:
 - 源码包（`.tar.gz`）；
 - Python wheel（`.whl`）；
 - Windows 免安装目录版应用（`InterferenceCalculator-Windows-vX.Y.Z.zip`）；
-- macOS 磁盘映像（`InterferenceCalculator-macOS-vX.Y.Z.dmg`）；
+- macOS 磁盘映像（配置签名时为 `InterferenceCalculator-macOS-vX.Y.Z.dmg`；
+  未配置 Apple 签名 secrets 时为
+  `InterferenceCalculator-macOS-unsigned-vX.Y.Z.dmg`）；
 - 从 `CHANGELOG.md` 当前版本段落自动提取的中英文更新日志。
 
 ## Release Checklist
@@ -92,12 +96,13 @@ git diff --check
 
 ## Notes About Unsigned Apps
 
-The generated Windows and macOS apps are currently unsigned. Windows SmartScreen
-or macOS Gatekeeper may warn on first launch. Code signing and notarization can
-be added later when signing certificates are available.
+The Windows app is currently unsigned. The macOS workflow publishes an unsigned,
+non-notarized DMG when Apple signing secrets are missing; Gatekeeper may block
+it after download. When the macOS secrets are configured, the workflow signs and
+notarizes the DMG automatically.
 
 ## 关于未签名应用
 
-当前自动生成的 Windows 和 macOS 软件未做代码签名。首次运行时，Windows
-SmartScreen 或 macOS Gatekeeper 可能会提示风险。后续取得签名证书后，可以在
-发布流程中加入代码签名和 macOS notarization。
+当前 Windows 应用未做代码签名。macOS workflow 在缺少 Apple 签名 secrets 时会
+发布未签名、未公证的 DMG，下载后可能被 Gatekeeper 拦截；配置完整 macOS
+secrets 后，workflow 会自动签名并公证 DMG。

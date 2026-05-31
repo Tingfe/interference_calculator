@@ -158,7 +158,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Validate macOS release signing configuration
+      - name: Detect macOS signing configuration
+        id: macos-signing
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           missing=0
@@ -171,17 +172,23 @@ jobs:
             MACOS_NOTARY_KEY_P8_BASE64
           do
             if [ -z "${!name}" ]; then
-              echo "::error::Missing GitHub secret: ${name}"
+              echo "::warning::Missing GitHub secret: ${name}"
               missing=1
             fi
           done
           if [ "$missing" -ne 0 ]; then
-            echo "::error::Tagged macOS releases must be Developer ID signed and notarized."
-            exit 1
+            echo "::warning::Building an unsigned, non-notarized macOS DMG. Gatekeeper may block it after download."
+            echo "MACOS_SIGNING_MODE=unsigned" >> "$GITHUB_ENV"
+            echo "MACOS_OUTPUT_SUFFIX=-unsigned" >> "$GITHUB_ENV"
+            echo "mode=unsigned" >> "$GITHUB_OUTPUT"
+          else
+            echo "MACOS_SIGNING_MODE=signed" >> "$GITHUB_ENV"
+            echo "MACOS_OUTPUT_SUFFIX=" >> "$GITHUB_ENV"
+            echo "mode=signed" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Import Developer ID certificate
-        if: env.MACOS_CERTIFICATE_P12 != ''
+        if: steps.macos-signing.outputs.mode == 'signed'
         run: |
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
           KEYCHAIN_PASSWORD="$(openssl rand -base64 32)"
@@ -215,7 +222,7 @@ jobs:
       - name: Build macOS app bundle
         run: |
           PYINSTALLER_CODESIGN_ARGS=(--osx-bundle-identifier "$MACOS_BUNDLE_ID")
-          if [ -n "$MACOS_CODESIGN_IDENTITY" ]; then
+          if [ "$MACOS_SIGNING_MODE" = "signed" ]; then
             PYINSTALLER_CODESIGN_ARGS+=(
               --codesign-identity "$MACOS_CODESIGN_IDENTITY"
               --osx-entitlements-file packaging/macos/entitlements.plist
@@ -280,7 +287,7 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSION" "$APP_PATH/Contents/Info.plist" || \
             /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string $VERSION" "$APP_PATH/Contents/Info.plist"
 
-          if [ -n "$MACOS_CODESIGN_IDENTITY" ]; then
+          if [ "$MACOS_SIGNING_MODE" = "signed" ]; then
             codesign \
               --force \
               --deep \
@@ -303,12 +310,12 @@ jobs:
             -volname "Interference Calculator" \
             -srcfolder "dist/Interference Calculator.app" \
             -ov -format UDZO \
-            "dist/InterferenceCalculator-macOS-${{ needs.prepare.outputs.tag_name }}.dmg"
+            "dist/InterferenceCalculator-macOS${MACOS_OUTPUT_SUFFIX}-${{ needs.prepare.outputs.tag_name }}.dmg"
 
       - name: Sign, notarize, and staple macOS DMG
-        if: env.MACOS_CODESIGN_IDENTITY != ''
+        if: steps.macos-signing.outputs.mode == 'signed'
         run: |
-          DMG_PATH="dist/InterferenceCalculator-macOS-${{ needs.prepare.outputs.tag_name }}.dmg"
+          DMG_PATH="dist/InterferenceCalculator-macOS${MACOS_OUTPUT_SUFFIX}-${{ needs.prepare.outputs.tag_name }}.dmg"
           NOTARY_KEY_PATH="$RUNNER_TEMP/AuthKey_${MACOS_NOTARY_KEY_ID}.p8"
 
           codesign --force --timestamp --sign "$MACOS_CODESIGN_IDENTITY" "$DMG_PATH"
