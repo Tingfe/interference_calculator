@@ -1,4 +1,4 @@
-# Interference Calculator 2.2.1 图文用户手册
+# Interference Calculator 2.3.0 图文用户手册
 
 本手册面向 GDMS、ICP-MS、SIMS 等无机质谱峰干扰筛查场景。软件支持中文和英文界面，下面以中文界面为例。
 

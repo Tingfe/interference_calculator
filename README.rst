@@ -7,7 +7,7 @@
 .. _chinese-section:
 
 ==========================================
-干扰计算器 / Interference Calculator 2.2
+干扰计算器 / Interference Calculator 2.3
 ==========================================
 
 `English <english-section_>`_ | **中文**
@@ -20,11 +20,11 @@
    :align: center
    :alt: 中文界面截图
 
-2.2 版更新内容
+2.3 版更新内容
 --------------
 
-2.x 是一次重大迭代，2.2 版在 2.1 的无机质谱主线基础上增加了 GDMS Excel
-谱图导入，让用户可以直接从仪器导出数据选择目标峰：
+2.x 是一次重大迭代，2.3 版在 2.1 的无机质谱主线基础上完成了 GDMS Excel
+谱图导入、目标峰选择、发布打包和启动体验的里程碑升级：
 
 * 现代化科学工具 GUI：更清晰的控制面板、结果概览标签、空状态提示、更紧凑的表格布局，并支持中英文界面切换。
 * GDMS、ICP-MS 和 SIMS 预设：提供电荷态、目标窗口、风险模型和仪器质量分辨力（MRP）的实用默认值。
@@ -40,7 +40,7 @@
 项目信息
 --------
 
-当前版本：``2.2.1``
+当前版本：``2.3.0``
 
 原作者：Zan Peeters
 
@@ -234,7 +234,7 @@ BSD 3-Clause Clear。详见 ``LICENSE.rst``。
 .. _english-section:
 
 ===========================
-Interference Calculator 2.2
+Interference Calculator 2.3
 ===========================
 
 **English** | `中文 <chinese-section_>`_
@@ -255,12 +255,12 @@ spectrum, and a compact data-dense results table.
    :align: center
    :alt: Chinese UI screenshot
 
-What Changed In 2.2
+What Changed In 2.3
 -------------------
 
-Version 2.x is a major project iteration. Version 2.2 builds on the 2.1
-inorganic-MS workflow by adding GDMS Excel profile import for target selection
-from instrument-exported data:
+Version 2.x is a major project iteration. Version 2.3 builds on the 2.1
+inorganic-MS workflow with milestone upgrades for GDMS Excel profile import,
+target selection, release packaging, and startup experience:
 
 * Modern scientific-tool GUI with a clearer control panel, result summary chips,
   empty state, improved table density, and bilingual language switching.
@@ -293,7 +293,7 @@ from instrument-exported data:
 Project Metadata
 ----------------
 
-Current version: ``2.2.1``
+Current version: ``2.3.0``
 
 Original author: Zan Peeters
 

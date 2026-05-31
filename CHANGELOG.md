@@ -1,6 +1,6 @@
 # Changelog / 更新日志
 
-## [2.2.1] - 2026-05-31
+## [2.3.0] - 2026-05-31
 
 ### English
 
@@ -346,7 +346,7 @@
 - 代码库现代化到 Python 3.9+。
 - 清理并重新生成周期表数据。
 
-[2.2.1]: https://github.com/Tingfe/interference_calculator/compare/v2.2.0...v2.2.1
+[2.3.0]: https://github.com/Tingfe/interference_calculator/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/Tingfe/interference_calculator/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Tingfe/interference_calculator/compare/v2.0.6...v2.1.0
 [2.0.6]: https://github.com/Tingfe/interference_calculator/compare/v2.0.5...v2.0.6
