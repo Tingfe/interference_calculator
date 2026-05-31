@@ -56,7 +56,9 @@
 从 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
 下载对应平台的免安装版本，直接运行：
 
-- **Windows**：下载 ``InterferenceCalculator-Windows-*.exe``，双击即可运行。
+- **Windows**：下载 ``InterferenceCalculator-Windows-*.zip``，解压后双击
+  ``InterferenceCalculator.exe``。Windows 采用目录版打包，避免单文件 ``.exe``
+  每次启动前解压运行时导致长时间无响应。
 - **macOS**：下载 ``InterferenceCalculator-macOS-*.dmg``，打开后将应用拖入 ``Applications`` 文件夹，首次打开需在「安全性与隐私」中允许。
 
 **方式二：通过 PyPI 安装（需要 Python 3.9+）**
@@ -87,7 +89,8 @@ GDMS Excel 导入和 Excel 导出所需的 ``openpyxl`` 已包含在默认依赖
 启动界面
 --------
 
-- **免安装版**：下载后直接双击 ``.exe``（Windows）或打开 ``.dmg`` 后点击应用（macOS）。
+- **免安装版**：Windows 解压 ``.zip`` 后双击 ``InterferenceCalculator.exe``；
+  macOS 打开 ``.dmg`` 后点击应用。
 - **PyPI 安装版**：在终端中运行 ``interference_calculator`` 即可启动图形界面。
 - **源码运行**：在项目根目录运行 ``python -m interference_calculator.ui``；直接运行
   ``python interference_calculator/ui.py`` 也受支持。
@@ -204,7 +207,7 @@ Python API
 - ``main``：无机材料 / 无机质谱专用主线，包含 GDMS、ICP-MS、SIMS 工作流，是默认发布分支。
 - ``maintenance/original``：现代化通用扫描维护线，保留通用分子枚举和同位素比计算，继续使用新同位素数据库、现代依赖和打包流程，但不包含无机专项预设、模板或风险模型。
 
-版本发布采用 GitHub Actions 自动化。更新 ``__version__`` 和中英文 ``CHANGELOG.md`` 后，推送 ``vX.Y.Z`` 标签会自动运行测试、构建源码包 / wheel、Windows ``.exe`` 和 macOS ``.dmg``，并用当前版本的中英文 changelog 生成 GitHub Release。
+版本发布采用 GitHub Actions 自动化。更新 ``__version__`` 和中英文 ``CHANGELOG.md`` 后，推送 ``vX.Y.Z`` 标签会自动运行测试、构建源码包 / wheel、Windows ``.zip`` 目录版应用和 macOS ``.dmg``，并用当前版本的中英文 changelog 生成 GitHub Release。
 
 macOS 正式发布包必须使用 Developer ID 签名并通过 Apple 公证。相关 secrets 和
 配置要求见 `docs/MACOS_SIGNING.md <docs/MACOS_SIGNING.md>`_。
@@ -307,7 +310,10 @@ Download the platform-specific package from
 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
 and run directly:
 
-- **Windows**: download ``InterferenceCalculator-Windows-*.exe`` and double-click.
+- **Windows**: download ``InterferenceCalculator-Windows-*.zip``, extract it, and
+  double-click ``InterferenceCalculator.exe``. Windows is distributed as an app
+  directory to avoid the long no-feedback startup caused by one-file ``.exe``
+  runtime extraction.
 - **macOS**: download ``InterferenceCalculator-macOS-*.dmg``, open it, and drag
   the app to ``Applications``. On first launch you may need to allow the app in
   "Security & Privacy".
@@ -340,8 +346,9 @@ You can also install a downloaded wheel manually:
 Running the GUI
 ---------------
 
-- **Standalone app**: double-click the downloaded ``.exe`` (Windows) or open the
-  ``.dmg`` and click the app icon (macOS).
+- **Standalone app**: extract the downloaded Windows ``.zip`` and double-click
+  ``InterferenceCalculator.exe``, or open the macOS ``.dmg`` and click the app
+  icon.
 - **pip install**: run ``interference_calculator`` from your terminal.
 - **Source checkout**: run ``python -m interference_calculator.ui`` from the
   project root; ``python interference_calculator/ui.py`` is also supported.
@@ -483,8 +490,8 @@ Branch model:
 
 Releases are automated with GitHub Actions. After updating ``__version__`` and
 the bilingual ``CHANGELOG.md``, pushing a ``vX.Y.Z`` tag runs tests, builds the
-source package / wheel, Windows ``.exe``, and macOS ``.dmg``, then creates a
-GitHub Release from the matching bilingual changelog section.
+source package / wheel, Windows ``.zip`` app directory, and macOS ``.dmg``,
+then creates a GitHub Release from the matching bilingual changelog section.
 
 Official macOS release packages must be Developer ID signed and Apple-notarized.
 See `docs/MACOS_SIGNING.md <docs/MACOS_SIGNING.md>`_ for the required secrets

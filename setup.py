@@ -1,18 +1,30 @@
 #!/usr/bin/env python
 """ Setuptools setup file for interference calculator. """
 from setuptools import setup, find_packages
+import ast
 import os
 
-with open(os.path.join('interference_calculator', '__init__.py'), mode='rt', encoding='utf-8') as fh:
-    script = []
-    for l in fh.readlines():
-        l = l.strip()
-        # don't import anything, just get metadata
-        if l.startswith('from') or l.startswith('import'):
-            continue
-        script.append(l)
+metadata_path = os.path.join('interference_calculator', '__init__.py')
+with open(metadata_path, mode='rt', encoding='utf-8') as fh:
+    metadata_source = fh.read()
 
-exec('\n'.join(script))
+metadata_tree = ast.parse(metadata_source, filename=metadata_path)
+metadata = {'__doc__': ast.get_docstring(metadata_tree)}
+for node in metadata_tree.body:
+    if not isinstance(node, ast.Assign):
+        continue
+    try:
+        value = ast.literal_eval(node.value)
+    except (SyntaxError, ValueError):
+        if isinstance(node.value, ast.Name) and node.value.id == '__doc__':
+            value = metadata['__doc__']
+        else:
+            continue
+    for target in node.targets:
+        if isinstance(target, ast.Name) and target.id.startswith('__'):
+            metadata[target.id] = value
+
+globals().update(metadata)
 
 with open('README.rst', mode='rt', encoding='utf-8') as fh:
     __long_description__ = fh.read()

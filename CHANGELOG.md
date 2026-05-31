@@ -5,6 +5,9 @@
 ### English
 
 #### Changed
+- Changed Windows release packaging from PyInstaller one-file `.exe` to a
+  zipped app directory to avoid slow no-feedback startup while the runtime is
+  extracted on every launch.
 - Made imported GDMS profile targets the primary target-selection path and moved
   manual target selection behind an explicit manual override.
 - Simplified the GDMS profile import button label to `Import` / `导入`.
@@ -15,6 +18,10 @@
   theoretical target m/z as the reference.
 
 #### Fixed
+- Delayed heavy top-level API and GUI calculation imports so startup does not
+  load nonessential calculation modules before the interface is shown.
+- Made package metadata extraction in `setup.py` robust after adding lazy
+  public API loading.
 - Promoted `openpyxl` to a default dependency because GDMS Excel import is now
   part of the primary workflow, not only an optional export path.
 - Updated missing-dependency guidance for direct source runs and editable
@@ -34,6 +41,8 @@
 ### 中文
 
 #### 变更
+- Windows 发布包从 PyInstaller 单文件 `.exe` 改为 `.zip` 目录版应用，避免每次
+  启动前解压运行时造成长时间无反馈。
 - 将导入的 GDMS 谱图目标峰作为首选目标选择路径，手动目标选择改为显式手动覆盖。
 - 将 GDMS 谱图导入按钮文案简化为 `Import` / `导入`。
 - GDMS Excel 导入后自动增加“导入元素”动态预设，误删后可一键恢复文件中的全部元素。
@@ -41,6 +50,8 @@
   和谱图中心均以理论目标 m/z 为参考点。
 
 #### 修复
+- 延迟包顶层 API 和 GUI 计算模块导入，减少界面显示前的非必要加载。
+- 将 `setup.py` 的包元数据读取改为 AST 解析，兼容新的公开 API 懒加载实现。
 - 将 `openpyxl` 提升为默认依赖，因为 GDMS Excel 导入已经是主工作流的一部分，
   不再只是可选导出功能。
 - 更新直接运行源码和 editable install 场景下的缺失依赖提示。

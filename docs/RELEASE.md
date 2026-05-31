@@ -43,7 +43,7 @@ For each release tag, the workflow creates a GitHub Release with:
 
 - source distribution (`.tar.gz`);
 - Python wheel (`.whl`);
-- Windows standalone executable (`InterferenceCalculator-Windows-vX.Y.Z.exe`);
+- Windows standalone app directory (`InterferenceCalculator-Windows-vX.Y.Z.zip`);
 - macOS disk image (`InterferenceCalculator-macOS-vX.Y.Z.dmg`);
 - bilingual release notes extracted from the matching `CHANGELOG.md` section.
 
@@ -53,7 +53,7 @@ For each release tag, the workflow creates a GitHub Release with:
 
 - 源码包（`.tar.gz`）；
 - Python wheel（`.whl`）；
-- Windows 免安装可执行文件（`InterferenceCalculator-Windows-vX.Y.Z.exe`）；
+- Windows 免安装目录版应用（`InterferenceCalculator-Windows-vX.Y.Z.zip`）；
 - macOS 磁盘映像（`InterferenceCalculator-macOS-vX.Y.Z.dmg`）；
 - 从 `CHANGELOG.md` 当前版本段落自动提取的中英文更新日志。
 

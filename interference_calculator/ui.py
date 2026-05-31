@@ -41,8 +41,6 @@ from interference_calculator.gdms_import import (
     extract_profile_elements,
     parse_gdms_profile_xlsx,
 )
-from interference_calculator.inorganic import inorganic_interference
-from interference_calculator.main import standard_ratio
 from interference_calculator.molecule import Molecule, periodic_table
 from interference_calculator.ui_help import *
 from interference_calculator import __version__
@@ -2055,6 +2053,7 @@ class CalculationWorker(QtCore.QObject):
             if self._cancelled:
                 return
             if self.risk_preset:
+                from interference_calculator.inorganic import inorganic_interference
                 data = inorganic_interference(
                     self.atoms, self.mz, targetrange=self.targetrange,
                     maxsize=self.maxsize, charge=self.charge,
@@ -3810,6 +3809,7 @@ class MainWidget(widgets.QWidget):
         if not self.check_atoms_input():
             return
 
+        from interference_calculator.main import standard_ratio
         data = standard_ratio(self.atoms)
         data['target'] = False
         if self.check_mz_input() and isinstance(self.mz, str):
