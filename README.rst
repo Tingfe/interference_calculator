@@ -253,14 +253,14 @@ template-based inorganic interference generation, CIAAW 2024 / AME2020 isotope
 data, full-width ``ppm`` target windows, an interactive target-centered
 spectrum, and a compact data-dense results table.
 
-.. image:: docs/images/main_zh.png
+.. image:: docs/images/main_en.png
    :align: center
-   :alt: Chinese UI screenshot
+   :alt: English UI screenshot
 
-What Changed In 2.3
+What Changed In 2.4
 -------------------
 
-Version 2.x is a major project iteration. Version 2.3 builds on the 2.1
+Version 2.x is a major project iteration. Version 2.4 builds on the 2.1
 inorganic-MS workflow with milestone upgrades for GDMS Excel profile import,
 target selection, release packaging, and startup experience:
 
@@ -406,7 +406,7 @@ observed profile centroid/apex to the corresponding theoretical isotope
 ``m/z`` and annotates the alignment shift without changing the interference
 calculation.
 
-.. image:: docs/images/spectrum_zh.png
+.. image:: docs/images/spectrum_en.png
    :align: center
    :alt: Target-centered spectrum screenshot
 

@@ -4,11 +4,22 @@
 
 ### English
 
-- No unreleased changes yet.
+#### Changed
+- Refresh README screenshots for the current 2.4 interface, use English
+  screenshots in the English README section, and align the UI header display
+  name with the 2.4 application name.
+- Keep the GDMS import button compact in the target row when no imported target
+  list is visible.
+- Widen the default control panel so English labels and automatic toggles are
+  not clipped in the startup layout.
 
 ### 中文
 
-- 暂无未发布变更。
+#### 变更
+- 刷新 README 截图为当前 2.4 界面，在英文 README 区域使用英文截图，并将
+  UI 页眉显示名同步为 2.4 应用名称。
+- 在尚未显示导入目标峰列表时，保持目标区域的导入按钮紧凑。
+- 加宽默认控制面板，避免英文标签和自动开关在启动布局中被截断。
 
 ## [2.4.2] - 2026-05-31
 

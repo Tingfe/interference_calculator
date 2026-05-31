@@ -156,7 +156,7 @@ _COLUMN_DISPLAY = {
 
 _UI_TEXT = {
     'en': {
-        'window_title': 'Inorganic mass interference calculator',
+        'window_title': 'Inorganic MS Interference Calculator',
         'spectrum_window_title': 'Inorganic interference spectrum',
         'spectrum_target_title': 'Target-centered interference spectrum',
         'spectrum_title': 'Inorganic interference spectrum',
@@ -176,7 +176,7 @@ _UI_TEXT = {
         'gdms_profile_match_shift_mz': 'shift {:+.5g} m/z',
         'ppm_from_target': '\u0394ppm from target',
         'mz_from_target': '\u0394m/z from target',
-        'header_title': 'Inorganic mass interference',
+        'header_title': 'Inorganic MS Interference Calculator',
         'header_subtitle': 'Inorganic peak screening',
         'language': 'Language',
         'workflow': 'workflow',
@@ -357,7 +357,7 @@ _UI_TEXT = {
         'gdms_profile_match_shift_mz': '偏移 {:+.5g} m/z',
         'ppm_from_target': '相对目标峰 \u0394ppm',
         'mz_from_target': '相对目标峰 \u0394m/z',
-        'header_title': '无机质谱峰干扰',
+        'header_title': '无机质谱峰干扰计算器',
         'header_subtitle': '无机质谱峰筛查',
         'language': '语言',
         'workflow': '流程',
@@ -2806,6 +2806,7 @@ class MainWidget(widgets.QWidget):
         self.import_gdms_button = widgets.QPushButton(_text(self.language, 'import_gdms'), parent=self)
         self.import_gdms_button.setToolTip(tooltip_text(self.language, 'gdms_import'))
         self.import_gdms_button.setMinimumWidth(72)
+        self.import_gdms_button.setMaximumWidth(110)
         self.imported_target_input = widgets.QComboBox(parent=self)
         self.imported_target_input.addItem(_text(self.language, 'imported_target_placeholder'), None)
         self.imported_target_input.setEnabled(False)
@@ -2892,8 +2893,8 @@ class MainWidget(widgets.QWidget):
 
         self.control_panel = widgets.QFrame(parent=self)
         self.control_panel.setObjectName('controlPanel')
-        self.control_panel.setMinimumWidth(420)
-        self.control_panel.setMaximumWidth(480)
+        self.control_panel.setMinimumWidth(460)
+        self.control_panel.setMaximumWidth(520)
         self.control_panel_layout = widgets.QVBoxLayout()
         self.control_panel_layout.setContentsMargins(0, 0, 0, 0)
         self.control_panel_layout.setSpacing(0)
@@ -3143,7 +3144,7 @@ class MainWidget(widgets.QWidget):
         self.body_splitter.addWidget(self.results_panel)
         self.body_splitter.setStretchFactor(0, 0)
         self.body_splitter.setStretchFactor(1, 1)
-        self.body_splitter.setSizes([420, 940])
+        self.body_splitter.setSizes([480, 880])
 
         self.layout = widgets.QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
