@@ -96,7 +96,7 @@ GDMS 快速工作流
 ---------------
 
 1. 选择 ``GDMS`` 模式。
-2. 如有 GDMS 导出的 Excel 谱图文件，点击 **导入GDMS**，软件会自动提取文件中的元素和可选目标峰。
+2. 如有 GDMS 导出的 Excel 谱图文件，点击 **导入**，软件会自动提取文件中的元素和可选目标峰。
 3. 导入后优先从目标峰列表选择；只有目标不在导入文件中时，勾选 **手动目标** 再选择 ``75As``、``56Fe`` 等目标。
 4. 保持默认 ``2000 ppm`` 全窗口。
 5. 导入文件后，``添加组合`` 会出现 ``导入元素`` 预设；如果误删元素，可用它一键恢复导入文件中的全部元素。
@@ -350,7 +350,7 @@ Quick GDMS workflow
 -------------------
 
 1. Select ``GDMS`` mode.
-2. If you have a GDMS Excel profile export, click **Import GDMS** so the
+2. If you have a GDMS Excel profile export, click **Import** so the
    software can extract elements and selectable target peaks from the file.
 3. After import, select from the imported target list first. Enable **Manual
    target** only when the desired target is not present in the imported file.

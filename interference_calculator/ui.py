@@ -207,7 +207,7 @@ _UI_TEXT = {
         'target_element_placeholder': 'Select element…',
         'target_isotope_placeholder': 'Select isotope…',
         'manual_target': 'Manual target',
-        'import_gdms': 'Import GDMS',
+        'import_gdms': 'Import',
         'imported_target_placeholder': 'Imported targets…',
         'gdms_profile_files_filter': 'GDMS Excel Profiles (*.xlsx *.xlsm);;All Files (*)',
         'gdms_import_missing': 'GDMS Excel import requires openpyxl.\n\nInstall or update dependencies: pip install -e .',
@@ -347,7 +347,7 @@ _UI_TEXT = {
         'target_element_placeholder': '选择元素…',
         'target_isotope_placeholder': '选择同位素…',
         'manual_target': '手动目标',
-        'import_gdms': '导入GDMS',
+        'import_gdms': '导入',
         'imported_target_placeholder': '导入的目标峰…',
         'gdms_profile_files_filter': 'GDMS Excel 谱图 (*.xlsx *.xlsm);;所有文件 (*)',
         'gdms_import_missing': 'GDMS Excel 导入需要 openpyxl。\n\n安装或更新依赖：pip install -e .',
@@ -2231,7 +2231,7 @@ class MainWidget(widgets.QWidget):
         self._applying_imported_target = False
         self.import_gdms_button = widgets.QPushButton(_text(self.language, 'import_gdms'), parent=self)
         self.import_gdms_button.setToolTip(tooltip_text(self.language, 'gdms_import'))
-        self.import_gdms_button.setMinimumWidth(96)
+        self.import_gdms_button.setMinimumWidth(72)
         self.imported_target_input = widgets.QComboBox(parent=self)
         self.imported_target_input.addItem(_text(self.language, 'imported_target_placeholder'), None)
         self.imported_target_input.setEnabled(False)
