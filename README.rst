@@ -6,159 +6,87 @@
 
 .. _chinese-section:
 
-================================
-干扰计算器 / Interference Calculator 2.0
-================================
+====================================================
+干扰计算器 2.0 维护版 / Interference Calculator 2.0
+====================================================
 
 `English <english-section_>`_ | **中文**
 
-**干扰计算器** 是一款用于质谱峰干扰筛查的科学桌面工具。2.0 版将原本通用分子干扰计算器升级为面向 GDMS、ICP-MS 和 SIMS 的现代化无机质谱分析工作流。
+**本分支：``maintenance/original``**
 
-该应用整合了双语 PyQt 界面、以 GDMS 优先的默认设置、基于模板的无机干扰生成、CIAAW 2024 / AME2020 同位素数据、ppm 或绝对 m/z 窗口、以目标峰为中心的光谱视图，以及紧凑高效的干扰结果表格。
+这个分支不是旧代码冻结版，而是原作者通用计算器功能边界的现代化维护版。它保留
+通用元素 / 同位素组合扫描和同位素比计算，移除无机质谱专项入口；过时的数据、
+依赖和 Python 2 / PyQt4 时代的维护负担已经被更新。
 
-.. image:: docs/images/main_zh.png
-   :align: center
-   :alt: 中文界面截图
+无机材料 / GDMS、ICP-MS、SIMS 专用功能在 ``main`` 分支维护并发布。
 
-2.0 版更新内容
---------------
-
-2.0 版是一次重大迭代：
-
-* 现代化科学工具 GUI：更清晰的控制面板、结果概览标签、空状态提示、更紧凑的表格布局，并支持中英文界面切换。
-* GDMS、ICP-MS 和 SIMS 预设：提供电荷态、目标窗口、风险模型和仪器质量分辨力（MRP）的实用默认值。
-* 常用无机元素集：包含适用于无机质谱筛查的全元素集。
-* GDMS 默认目标窗口为 ``2000 ppm``（全窗口宽度），等同于目标峰校准后 ``±1000 ppm`` 的范围。
-* 新的无机质谱算法：基于干扰模板生成原子离子、双电荷离子、氧化物、氢化物、氢氧化物、氮化物、碳化物、硫化物、卤化物、等离子体加合物、背景分子及小型基质团簇的干扰。
-* ``相对风险`` 排序：基于同位素概率和特定方法的形成因子进行评估，用于筛查排序而非定量校正。
-* 目标峰中心光谱视图：存在目标峰时显示 ``Δppm`` 或 ``Δm/z`` 分布。
-* 同位素数据库更新：基于 CIAAW 2024 同位素丰度和 AME2020 原子质量生成，包含不确定度和丰度范围元数据。
-* Python 3 现代化改造，并为核心分子解析、干扰搜索、无机筛查和数据模式编写了单元测试。
-
-项目信息
+分支定位
 --------
 
-当前版本：``2.0.4``
+``maintenance/original`` 保留：
 
-原作者：Zan Peeters
+* 通用分子 / 同位素组合枚举：``interference()``。
+* 标准同位素比表：``standard_ratio()``。
+* 现代 PyQt 图形界面、中英文切换、结果表格和谱图查看。
+* CIAAW 2024 同位素丰度、AME2020 原子质量和 CODATA 2022 电子质量。
+* Python 3.9+、PyQt5、QPainter 谱图、现代打包和测试流程。
 
-当前维护者及最新贡献者：Tingfe
+``maintenance/original`` 不包含：
 
-仓库地址：https://github.com/Tingfe/interference_calculator
+* GDMS、ICP-MS、SIMS 仪器预设。
+* 无机质谱模板干扰算法。
+* ``inorganic_interference()`` API。
+* 方法相关的相对风险模型。
 
 安装
 ----
 
-**方式一：免安装版（推荐，无需 Python）**
-
-从 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
-下载对应平台的免安装版本，直接运行：
-
-- **Windows**：下载 ``InterferenceCalculator-Windows-*.exe``，双击即可运行。
-- **macOS**：下载 ``InterferenceCalculator-macOS-*.dmg``，打开后将应用拖入 ``Applications`` 文件夹，首次打开需在「安全性与隐私」中允许。
-
-**方式二：通过 PyPI 安装（需要 Python 3.9+）**
-
-.. code-block:: bash
-
-   pip install interference_calculator
-
-也可从 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
-下载 wheel 包手动安装：
-
-.. code-block:: bash
-
-   pip install interference_calculator-*.whl
-
-**方式三：从源码安装（开发者）**
+**方式一：从源码安装（维护分支）**
 
 .. code-block:: bash
 
    git clone https://github.com/Tingfe/interference_calculator.git
    cd interference_calculator
+   git switch maintenance/original
    python3 -m venv .venv
    . .venv/bin/activate
    pip install -e .
 
+**方式二：通过 pip 安装发布版**
+
+.. code-block:: bash
+
+   pip install interference_calculator
+
+注意：PyPI 或 GitHub Releases 的默认发布通常来自 ``main`` 分支。需要通用维护版时，
+请确认所安装的版本来自 ``maintenance/original``。
+
 启动界面
 --------
 
-- **免安装版**：下载后直接双击 ``.exe``（Windows）或打开 ``.dmg`` 后点击应用（macOS）。
-- **PyPI 安装版**：在终端中运行 ``interference_calculator`` 即可启动图形界面。
+.. code-block:: bash
 
-GDMS 快速工作流
----------------
+   interference_calculator
 
-1. 选择 ``GDMS`` 模式。
-2. 输入目标峰，如 ``75As`` 或 ``56Fe``。
-3. 保持默认 ``2000 ppm`` 全窗口，或切换为绝对 ``m/z`` 窗口。
-4. 输入样品、基质、等离子体及背景元素，例如 ``Ar Cl As O H``，或添加全元素无机预设进行广泛筛查。
-5. 根据需要设置离子模型和仪器 MRP。
-6. 点击 **计算**。
-7. 查阅候选峰、``Δppm``、所需 MRP、相对风险及每个峰是否可分辨。
-8. 打开光谱视图查看以目标峰为中心的峰分布。
+通用扫描工作流
+--------------
 
-.. image:: docs/images/spectrum_zh.png
+1. 在元素框中输入样品、基体或背景元素，例如 ``Ca O H Si``。
+2. 可选：输入目标峰，例如 ``56Fe``、``40Ca16O`` 或 ``55.9349``。
+3. 设置完整窗口宽度。通用扫描默认使用 ``m/z`` 窗口；如果输入了有效目标峰，也可以切换为 ``ppm``。
+4. 选择离子电荷和最大原子数。
+5. 点击 **计算**。
+6. 查看候选峰、``m/z``、``Δm/z``、``Δppm``、所需 MRP、概率和可分辨标记。
+7. 点击谱图按钮查看候选峰分布。
+
+.. image:: docs/images/main_zh.png
    :align: center
-   :alt: 目标峰中心光谱截图
-
-用户手册
---------
-
-图文用户手册请见：
-
-`docs/USER_MANUAL.md <docs/USER_MANUAL.md>`_
-
-核心概念
---------
-
-窗口宽度
-~~~~~~~~
-
-界面使用全窗口宽度，这与常见的仪器设置一致。例如 ``2000 ppm`` 表示计算范围为低于目标峰 ``1000 ppm`` 至高于目标峰 ``1000 ppm``。存在有效目标峰时，``ppm`` 与 ``m/z`` 之间可互相转换。
-
-仪器 MRP
-~~~~~~~~
-
-仪器 MRP 不影响候选峰生成。它在质量计算后应用以标记候选峰是否可从目标峰中分辨出来。需要比仪器设置更高分辨力的候选峰会被标记为未分辨。
-
-相对风险
-~~~~~~~~
-
-``相对风险`` 是定性优先级评分：
-
-.. code-block:: text
-
-   相对风险 = 同位素概率 × 形成因子
-
-用于对可能的干扰进行排序审查，不应在缺乏特定方法校准的情况下用作定量丰度校正。
-
-数据来源
---------
-
-原子质量基于 AME2020（发表于 *Chinese Physics C* 45, 030002 和 030003）。同位素丰度基于 CIAAW 2024。电子质量使用 CODATA 2022。
-
-内置同位素表存储代表性丰度值以及 CIAAW 报告正常材料丰度范围的区间边界。
+   :alt: 中文界面截图
 
 Python API
 ----------
 
-无机筛查：
-
-.. code-block:: python
-
-   import interference_calculator as ic
-
-   data = ic.inorganic_interference(
-       ['Ar', 'Cl', 'As', 'O', 'H'],
-       '75As',
-       targetrange=0.074921,   # 半窗口，单位 m/z
-       charge=[1, 2],
-       maxsize=3,
-       risk_preset='gdms',
-   )
-
-通用分子枚举仍可使用：
+通用干扰计算：
 
 .. code-block:: python
 
@@ -167,7 +95,7 @@ Python API
    data = ic.interference(
        ['Ca', 'O', 'H', 'Si'],
        'Fe',
-       targetrange=0.3,
+       targetrange=0.3,   # m/z 半窗口
        maxsize=4,
        charge=[1],
        chargesign='+',
@@ -178,6 +106,12 @@ Python API
 .. code-block:: python
 
    ratios = ic.standard_ratio(['Ca', 'O'])
+
+数据来源
+--------
+
+原子质量基于 AME2020（*Chinese Physics C* 45, 030002 和 030003）。同位素丰度
+基于 CIAAW 2024，内置表保留正常材料丰度区间边界。电子质量使用 CODATA 2022。
 
 开发
 ----
@@ -203,191 +137,90 @@ BSD 3-Clause Clear。详见 ``LICENSE.rst``。
 
 .. _english-section:
 
-================================
-Interference Calculator 2.0
-================================
+====================================================
+Interference Calculator 2.0 Maintenance Edition
+====================================================
 
 **English** | `中文 <chinese-section_>`_
 
-Interference Calculator is a scientific desktop tool for mass-spectrometry peak
-interference screening. Version 2.0 turns the original general molecular
-interference calculator into a modern inorganic mass-spectrometry workflow for
-GDMS, ICP-MS, and SIMS.
+**Branch: ``maintenance/original``**
 
-The application combines a bilingual PyQt GUI, GDMS-first defaults,
-template-based inorganic interference generation, CIAAW 2024 / AME2020 isotope
-data, ppm or absolute m/z windows, target-centered spectra, and a compact
-data-dense results table.
+This branch is not a frozen copy of the old code. It is the modern maintenance
+line for the original calculator's product boundary. It keeps the general
+element / isotope-combination scan and isotope-ratio workflow, while removing
+the inorganic-MS specialist entry points. Outdated data, dependencies, and the
+old Python 2 / PyQt4 maintenance burden have been updated.
 
-.. image:: docs/images/main_zh.png
-   :align: center
-   :alt: Chinese UI screenshot
+Inorganic-materials workflows for GDMS, ICP-MS, and SIMS are developed and
+released from the ``main`` branch.
 
-What Changed In 2.0
--------------------
+Branch Scope
+------------
 
-Version 2.0 is a major project iteration:
+``maintenance/original`` keeps:
 
-* Modern scientific-tool GUI with a clearer control panel, result summary chips,
-  empty state, improved table density, and bilingual language switching.
-* GDMS, ICP-MS, and SIMS presets with practical defaults for charge state,
-  target window, risk model, and instrument mass resolving power.
-* Common inorganic element sets, including an all-elements set tuned for
-  inorganic MS screening.
-* GDMS default target window is ``2000 ppm`` as a full window width, equivalent
-  to ``±1000 ppm`` around the calibrated target peak.
-* New inorganic mass-spectrometry algorithm using interference templates for
-  atomic ions, doubly charged ions, oxides, hydrides, hydroxides, nitrides,
-  carbides, sulfides, halides, plasma adducts, background molecules, and small
-  matrix clusters.
-* ``relative risk`` ranking based on isotope probability and method-specific
-  formation factors. It is a screening score, not a quantitative correction.
-* Target-centered spectrum display using ``Δppm`` or ``Δm/z`` when a target
-  peak is present.
-* Updated isotope database generated from CIAAW 2024 isotopic compositions and
-  AME2020 atomic masses, including uncertainty and abundance interval metadata.
-* Python 3 modernization and focused unit tests for core molecule parsing,
-  interference search, inorganic screening, and data schema.
+* General molecular / isotope-combination enumeration: ``interference()``.
+* Standard isotope-ratio tables: ``standard_ratio()``.
+* Modern PyQt GUI with Chinese/English switching, result tables, and spectrum view.
+* CIAAW 2024 isotopic compositions, AME2020 atomic masses, and CODATA 2022
+  electron mass.
+* Python 3.9+, PyQt5, QPainter spectrum rendering, modern packaging, and tests.
 
-Project Metadata
-----------------
+``maintenance/original`` does not include:
 
-Current version: ``2.0.4``
-
-Original author: Zan Peeters
-
-Current maintainer and latest contributor: Tingfe
-
-Repository: https://github.com/Tingfe/interference_calculator
+* GDMS, ICP-MS, or SIMS instrument presets.
+* Inorganic-MS template interference generation.
+* The ``inorganic_interference()`` API.
+* Method-specific relative-risk models.
 
 Installation
 ------------
 
-**Option A — Standalone app (recommended, no Python required)**
-
-Download the platform-specific package from
-`GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
-and run directly:
-
-- **Windows**: download ``InterferenceCalculator-Windows-*.exe`` and double-click.
-- **macOS**: download ``InterferenceCalculator-macOS-*.dmg``, open it, and drag
-  the app to ``Applications``. On first launch you may need to allow the app in
-  "Security & Privacy".
-
-**Option B — pip install (requires Python 3.9+)**
-
-.. code-block:: bash
-
-   pip install interference_calculator
-
-You can also install a downloaded wheel manually:
-
-.. code-block:: bash
-
-   pip install interference_calculator-*.whl
-
-**Option C — from source (developers)**
+**Option A - source install from this maintenance branch**
 
 .. code-block:: bash
 
    git clone https://github.com/Tingfe/interference_calculator.git
    cd interference_calculator
+   git switch maintenance/original
    python3 -m venv .venv
    . .venv/bin/activate
    pip install -e .
 
-Running the GUI
----------------
+**Option B - install a published package**
 
-- **Standalone app**: double-click the downloaded ``.exe`` (Windows) or open the
-  ``.dmg`` and click the app icon (macOS).
-- **pip install**: run ``interference_calculator`` from your terminal.
+.. code-block:: bash
 
-Quick GDMS workflow
--------------------
+   pip install interference_calculator
 
-1. Select ``GDMS`` mode.
-2. Enter a target peak such as ``75As`` or ``56Fe``.
-3. Keep the default ``2000 ppm`` full window or switch to absolute ``m/z``.
-4. Enter sample, matrix, plasma, and background elements, for example
-   ``Ar Cl As O H``, or add the all-elements preset for a broad screen.
-5. Set ion model and instrument MRP if needed.
-6. Click **Calculate**.
-7. Review candidate peaks, ``Δppm``, required MRP, relative risk, and whether
-   each candidate is resolvable.
-8. Open the spectrum view to inspect the target-centered peak display.
+Note: default PyPI or GitHub Releases builds normally come from ``main``. For
+the general maintenance edition, verify that the package was built from
+``maintenance/original``.
 
-.. image:: docs/images/spectrum_zh.png
-   :align: center
-   :alt: Target-centered spectrum screenshot
-
-User manual
+Run The GUI
 -----------
 
-The illustrated user manual:
+.. code-block:: bash
 
-`docs/USER_MANUAL.md <docs/USER_MANUAL.md>`_
+   interference_calculator
 
-Core concepts
--------------
+General Scan Workflow
+---------------------
 
-Window width
-~~~~~~~~~~~~
-
-The GUI uses full window width to match common instrument settings. For
-example, ``2000 ppm`` means the calculation searches ``1000 ppm`` below and
-``1000 ppm`` above the target peak. When a valid target peak exists, switching
-between ``ppm`` and ``m/z`` converts the displayed value automatically.
-
-Instrument MRP
-~~~~~~~~~~~~~~
-
-Instrument MRP does not change candidate generation. It is applied after mass
-calculation to mark whether a candidate peak is resolvable from the target.
-Candidates that require higher resolving power than the instrument setting are
-highlighted as unresolved.
-
-Relative risk
-~~~~~~~~~~~~~
-
-``relative risk`` is a qualitative screening score:
-
-.. code-block:: text
-
-   relative risk = isotope probability × formation factor
-
-It helps rank interferences for review. It should not be used as a quantitative
-abundance correction without method-specific calibration.
-
-Data sources
-------------
-
-Atomic masses are based on AME2020, published in *Chinese Physics C* 45,
-030002 and 030003. Isotopic compositions are based on CIAAW 2024. Electron mass
-uses CODATA 2022.
-
-The packaged isotope table stores representative abundances as well as interval
-bounds where CIAAW reports normal-material abundance ranges.
+1. Enter sample, matrix, or background elements, for example ``Ca O H Si``.
+2. Optional: enter a target peak such as ``56Fe``, ``40Ca16O``, or ``55.9349``.
+3. Set the full window width. General scan defaults to an absolute ``m/z``
+   window; ``ppm`` is available when a valid target peak is present.
+4. Select ion charge and maximum molecule size.
+5. Click **Calculate**.
+6. Review candidate peaks, ``m/z``, ``Δm/z``, ``Δppm``, required MRP,
+   probability, and resolvability.
+7. Open the spectrum view to inspect candidate peak distribution.
 
 Python API
 ----------
 
-Inorganic screening:
-
-.. code-block:: python
-
-   import interference_calculator as ic
-
-   data = ic.inorganic_interference(
-       ['Ar', 'Cl', 'As', 'O', 'H'],
-       '75As',
-       targetrange=0.074921,   # half-window in m/z
-       charge=[1, 2],
-       maxsize=3,
-       risk_preset='gdms',
-   )
-
-General molecular enumeration is still available:
+General interference calculation:
 
 .. code-block:: python
 
@@ -396,7 +229,7 @@ General molecular enumeration is still available:
    data = ic.interference(
        ['Ca', 'O', 'H', 'Si'],
        'Fe',
-       targetrange=0.3,
+       targetrange=0.3,   # half window in m/z
        maxsize=4,
        charge=[1],
        chargesign='+',
@@ -408,16 +241,23 @@ Isotope ratio table:
 
    ratios = ic.standard_ratio(['Ca', 'O'])
 
+Data Sources
+------------
+
+Atomic masses are based on AME2020 (*Chinese Physics C* 45, 030002 and 030003).
+Isotopic compositions are based on CIAAW 2024, including normal-material
+abundance interval bounds where available. Electron mass uses CODATA 2022.
+
 Development
 -----------
 
-Run the test suite:
+Run tests:
 
 .. code-block:: bash
 
    python -m unittest discover -s tests -v
 
-Update the isotope database:
+Update isotope data:
 
 .. code-block:: bash
 

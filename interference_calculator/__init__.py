@@ -2,9 +2,8 @@
 """ Calculate mass interference and standard isotopic ratios for mass spectrometry. """
 from interference_calculator.molecule import Molecule, periodic_table, mass_electron, templates
 from interference_calculator.main import interference, standard_ratio
-from interference_calculator.inorganic import inorganic_interference
 
-__version__ = '2.0.6'
+__version__ = '2.0.7'
 __name__ = 'interference_calculator'
 __author__ = 'Zan Peeters'
 __maintainer__ = 'Tingfe'

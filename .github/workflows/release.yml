@@ -1,4 +1,4 @@
-name: Build and Release
+name: Release
 
 on:
   workflow_dispatch:
@@ -10,30 +10,138 @@ permissions:
   contents: write
 
 jobs:
+  prepare:
+    name: Validate version and changelog
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      tag_name: ${{ steps.meta.outputs.tag_name }}
+    steps:
+      - uses: actions/checkout@v4
 
-  # ── sdist + wheel (cross-platform) ──────────────────────────────────
+      - name: Read and validate release metadata
+        id: meta
+        shell: python
+        run: |
+          import os
+          import re
+          from pathlib import Path
 
-  build-sdist:
+          init_text = Path("interference_calculator/__init__.py").read_text(encoding="utf-8")
+          match = re.search(r"__version__\s*=\s*['\"]([^'\"]+)['\"]", init_text)
+          if not match:
+              raise SystemExit("Could not find __version__ in interference_calculator/__init__.py")
+          version = match.group(1)
+          tag_name = f"v{version}"
+
+          github_ref_type = os.environ.get("GITHUB_REF_TYPE", "")
+          github_ref_name = os.environ.get("GITHUB_REF_NAME", "")
+          if github_ref_type == "tag":
+              if not github_ref_name.startswith("v"):
+                  raise SystemExit(f"Release tags must start with v: {github_ref_name}")
+              tag_version = github_ref_name[1:]
+              if tag_version != version:
+                  raise SystemExit(
+                      f"Tag version {tag_version} does not match package __version__ {version}"
+                  )
+              tag_name = github_ref_name
+
+          changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+          section_match = re.search(
+              rf"^## \[{re.escape(version)}\].*?(?=^## \[|\Z)",
+              changelog,
+              flags=re.MULTILINE | re.DOTALL,
+          )
+          if not section_match:
+              raise SystemExit(f"CHANGELOG.md is missing a ## [{version}] section")
+          release_section = section_match.group(0)
+          for heading in ("### English", "### 中文"):
+              if heading not in release_section:
+                  raise SystemExit(
+                      f"CHANGELOG.md section ## [{version}] must include {heading}"
+                  )
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"version={version}\n")
+              fh.write(f"tag_name={tag_name}\n")
+
+      - name: Extract release notes
+        shell: python
+        run: |
+          import os
+          import re
+          from pathlib import Path
+
+          version = "${{ steps.meta.outputs.version }}"
+          changelog = Path("CHANGELOG.md").read_text(encoding="utf-8").splitlines()
+          start = None
+          for index, line in enumerate(changelog):
+              if line.strip().startswith(f"## [{version}]"):
+                  start = index + 1
+                  break
+          if start is None:
+              raise SystemExit(f"CHANGELOG.md is missing ## [{version}]")
+
+          end = len(changelog)
+          for index in range(start, len(changelog)):
+              if re.match(r"^## \[", changelog[index]):
+                  end = index
+                  break
+
+          body = "\n".join(changelog[start:end]).strip()
+          if not body:
+              body = f"Release {version}"
+          Path("release_body.md").write_text(body + "\n", encoding="utf-8")
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: release_body.md
+
+  test:
+    name: Test
+    needs: prepare
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install build tools
+
+      - name: Install package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+  build-python:
+    name: Build Python packages
+    needs: [prepare, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build source distribution and wheel
         run: |
           python -m pip install --upgrade pip
           pip install build
-      - name: Build sdist and wheel
-        run: python -m build
+          python -m build
+
       - uses: actions/upload-artifact@v4
         with:
-          name: sdist-packages
+          name: python-packages
           path: dist/*
 
-  # ── macOS .app (PyInstaller) ────────────────────────────────────────
-
   build-macos:
+    name: Build macOS app
+    needs: [prepare, test]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,10 +153,10 @@ jobs:
       - name: Install UPX
         run: brew install upx
 
-      - name: Install dependencies
+      - name: Install app build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller PyQt5 numpy pandas pyparsing
+          pip install . pyinstaller
 
       - name: Build macOS app bundle
         run: |
@@ -98,22 +206,22 @@ jobs:
             --exclude-module PyQt5.QtUiTools \
             interference_calculator/ui.py
 
-      - name: Package as DMG
+      - name: Package macOS DMG
         run: |
           hdiutil create \
             -volname "Interference Calculator" \
             -srcfolder "dist/Interference Calculator.app" \
             -ov -format UDZO \
-            "dist/InterferenceCalculator-macOS-${{ github.ref_name }}.dmg"
+            "dist/InterferenceCalculator-macOS-${{ needs.prepare.outputs.tag_name }}.dmg"
 
       - uses: actions/upload-artifact@v4
         with:
           name: macos-app
           path: dist/InterferenceCalculator-macOS-*.dmg
 
-  # ── Windows .exe (PyInstaller) ─────────────────────────────────────
-
   build-windows:
+    name: Build Windows app
+    needs: [prepare, test]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -125,10 +233,10 @@ jobs:
       - name: Install UPX
         run: choco install upx --no-progress
 
-      - name: Install dependencies
+      - name: Install app build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller PyQt5 numpy pandas pyparsing
+          pip install . pyinstaller
 
       - name: Build Windows executable
         run: |
@@ -178,62 +286,48 @@ jobs:
             --exclude-module PyQt5.QtUiTools `
             interference_calculator/ui.py
 
-      - name: Rename with version tag
+      - name: Rename executable with version
         run: |
           Rename-Item `
             -Path "dist/InterferenceCalculator.exe" `
-            -NewName "InterferenceCalculator-Windows-${{ github.ref_name }}.exe"
+            -NewName "InterferenceCalculator-Windows-${{ needs.prepare.outputs.tag_name }}.exe"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-exe
+          name: windows-app
           path: dist/InterferenceCalculator-Windows-*.exe
 
-  # ── GitHub Release ─────────────────────────────────────────────────
-
   release:
-    needs: [build-sdist, build-macos, build-windows]
+    name: Publish GitHub Release
+    needs: [prepare, test, build-python, build-macos, build-windows]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Extract version changelog
-        run: |
-          V="${{ github.ref_name }}"
-          VNUM="${V#v}"
-          awk -v ver="$VNUM" '
-            BEGIN { found=0 }
-            $0 ~ "^## \\[" ver "\\]" { found=1; next }
-            found && /^## \[/ { exit }
-            found { print }
-          ' CHANGELOG.md > release_body.md
-          echo "=== release body ==="
-          cat release_body.md
-
-      - name: Download sdist/wheel
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: sdist-packages
+          name: release-notes
+          path: release/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-packages
           path: dist/
 
-      - name: Download macOS app
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: macos-app
           path: dist/
 
-      - name: Download Windows exe
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: windows-exe
+          name: windows-app
           path: dist/
 
-      - name: Create GitHub Release
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          name: "Interference Calculator ${{ github.ref_name }}"
-          body_path: release_body.md
+          name: "Interference Calculator ${{ needs.prepare.outputs.tag_name }}"
+          body_path: release/release_body.md
           files: dist/*
           draft: false
           prerelease: false

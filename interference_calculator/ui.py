@@ -30,7 +30,6 @@ pd = _LazyModule("pandas")
 import sys, re
 from importlib import resources
 from pyparsing import ParseException
-from interference_calculator.inorganic import inorganic_interference
 from interference_calculator.main import interference, standard_ratio
 from interference_calculator.molecule import Molecule, periodic_table
 from interference_calculator.ui_help import *
@@ -39,18 +38,7 @@ from interference_calculator import __version__
 _isotope_rx = re.compile(r'(\d*[A-Z][a-z]{0,2})')
 _charges_rx = re.compile(r'(\d+)')
 
-_COMMON_INORGANIC_ELEMENTS = (
-    'H', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F',
-    'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar',
-    'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn',
-    'Ga', 'Ge', 'As', 'Se', 'Br',
-    'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In',
-    'Sn', 'Sb', 'Te', 'I',
-    'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho',
-    'Er', 'Tm', 'Yb', 'Lu',
-    'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi',
-    'Th', 'U',
-)
+_ALL_ELEMENTS = tuple(dict.fromkeys(periodic_table['element']))
 
 # Qt uses 0-255 ints, Matplotlib uses 0-1 floats for RGB.
 # Palette follows a data-dense scientific tool system: blue for primary data,
@@ -115,38 +103,38 @@ _COLUMN_DISPLAY = {
 
 _UI_TEXT = {
     'en': {
-        'window_title': 'Inorganic mass interference calculator',
-        'spectrum_window_title': 'Inorganic interference spectrum',
+        'window_title': 'Mass interference calculator',
+        'spectrum_window_title': 'Interference spectrum',
         'spectrum_target_title': 'Target-centered interference spectrum',
-        'spectrum_title': 'Inorganic interference spectrum',
+        'spectrum_title': 'Interference spectrum',
         'y_normalised': '{} (normalised)',
         'candidate': 'candidate',
         'not_resolved': 'not resolved',
         'target_peak': 'target',
         'ppm_from_target': '\u0394ppm from target',
         'mz_from_target': '\u0394m/z from target',
-        'header_title': 'Inorganic mass interference',
-        'header_subtitle': 'Inorganic peak screening',
+        'header_title': 'Mass interference calculator',
+        'header_subtitle': 'General isotope-combination screening',
         'language': 'Language',
         'workflow': 'workflow',
         'mode': 'mode',
         'target_group': 'target peak',
         'target': 'target',
         'window_width': 'window width',
-        'target_hint': 'Full-width window; GDMS defaults to 2000 ppm.',
-        'sample_plasma': 'sample / plasma',
+        'target_hint': 'Full-width window; m/z is best for open-ended scans.',
+        'sample_plasma': 'sample elements',
         'elements': 'elements',
         'add_set': 'add set',
-        'elements_hint': 'Include analyte, matrix, plasma, and background elements.',
+        'elements_hint': 'Include elements expected in the sample, matrix, or background.',
         'ion_model': 'ion model',
         'ions': 'ions',
         'max_size': 'max size',
         'instrument_mrp': 'instrument MRP',
         'general_scan': 'General scan',
         'add_set_empty': 'add set...',
-        'all_inorganic_elements': 'all inorganic elements',
-        'ar_background': 'Ar plasma background',
-        'light_background': 'light background',
+        'all_inorganic_elements': 'all elements',
+        'ar_background': 'common light elements',
+        'light_background': 'CHNOPS',
         'halogens_sulfur': 'halogens / sulfur',
         'transition_matrix': 'transition matrix',
         'silicate_matrix': 'silicate matrix',
@@ -167,8 +155,8 @@ _UI_TEXT = {
         'isotope_count': '{} isotope rows',
         'help_title': 'Interference calculator help',
         'results_title': 'Results',
-        'empty_title': 'Ready for peak screening',
-        'empty_body': 'Enter a target peak and sample elements, then calculate interference candidates.',
+        'empty_title': 'Ready for general scanning',
+        'empty_body': 'Enter elements and an optional target peak, then calculate isotope-combination candidates.',
         'summary_mode': 'Mode',
         'summary_window': 'Window',
         'summary_mrp': 'MRP',
@@ -182,38 +170,38 @@ _UI_TEXT = {
         'no': 'no',
     },
     'zh': {
-        'window_title': '无机质谱峰干扰计算器',
-        'spectrum_window_title': '无机干扰谱图',
+        'window_title': '质谱峰干扰计算器',
+        'spectrum_window_title': '干扰谱图',
         'spectrum_target_title': '以目标峰为中心的干扰谱图',
-        'spectrum_title': '无机干扰谱图',
+        'spectrum_title': '干扰谱图',
         'y_normalised': '{}（归一化）',
         'candidate': '候选峰',
         'not_resolved': '未分辨',
         'target_peak': '目标峰',
         'ppm_from_target': '相对目标峰 \u0394ppm',
         'mz_from_target': '相对目标峰 \u0394m/z',
-        'header_title': '无机质谱峰干扰',
-        'header_subtitle': '无机质谱峰筛查',
+        'header_title': '质谱峰干扰计算器',
+        'header_subtitle': '通用同位素组合扫描',
         'language': '语言',
         'workflow': '流程',
         'mode': '模式',
         'target_group': '目标峰',
         'target': '目标',
         'window_width': '窗口宽度',
-        'target_hint': '完整窗口宽度；GDMS 默认 2000 ppm。',
-        'sample_plasma': '样品 / 等离子体',
+        'target_hint': '完整窗口宽度；开放式扫描建议使用 m/z。',
+        'sample_plasma': '样品元素',
         'elements': '元素',
         'add_set': '添加组合',
-        'elements_hint': '建议包含待测、基体、等离子体和背景元素。',
+        'elements_hint': '输入样品、基体或背景中可能存在的元素。',
         'ion_model': '离子模型',
         'ions': '离子',
         'max_size': '最大原子数',
         'instrument_mrp': '仪器 MRP',
         'general_scan': '通用扫描',
         'add_set_empty': '添加组合...',
-        'all_inorganic_elements': '全元素（无机质谱）',
-        'ar_background': 'Ar 等离子体背景',
-        'light_background': '轻元素背景',
+        'all_inorganic_elements': '全元素',
+        'ar_background': '常见轻元素',
+        'light_background': 'CHNOPS',
         'halogens_sulfur': '卤素 / 硫',
         'transition_matrix': '过渡金属基体',
         'silicate_matrix': '硅酸盐基体',
@@ -234,8 +222,8 @@ _UI_TEXT = {
         'isotope_count': '{} 行同位素数据',
         'help_title': '软件介绍',
         'results_title': '结果',
-        'empty_title': '准备开始峰干扰筛查',
-        'empty_body': '输入目标峰和样品元素后，点击计算生成候选干扰峰。',
+        'empty_title': '准备开始通用扫描',
+        'empty_body': '输入元素和可选目标峰后，点击计算生成同位素组合候选峰。',
         'summary_mode': '模式',
         'summary_window': '窗口',
         'summary_mrp': 'MRP',
@@ -1210,38 +1198,7 @@ class MainWindow(widgets.QMainWindow):
 
 class MainWidget(widgets.QWidget):
     """ Central widget class for interference calculator ui. """
-    MODE_PRESETS = {
-        'GDMS': {
-            'risk_preset': 'gdms',
-            'charge_index': 1,
-            'maxsize': 3,
-            'mrp': 4000,
-            'window_unit': 'ppm',
-            'window': 2000.0,
-            'atoms': 'Fe Ni Cu Zn Ar O H C N Cl S',
-            'target': '56Fe or 75As or 55.9349',
-        },
-        'ICP-MS': {
-            'risk_preset': 'icp-ms',
-            'charge_index': 1,
-            'maxsize': 3,
-            'mrp': 3000,
-            'window_unit': 'ppm',
-            'window': 400.0,
-            'atoms': 'Ar O H C N Cl S Ca Fe As Se',
-            'target': '75As or 80Se or 51V',
-        },
-        'SIMS': {
-            'risk_preset': 'sims',
-            'charge_index': 0,
-            'maxsize': 3,
-            'mrp': 5000,
-            'window_unit': 'ppm',
-            'window': 200.0,
-            'atoms': 'Si O H C N Al Fe Ca',
-            'target': '28Si or 56Fe or 27Al',
-        },
-    }
+    MODE_PRESETS = {}
 
     def __init__(self, parent=None):
         widgets.QWidget.__init__(self, parent=parent)
@@ -1255,19 +1212,16 @@ class MainWidget(widgets.QWidget):
 
         # Inputs
         self.mode_input = widgets.QComboBox(parent=self)
-        self.mode_input.addItem('GDMS', 'gdms')
-        self.mode_input.addItem('ICP-MS', 'icp-ms')
-        self.mode_input.addItem('SIMS', 'sims')
         self.mode_input.addItem(_text(self.language, 'general_scan'), None)
 
         self.atoms_input = ElementInput(parent=self)
-        self.atoms_input.setPlaceholderText('Fe Ni Cu Zn Ar O H C N Cl S')
+        self.atoms_input.setPlaceholderText(_text(self.language, 'general_atoms_placeholder'))
 
         self.element_set_input = widgets.QComboBox(parent=self)
         self.element_set_input.addItem(_text(self.language, 'add_set_empty'), ())
-        self.element_set_input.addItem(_text(self.language, 'all_inorganic_elements'), _COMMON_INORGANIC_ELEMENTS)
-        self.element_set_input.addItem(_text(self.language, 'ar_background'), ('Ar', 'O', 'H', 'C', 'N', 'Cl', 'S'))
-        self.element_set_input.addItem(_text(self.language, 'light_background'), ('H', 'C', 'N', 'O'))
+        self.element_set_input.addItem(_text(self.language, 'all_inorganic_elements'), _ALL_ELEMENTS)
+        self.element_set_input.addItem(_text(self.language, 'ar_background'), ('H', 'C', 'N', 'O', 'Si', 'Ca'))
+        self.element_set_input.addItem(_text(self.language, 'light_background'), ('C', 'H', 'N', 'O', 'P', 'S'))
         self.element_set_input.addItem(_text(self.language, 'halogens_sulfur'), ('F', 'Cl', 'Br', 'I', 'S'))
         self.element_set_input.addItem(_text(self.language, 'transition_matrix'), ('Fe', 'Ni', 'Cu', 'Zn', 'Co', 'Cr', 'Mn'))
         self.element_set_input.addItem(_text(self.language, 'silicate_matrix'), ('Si', 'Al', 'Ca', 'Mg', 'Na', 'K', 'O'))
@@ -1287,7 +1241,7 @@ class MainWidget(widgets.QWidget):
         self.charge_preset_input.setCurrentIndex(1)
 
         self.mz_input = widgets.QLineEdit(parent=self)
-        self.mz_input.setPlaceholderText('56Fe or 75As or 55.9349')
+        self.mz_input.setPlaceholderText(_text(self.language, 'general_target_placeholder'))
 
         self.mzrange_label = widgets.QLabel(_text(self.language, 'window_width'), parent=self)
         self.mzrange_input = widgets.QDoubleSpinBox(parent=self)
@@ -1299,6 +1253,7 @@ class MainWidget(widgets.QWidget):
         self.window_unit_input = widgets.QComboBox(parent=self)
         self.window_unit_input.addItem('ppm', 'ppm')
         self.window_unit_input.addItem('m/z', 'mz')
+        self.window_unit_input.setCurrentIndex(1)
         self._applying_preset = False
         self._window_unit = _current_data(self.window_unit_input)
 
@@ -1589,7 +1544,7 @@ class MainWidget(widgets.QWidget):
         if window is not None:
             window.setWindowTitle(self._tr('window_title'))
 
-        self.mode_input.setItemText(3, self._tr('general_scan'))
+        self.mode_input.setItemText(0, self._tr('general_scan'))
         self.element_set_input.setItemText(0, self._tr('add_set_empty'))
         self.element_set_input.setItemText(1, self._tr('all_inorganic_elements'))
         self.element_set_input.setItemText(2, self._tr('ar_background'))
@@ -1714,9 +1669,9 @@ class MainWidget(widgets.QWidget):
                 self.charge_preset_input.setCurrentIndex(3)
                 self.maxsize_input.setValue(5)
                 self.instrument_mrp_input.setValue(0)
-                self.window_unit_input.setCurrentIndex(self.window_unit_input.findText('ppm'))
+                self.window_unit_input.setCurrentIndex(self.window_unit_input.findText('m/z'))
                 self.apply_window_unit()
-                self.mzrange_input.setValue(600.0)
+                self.mzrange_input.setValue(0.3)
                 self.atoms_input.setPlaceholderText(self._tr('general_atoms_placeholder'))
                 self.mz_input.setPlaceholderText(self._tr('general_target_placeholder'))
         finally:
@@ -1949,20 +1904,12 @@ class MainWidget(widgets.QWidget):
         if self.mzrange is None:
             return
 
-        risk_preset = _current_data(self.mode_input)
         self.interference_button.setEnabled(False)
         widgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            if risk_preset:
-                data = inorganic_interference(self.atoms, self.mz, targetrange=self.mzrange,
-                    maxsize=self.maxsize, charge=self.charges, chargesign=self.chargesign,
-                    risk_preset=risk_preset)
-            else:
-                data = interference(self.atoms, self.mz, targetrange=self.mzrange,
-                    maxsize=self.maxsize, charge=self.charges, chargesign=self.chargesign)
-                data['type'] = 'enumerated'
-                data['formation factor'] = ''
-                data['relative risk'] = data['probability']
+            data = interference(self.atoms, self.mz, targetrange=self.mzrange,
+                maxsize=self.maxsize, charge=self.charges, chargesign=self.chargesign)
+            data['type'] = 'enumerated'
         finally:
             widgets.QApplication.restoreOverrideCursor()
             self.interference_button.setEnabled(True)
@@ -1993,10 +1940,10 @@ class MainWidget(widgets.QWidget):
 
         display_data = data[['molecule', 'type', 'charge', 'mass/charge',
                              'mass/charge diff', '\u0394ppm', 'MRP',
-                             'probability', 'relative risk', 'resolved',
+                             'probability', 'resolved',
                              'target']].copy()
         display_data.columns = ['ion', 'type', 'z', 'm/z', '\u0394m/z',
-                                '\u0394ppm', 'MRP', 'prob.', 'risk', 'ok',
+                                '\u0394ppm', 'MRP', 'prob.', 'ok',
                                 'target']
 
         model = TableModel(display_data, table='interference', language=self.language)

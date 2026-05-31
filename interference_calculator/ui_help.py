@@ -5,7 +5,7 @@ import sys
 atoms_input_tooltip = '''
 <html><head/><body>
 <p><b>Elements to include in the interference search.</b></p>
-<p>Use sample, matrix, plasma, and common background elements separated by spaces.
+<p>Use sample, matrix, and common background elements separated by spaces.
 All stable isotopes for each element are included automatically.</p>
 </body></html>
 '''
@@ -13,17 +13,15 @@ All stable isotopes for each element are included automatically.</p>
 element_set_input_tooltip = '''
 <html><head/><body>
 <p><b>Add common element sets.</b></p>
-<p>Appends common plasma, background, and matrix elements to the element field
-without replacing existing entries. The all-elements set is tuned for inorganic
-MS screening and excludes short-lived radioactive elements.</p>
+<p>Appends common element groups to the element field without replacing existing
+entries. The all-elements set follows the packaged isotope database.</p>
 </body></html>
 '''
 
 mode_input_tooltip = '''
 <html><head/><body>
-<p><b>Instrument preset.</b></p>
-<p>GDMS, ICP-MS, and SIMS set practical defaults for ion charge, risk model,
-mass window, and resolving power. General scan keeps the older enumeration path.</p>
+<p><b>Calculation mode.</b></p>
+<p>This maintenance branch keeps the original general isotope-combination scan.</p>
 </body></html>
 '''
 
@@ -133,28 +131,20 @@ help_text = '''
 <br/>
 <h2>Software overview</h2>
 <p>This program calculates possible mass interferences around a target mass-to-charge
-peak from the elements present in a sample, matrix, plasma, or background gas.</p>
+peak from the elements present in a sample, matrix, or background gas.</p>
 
-<p>The original general scan enumerates isotope combinations up to the selected
-maximum molecule size. The new inorganic mass-spectrometry workflow adds dedicated
-instrument presets for GDMS, ICP-MS, and SIMS, with practical defaults for ion
-charge, mass window, risk model, and resolving power.</p>
+<p>The general scan enumerates isotope combinations up to the selected maximum
+molecule size. It preserves the original calculator's broad molecular-enumeration
+workflow while using the modernized Python 3 codebase and refreshed isotope
+database.</p>
 
-<p>In inorganic mode, candidates are generated from common inorganic MS interference
-templates rather than only by unrestricted enumeration. The screening prioritizes
-atomic ions, doubly charged atomic ions, oxides, hydrides, hydroxides, nitrides,
-carbides, sulfides, halides, plasma adducts, background molecules, and small matrix
-clusters. This makes the result set more focused for GDMS peak-interference review.</p>
+<p>The element set menu includes common light elements, CHNOPS, halogens/sulfur,
+transition metals, rock-forming elements, and an all-elements set based on the
+packaged isotope table.</p>
 
-<p>The element set menu includes common plasma, background, matrix, and an
-all-elements inorganic MS preset. The all-elements preset focuses on commonly
-measurable inorganic MS elements, keeps Th/U, and excludes short-lived or unusual
-radioactive elements.</p>
-
-<p>The GDMS target window defaults to 2000 ppm and is entered as a full window
-width. For example, a 2000 ppm window means the software searches 1000 ppm lower
-and 1000 ppm higher than the calibrated target peak. Absolute m/z windows are
-also available.</p>
+<p>The target window is entered as a full window width. For example, a 0.3 m/z
+window searches 0.15 m/z lower and 0.15 m/z higher than the target peak. ppm
+windows are also available when a valid target peak is entered.</p>
 
 <p>Instrument MRP is used after candidate generation to estimate whether each
 candidate can be resolved from the target. It does not remove candidates from the
@@ -163,10 +153,6 @@ calculation; unresolved peaks are highlighted in the table and spectrum.</p>
 <p>The spectrum display is target-centered when a target peak is present. In ppm
 mode, the x-axis is shown as &Delta;ppm so the calibrated target peak is at zero
 and nearby interference peaks can be compared directly.</p>
-
-<p>Relative risk is a qualitative screening score based on isotope probability and
-method-specific formation factors. It is intended for prioritizing candidate
-interferences, not for quantitative abundance correction.</p>
 
 <h2>Data sources</h2>
 <p>The atomic data used in this program is taken from the International Union for
@@ -203,32 +189,23 @@ help_text_zh = '''
 
 <br/>
 <h2>软件介绍</h2>
-<p>本软件用于根据样品、基体、等离子体或背景气体中的元素，计算目标质荷比峰附近
+<p>本软件用于根据样品、基体或背景气体中的元素，计算目标质荷比峰附近
 可能出现的质谱峰干扰。</p>
 
-<p>原有的通用扫描模式会在设定的最大原子数内枚举同位素组合。新增的无机质谱
-专项流程内置 GDMS、ICP-MS 和 SIMS 预设，并为离子电荷、质量窗口、风险模型和
-分辨能力提供更贴近仪器使用习惯的默认值。</p>
+<p>通用扫描模式会在设定的最大原子数内枚举同位素组合。这个维护分支保留原作者
+计算器的通用分子枚举边界，同时使用现代化 Python 3 代码和更新后的同位素数据库。</p>
 
-<p>在无机模式下，候选干扰峰来自常见无机质谱干扰模板，而不是单纯无限制枚举。
-筛查对象包括原子离子、双电荷原子离子、氧化物、氢化物、氢氧化物、氮化物、
-碳化物、硫化物、卤化物、等离子体加合物、背景分子以及小型基体团簇。这样更
-适合 GDMS 峰干扰排查。</p>
+<p>元素组合菜单提供常见轻元素、CHNOPS、卤素/硫、过渡金属、岩石成分元素，以及
+基于内置同位素表的全元素组合。</p>
 
-<p>元素组合菜单提供常见等离子体、背景、基体以及无机质谱全元素预设。全元素
-预设面向常见无机质谱可测元素，保留 Th/U，并排除短寿命或非常规放射性元素。</p>
-
-<p>GDMS 的目标窗口默认使用 2000 ppm，并按完整窗口宽度输入。例如 2000 ppm 表示
-软件会在校准后的目标峰两侧各搜索 1000 ppm。也可以切换为绝对 m/z 窗口。</p>
+<p>目标窗口按完整窗口宽度输入。例如 0.3 m/z 表示软件会在目标峰两侧各搜索
+0.15 m/z。输入有效目标峰后，也可以使用 ppm 窗口。</p>
 
 <p>Instrument MRP 在候选峰生成后用于判断候选峰是否可与目标峰分辨。它不会改变
 候选峰的生成范围；未能分辨的峰会在表格和谱图中高亮显示。</p>
 
 <p>存在目标峰时，谱图会以目标峰为中心显示。ppm 模式下，横轴显示为 &Delta;ppm，
 因此校准后的目标峰位于零点，附近干扰峰可以直接对比。</p>
-
-<p>Relative risk 是基于同位素概率和方法相关生成因子的定性筛查分数，适合用于
-干扰候选峰排序，不应作为定量校正因子。</p>
 
 <h2>数据来源</h2>
 <p>本软件使用的原子质量与同位素丰度数据来自 IUPAC 下属 CIAAW，电子质量来自
@@ -272,22 +249,21 @@ _TOOLTIPS = {
         'atoms': '''
 <html><head/><body>
 <p><b>参与干扰搜索的元素。</b></p>
-<p>输入样品、基体、等离子体和常见背景元素，元素之间用空格分隔。
+<p>输入样品、基体和常见背景元素，元素之间用空格分隔。
 软件会自动包含每个元素的稳定同位素。</p>
 </body></html>
 ''',
         'element_set': '''
 <html><head/><body>
 <p><b>添加常用元素组合。</b></p>
-<p>将常见等离子体、背景和基体元素追加到元素输入框，不会覆盖已有元素。
-全元素组合面向无机质谱筛查，已排除短寿命放射性元素。</p>
+<p>将常用元素组合追加到元素输入框，不会覆盖已有元素。
+全元素组合基于当前内置同位素表。</p>
 </body></html>
 ''',
         'mode': '''
 <html><head/><body>
-<p><b>仪器预设。</b></p>
-<p>GDMS、ICP-MS 和 SIMS 会设置离子电荷、风险模型、质量窗口和分辨能力的实用默认值。
-通用扫描保留原有枚举计算路径。</p>
+<p><b>计算模式。</b></p>
+<p>这个维护分支保留原始通用同位素组合扫描。</p>
 </body></html>
 ''',
         'charge_preset': '''

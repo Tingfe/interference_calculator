@@ -74,92 +74,10 @@ class InterferenceTests(unittest.TestCase):
         self.assertAlmostEqual(data.loc[data['isotope'] == '16O', 'ratio'].iat[0], 1.0)
         self.assertGreater(data.loc[data['isotope'] == '18O', 'inverse ratio'].iat[0], 400)
 
-
-class InorganicInterferenceTests(unittest.TestCase):
-    def test_inorganic_mode_finds_argon_chloride_near_arsenic(self):
-        data = ic.inorganic_interference(
-            ['Ar', 'Cl', 'As', 'O', 'H'],
-            '75As',
-            targetrange=0.02,
-            charge=[1, 2],
-            maxsize=3,
-        )
-
-        argon_chloride = data[data['type'] == 'plasma adduct']
-        self.assertFalse(argon_chloride.empty)
-        self.assertTrue(argon_chloride['molecule'].str.contains('Cl').any())
-        self.assertTrue(argon_chloride['molecule'].str.contains('Ar').any())
-        self.assertIn('relative risk', data.columns)
-        self.assertIn('m/z uncertainty', data.columns)
-        self.assertEqual(data['target'].sum(), 1)
-        row = argon_chloride.iloc[0]
-        molecule = ic.Molecule(row['molecule'])
-        self.assertAlmostEqual(row['mass/charge'], molecule.mass / molecule.charge)
-
-    def test_inorganic_mode_respects_maxsize_for_adducts(self):
-        data = ic.inorganic_interference(
-            ['Ar', 'Cl', 'As'],
-            '74.921',
-            targetrange=0.02,
-            charge=[1, 2],
-            maxsize=1,
-        )
-
-        self.assertNotIn('plasma adduct', set(data['type']))
-        self.assertIn('atomic', set(data['type']))
-
-    def test_inorganic_mode_risk_presets_change_relative_risk(self):
-        gdms = ic.inorganic_interference(
-            ['Ar', 'Cl', 'As'],
-            '75As',
-            targetrange=0.02,
-            risk_preset='gdms',
-        )
-        icp_ms = ic.inorganic_interference(
-            ['Ar', 'Cl', 'As'],
-            '75As',
-            targetrange=0.02,
-            risk_preset='icp-ms',
-        )
-
-        gdms_adduct = gdms.loc[gdms['type'] == 'plasma adduct', 'relative risk'].max()
-        icp_ms_adduct = icp_ms.loc[icp_ms['type'] == 'plasma adduct', 'relative risk'].max()
-        self.assertGreater(icp_ms_adduct, gdms_adduct)
-
-    def test_inorganic_mode_accepts_custom_formation_factors(self):
-        data = ic.inorganic_interference(
-            ['Ar', 'Cl', 'As'],
-            '75As',
-            targetrange=0.02,
-            formation_factors={'plasma adduct': 0.5},
-        )
-
-        factor = data.loc[data['type'] == 'plasma adduct', 'formation factor'].iat[0]
-        self.assertEqual(factor, 0.5)
-
-    def test_inorganic_mode_can_disable_plasma_role(self):
-        data = ic.inorganic_interference(
-            ['Ar', 'Cl', 'As'],
-            '75As',
-            targetrange=0.02,
-            plasma_atoms=[],
-        )
-
-        self.assertNotIn('plasma adduct', set(data['type']))
-
-    def test_inorganic_mode_generates_background_molecules(self):
-        data = ic.inorganic_interference(
-            ['C', 'N', 'O'],
-            31.989,
-            targetrange=0.02,
-            maxsize=2,
-        )
-
-        self.assertIn('background molecule', set(data['type']))
-
-    def test_inorganic_mode_rejects_unknown_risk_preset(self):
-        with self.assertRaises(ValueError):
-            ic.inorganic_interference(['Ar', 'Cl'], '75As', risk_preset='unknown')
+    def test_original_maintenance_api_is_general_scan_only(self):
+        self.assertTrue(hasattr(ic, 'interference'))
+        self.assertTrue(hasattr(ic, 'standard_ratio'))
+        self.assertFalse(hasattr(ic, 'inorganic_interference'))
 
 
 if __name__ == '__main__':

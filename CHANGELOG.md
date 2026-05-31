@@ -1,111 +1,68 @@
+# Changelog / 更新日志
+
+## [2.0.7] - 2026-05-31
+
+### English
+
+#### Changed
+- Re-scoped `maintenance/original` as the modern maintenance line for the
+  original general calculator instead of an old-code archive.
+- Kept the refreshed CIAAW 2024 / AME2020 isotope database, Python 3.9+ support,
+  PyQt5 GUI, QPainter spectrum, packaging, and tests.
+- Simplified the GUI to the original general isotope-combination scan and
+  isotope-ratio workflows.
+- Set the general scan default window back to absolute `m/z`, which supports
+  open-ended scans without a target peak.
+- Updated README, user manual, and help text to describe the branch split:
+  `maintenance/original` for general scanning, `main` for the inorganic edition.
+
+#### Removed
+- Removed GDMS, ICP-MS, and SIMS presets from this maintenance branch.
+- Removed the inorganic template API from this maintenance branch; use `main`
+  for `inorganic_interference()` and inorganic-MS workflows.
+
+### 中文
+
+#### 变更
+- 将 `maintenance/original` 明确调整为原作者通用计算器的现代化维护线，而不是旧代码归档。
+- 保留 CIAAW 2024 / AME2020 同位素数据库、Python 3.9+、PyQt5 GUI、QPainter 谱图、
+  打包流程和测试。
+- 将 GUI 收窄为原始通用同位素组合扫描和同位素比功能。
+- 通用扫描默认窗口恢复为绝对 `m/z`，支持无目标峰的开放式扫描。
+- 更新 README、用户手册和帮助文本，明确分支分工：`maintenance/original`
+  用于通用扫描，`main` 用于无机专用版。
+
+#### 移除
+- 从本维护分支移除 GDMS、ICP-MS 和 SIMS 预设。
+- 从本维护分支移除无机模板 API；需要 `inorganic_interference()` 和无机质谱流程时
+  使用 `main` 分支。
 
 ## [2.0.6] - 2026-05-30
 
-### Fixed
+### English
+
+#### Fixed
 - Spectrum window on Windows now positions within the visible screen area
-  instead of rendering off-screen (was ~560px past the right edge on 1920px
-  displays). The window is clamped to the available screen geometry and falls
-  back to vertical stacking if horizontal space is insufficient.
+  instead of rendering off-screen. The window is clamped to the available screen
+  geometry and falls back to vertical stacking if horizontal space is
+  insufficient.
 
+#### Changed
+- CI workflow installs UPX on macOS and Windows runners to compress final
+  executables.
+- macOS build uses `--strip` to remove debug symbols.
+- Release builds exclude unused PyQt5 submodules to reduce bundled size.
 
-### Changed
-- CI workflow now installs UPX on macOS (brew) and Windows (choco) runners
-  to compress final executables, reducing download size significantly.
-- macOS build uses `--strip` to strip debug symbols from binaries.
-- Both builds exclude 30+ unused PyQt5 submodules (Network, WebEngine,
-  Multimedia, Qml, Quick, Sql, Xml, etc.) to reduce bundled size.
+### 中文
 
-## [2.0.5] - 2026-05-30
+#### 修复
+- 修复 Windows 下谱图窗口可能显示到屏幕外的问题；窗口会限制在可见屏幕区域内，
+  横向空间不足时改为垂直排列。
 
-### Changed
-- README installation section now features three tiers: standalone app
-  (downloadable ``.exe`` / ``.dmg``, no Python required), ``pip install``,
-  and source install.
-- README running instructions updated accordingly for each installation path.
+#### 变更
+- CI 在 macOS 和 Windows runner 上安装 UPX，用于压缩最终可执行文件。
+- macOS 构建使用 `--strip` 去除调试符号。
+- 发布构建排除未使用的 PyQt5 子模块，以降低打包体积。
 
-## [2.0.4] - 2026-05-30
-
-### Added
-- GitHub Actions now builds and publishes standalone applications for
-  Windows (single ``.exe``) and macOS (``.dmg``) automatically on every
-  version tag push.
-
-### Changed
-- README usage section now recommends ``pip install`` and the
-  ``interference_calculator`` CLI entry point as the primary workflow.
-
-# Changelog
-
-## [2.0.3] - 2026-05-30
-
-### Added
-- Application icon files rendered from the same vector source: `icon.ico`
-  (Windows, 16/32/48/256 px) and `icon.icns` (macOS, up to 1024 px).
-
-## [2.0.2] - 2026-05-30
-
-### Changed
-- Lazy-load numpy and pandas to reduce GUI startup time (~3x faster).
-- Replaced matplotlib-based spectrum view with a native Qt QPainter
-  implementation, removing the ~20 MB matplotlib dependency entirely.
-  The spectrum retains all features: log-scale stem plot, 3-colour
-  category display (candidate / unresolved / target), peak annotations,
-  zoom (mouse wheel), and bilingual labels.
-
-### Removed
-- matplotlib dependency (replaced by built-in Qt painting).
-
-### Fixed
-- The spectrum window is always available; no external plotting library
-  required.
-
-## [2.0.1] - 2026-05-30
-
-### Fixed
-- Enable PyQt5 high-DPI auto-scaling (`AA_EnableHighDpiScaling`) so text and
-  controls render at readable sizes on 2K/4K displays.
-
-### Changed
-- README is now bilingual Chinese/English with Chinese as the default language
-  and in-page language switcher links.
-- CI: simplified GitHub Actions release workflow to build cross-platform sdist
-  and wheel instead of per-platform PyInstaller executables.
-
-## [2.0.0] - 2026-05-30
-
-### Added
-- Modern PyQt5 GUI with bilingual (Chinese/English) switching, result summary
-  chips, empty-state guidance, compact data-dense result table, and a
-  target-centered spectrum view.
-- GDMS, ICP-MS, and SIMS instrument presets with practical defaults for charge
-  state, target window, risk model, and mass resolving power.
-- Inorganic mass-spectrometry algorithm using interference templates for atomic
-  ions, doubly charged ions, oxides, hydrides, hydroxides, nitrides, carbides,
-  sulfides, halides, plasma adducts, background molecules, and small matrix
-  clusters.
-- `relative risk` screening score based on isotope probability and
-  method-specific formation factors.
-- Common inorganic element sets, including an all-elements preset for broad
-  inorganic MS screening.
-- `inorganic_interference()` Python API alongside the existing `interference()`
-  and `standard_ratio()` APIs.
-- Unit test suite (`tests/`) covering core molecule parsing, interference
-  search, inorganic screening, and data schema.
-- Illustrated user manual (`docs/USER_MANUAL.md`).
-
-### Changed
-- Upgraded the isotope database to CIAAW 2024 isotopic compositions and AME2020
-  atomic masses, including uncertainty and abundance-interval metadata.
-- GDMS default target window is `2000 ppm` (full window), i.e. `±1000 ppm` about
-  the calibrated target peak.
-- The spectrum view uses `Δppm` or `Δm/z` centered on the target peak.
-- Modernised the codebase to Python 3.9+.
-- Periodic table data cleaned up and re-generated.
-
+[2.0.7]: https://github.com/Tingfe/interference_calculator/compare/v2.0.6...maintenance/original
 [2.0.6]: https://github.com/Tingfe/interference_calculator/compare/v2.0.5...v2.0.6
-[2.0.5]: https://github.com/Tingfe/interference_calculator/compare/v2.0.4...v2.0.5
-[2.0.4]: https://github.com/Tingfe/interference_calculator/compare/v2.0.3...v2.0.4
-[2.0.3]: https://github.com/Tingfe/interference_calculator/compare/v2.0.2...v2.0.3
-[2.0.2]: https://github.com/Tingfe/interference_calculator/compare/v2.0.1...v2.0.2
-[2.0.1]: https://github.com/Tingfe/interference_calculator/compare/v2.0.0...v2.0.1
-[2.0.0]: https://github.com/Tingfe/interference_calculator/releases/tag/v2.0.0
