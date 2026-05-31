@@ -143,12 +143,66 @@ jobs:
     name: Build macOS app
     needs: [prepare, test]
     runs-on: macos-latest
+    env:
+      MACOS_BUNDLE_ID: com.tingfe.interferencecalculator
+      MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+      MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+      MACOS_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
+      MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+      MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+      MACOS_NOTARY_KEY_P8_BASE64: ${{ secrets.MACOS_NOTARY_KEY_P8_BASE64 }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Validate macOS release signing configuration
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          missing=0
+          for name in \
+            MACOS_CERTIFICATE_P12 \
+            MACOS_CERTIFICATE_PASSWORD \
+            MACOS_CODESIGN_IDENTITY \
+            MACOS_NOTARY_KEY_ID \
+            MACOS_NOTARY_ISSUER_ID \
+            MACOS_NOTARY_KEY_P8_BASE64
+          do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub secret: ${name}"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::Tagged macOS releases must be Developer ID signed and notarized."
+            exit 1
+          fi
+
+      - name: Import Developer ID certificate
+        if: env.MACOS_CERTIFICATE_P12 != ''
+        run: |
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -base64 32)"
+          CERTIFICATE_PATH="$RUNNER_TEMP/developer-id-application.p12"
+
+          echo "$MACOS_CERTIFICATE_P12" | base64 --decode > "$CERTIFICATE_PATH"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" \
+            -k "$KEYCHAIN_PATH" \
+            -P "$MACOS_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
 
       - name: Install UPX
         run: brew install upx
@@ -160,10 +214,19 @@ jobs:
 
       - name: Build macOS app bundle
         run: |
+          PYINSTALLER_CODESIGN_ARGS=(--osx-bundle-identifier "$MACOS_BUNDLE_ID")
+          if [ -n "$MACOS_CODESIGN_IDENTITY" ]; then
+            PYINSTALLER_CODESIGN_ARGS+=(
+              --codesign-identity "$MACOS_CODESIGN_IDENTITY"
+              --osx-entitlements-file packaging/macos/entitlements.plist
+            )
+          fi
+
           pyinstaller \
             --name "Interference Calculator" \
             --windowed \
             --strip \
+            "${PYINSTALLER_CODESIGN_ARGS[@]}" \
             --icon interference_calculator/icon.icns \
             --add-data "interference_calculator/periodic_table.csv:interference_calculator" \
             --add-data "interference_calculator/icon.svg:interference_calculator" \
@@ -207,6 +270,33 @@ jobs:
             --exclude-module PyQt5.QtUiTools \
             interference_calculator/ui.py
 
+      - name: Finalize and verify macOS app signature
+        run: |
+          APP_PATH="dist/Interference Calculator.app"
+          VERSION="${{ needs.prepare.outputs.version }}"
+
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $MACOS_BUNDLE_ID" "$APP_PATH/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$APP_PATH/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSION" "$APP_PATH/Contents/Info.plist" || \
+            /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string $VERSION" "$APP_PATH/Contents/Info.plist"
+
+          if [ -n "$MACOS_CODESIGN_IDENTITY" ]; then
+            codesign \
+              --force \
+              --deep \
+              --options runtime \
+              --timestamp \
+              --entitlements packaging/macos/entitlements.plist \
+              --sign "$MACOS_CODESIGN_IDENTITY" \
+              "$APP_PATH"
+          else
+            echo "::warning::No Developer ID identity configured; creating an ad-hoc signed app for non-release testing only."
+            codesign --force --deep --sign - "$APP_PATH"
+          fi
+
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          codesign -dv --verbose=4 "$APP_PATH"
+
       - name: Package macOS DMG
         run: |
           hdiutil create \
@@ -214,6 +304,24 @@ jobs:
             -srcfolder "dist/Interference Calculator.app" \
             -ov -format UDZO \
             "dist/InterferenceCalculator-macOS-${{ needs.prepare.outputs.tag_name }}.dmg"
+
+      - name: Sign, notarize, and staple macOS DMG
+        if: env.MACOS_CODESIGN_IDENTITY != ''
+        run: |
+          DMG_PATH="dist/InterferenceCalculator-macOS-${{ needs.prepare.outputs.tag_name }}.dmg"
+          NOTARY_KEY_PATH="$RUNNER_TEMP/AuthKey_${MACOS_NOTARY_KEY_ID}.p8"
+
+          codesign --force --timestamp --sign "$MACOS_CODESIGN_IDENTITY" "$DMG_PATH"
+          codesign --verify --verbose=2 "$DMG_PATH"
+
+          echo "$MACOS_NOTARY_KEY_P8_BASE64" | base64 --decode > "$NOTARY_KEY_PATH"
+          xcrun notarytool submit "$DMG_PATH" \
+            --key "$NOTARY_KEY_PATH" \
+            --key-id "$MACOS_NOTARY_KEY_ID" \
+            --issuer "$MACOS_NOTARY_ISSUER_ID" \
+            --wait
+          xcrun stapler staple "$DMG_PATH"
+          spctl -a -vv -t open "$DMG_PATH"
 
       - uses: actions/upload-artifact@v4
         with:

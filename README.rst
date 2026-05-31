@@ -40,7 +40,7 @@
 项目信息
 --------
 
-当前版本：``2.2.0``
+当前版本：``2.2.1``
 
 原作者：Zan Peeters
 
@@ -204,6 +204,9 @@ Python API
 
 版本发布采用 GitHub Actions 自动化。更新 ``__version__`` 和中英文 ``CHANGELOG.md`` 后，推送 ``vX.Y.Z`` 标签会自动运行测试、构建源码包 / wheel、Windows ``.exe`` 和 macOS ``.dmg``，并用当前版本的中英文 changelog 生成 GitHub Release。
 
+macOS 正式发布包必须使用 Developer ID 签名并通过 Apple 公证。相关 secrets 和
+配置要求见 `docs/MACOS_SIGNING.md <docs/MACOS_SIGNING.md>`_。
+
 运行测试：
 
 .. code-block:: bash
@@ -281,7 +284,7 @@ from instrument-exported data:
 Project Metadata
 ----------------
 
-Current version: ``2.2.0``
+Current version: ``2.2.1``
 
 Original author: Zan Peeters
 
@@ -470,6 +473,10 @@ Releases are automated with GitHub Actions. After updating ``__version__`` and
 the bilingual ``CHANGELOG.md``, pushing a ``vX.Y.Z`` tag runs tests, builds the
 source package / wheel, Windows ``.exe``, and macOS ``.dmg``, then creates a
 GitHub Release from the matching bilingual changelog section.
+
+Official macOS release packages must be Developer ID signed and Apple-notarized.
+See `docs/MACOS_SIGNING.md <docs/MACOS_SIGNING.md>`_ for the required secrets
+and workflow configuration.
 
 Run the test suite:
 

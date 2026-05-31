@@ -1,5 +1,31 @@
 # Changelog / 更新日志
 
+## [2.2.1] - 2026-05-31
+
+### English
+
+#### Fixed
+- Hardened the macOS release pipeline so tagged releases require Developer ID
+  signing and Apple notarization instead of publishing ad-hoc signed DMG files
+  that Gatekeeper reports as damaged.
+- Set a valid macOS bundle identifier and synchronized the bundle version with
+  the package version during CI packaging.
+
+#### Added
+- Added macOS signing and notarization documentation for the GitHub Release
+  workflow secrets.
+
+### 中文
+
+#### 修复
+- 加强 macOS 发布流程：tag 发布时必须使用 Developer ID 签名并通过 Apple 公证，
+  避免继续发布会被 Gatekeeper 判定为“已损坏”的 ad-hoc 签名 DMG。
+- 设置合法的 macOS bundle identifier，并在 CI 打包时同步应用 bundle 版本和
+  包版本。
+
+#### 新增
+- 增加 macOS 签名与公证文档，说明 GitHub Release workflow 需要配置的 secrets。
+
 ## [2.2.0] - 2026-05-31
 
 ### English
@@ -275,6 +301,7 @@
 - 代码库现代化到 Python 3.9+。
 - 清理并重新生成周期表数据。
 
+[2.2.1]: https://github.com/Tingfe/interference_calculator/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/Tingfe/interference_calculator/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Tingfe/interference_calculator/compare/v2.0.6...v2.1.0
 [2.0.6]: https://github.com/Tingfe/interference_calculator/compare/v2.0.5...v2.0.6
