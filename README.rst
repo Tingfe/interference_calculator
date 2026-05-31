@@ -6,24 +6,24 @@
 
 .. _chinese-section:
 
-================================
-干扰计算器 / Interference Calculator 2.0
-================================
+==========================================
+干扰计算器 / Interference Calculator 2.1
+==========================================
 
 `English <english-section_>`_ | **中文**
 
-**干扰计算器** 是一款用于质谱峰干扰筛查的科学桌面工具。2.0 版将原本通用分子干扰计算器升级为面向 GDMS、ICP-MS 和 SIMS 的现代化无机质谱分析工作流。
+**干扰计算器** 是一款用于质谱峰干扰筛查的科学桌面工具。当前 ``main`` 分支是面向 GDMS、ICP-MS 和 SIMS 的无机材料专用工具；另设维护分支保留原作者通用计算器的功能边界，用于更保守的可维护重构。
 
-该应用整合了双语 PyQt 界面、以 GDMS 优先的默认设置、基于模板的无机干扰生成、CIAAW 2024 / AME2020 同位素数据、ppm 或绝对 m/z 窗口、以目标峰为中心的光谱视图，以及紧凑高效的干扰结果表格。
+该应用整合了双语 PyQt 界面、以 GDMS 优先的默认设置、基于模板的无机干扰生成、CIAAW 2024 / AME2020 同位素数据、以 ``ppm`` 表示的完整窗口宽度、以目标峰为中心的交互式谱图，以及紧凑高效的干扰结果表格。
 
 .. image:: docs/images/main_zh.png
    :align: center
    :alt: 中文界面截图
 
-2.0 版更新内容
+2.1 版更新内容
 --------------
 
-2.0 版是一次重大迭代：
+2.x 是一次重大迭代，2.1 版进一步把项目定位、双语覆盖和谱图排查流程稳定下来：
 
 * 现代化科学工具 GUI：更清晰的控制面板、结果概览标签、空状态提示、更紧凑的表格布局，并支持中英文界面切换。
 * GDMS、ICP-MS 和 SIMS 预设：提供电荷态、目标窗口、风险模型和仪器质量分辨力（MRP）的实用默认值。
@@ -31,14 +31,14 @@
 * GDMS 默认目标窗口为 ``2000 ppm``（全窗口宽度），等同于目标峰校准后 ``±1000 ppm`` 的范围。
 * 新的无机质谱算法：基于干扰模板生成原子离子、双电荷离子、氧化物、氢化物、氢氧化物、氮化物、碳化物、硫化物、卤化物、等离子体加合物、背景分子及小型基质团簇的干扰。
 * ``相对风险`` 排序：基于同位素概率和特定方法的形成因子进行评估，用于筛查排序而非定量校正。
-* 目标峰中心光谱视图：存在目标峰时显示 ``Δppm`` 或 ``Δm/z`` 分布。
+* 目标峰中心交互式谱图：存在目标峰时显示 ``Δppm`` 分布，支持峰悬停详情、点击联动表格、仪器 MRP 未分辨区显示和 PNG 导出。
 * 同位素数据库更新：基于 CIAAW 2024 同位素丰度和 AME2020 原子质量生成，包含不确定度和丰度范围元数据。
-* Python 3 现代化改造，并为核心分子解析、干扰搜索、无机筛查和数据模式编写了单元测试。
+* Python 3 现代化改造，并为核心分子解析、干扰搜索、无机筛查、双语覆盖和数据模式编写了单元测试。
 
 项目信息
 --------
 
-当前版本：``2.0.4``
+当前版本：``2.1.0``
 
 原作者：Zan Peeters
 
@@ -91,12 +91,12 @@ GDMS 快速工作流
 
 1. 选择 ``GDMS`` 模式。
 2. 输入目标峰，如 ``75As`` 或 ``56Fe``。
-3. 保持默认 ``2000 ppm`` 全窗口，或切换为绝对 ``m/z`` 窗口。
-4. 输入样品、基质、等离子体及背景元素，例如 ``Ar Cl As O H``，或添加全元素无机预设进行广泛筛查。
+3. 保持默认 ``2000 ppm`` 全窗口。
+4. 点击元素区的 **添加** 按钮选择样品、基质、等离子体及背景元素，例如 ``Ar Cl As O H``，或添加全元素无机预设进行广泛筛查。
 5. 根据需要设置离子模型和仪器 MRP。
 6. 点击 **计算**。
 7. 查阅候选峰、``Δppm``、所需 MRP、相对风险及每个峰是否可分辨。
-8. 打开光谱视图查看以目标峰为中心的峰分布。
+8. 打开谱图视图查看以目标峰为中心的峰分布；悬停峰可看详情，点击峰可定位表格行。
 
 .. image:: docs/images/spectrum_zh.png
    :align: center
@@ -109,13 +109,18 @@ GDMS 快速工作流
 
 `docs/USER_MANUAL.md <docs/USER_MANUAL.md>`_
 
+维护与发布文档：
+
+- `分支模型 / Branching model <docs/BRANCHING.md>`_
+- `发布指南 / Release guide <docs/RELEASE.md>`_
+
 核心概念
 --------
 
 窗口宽度
 ~~~~~~~~
 
-界面使用全窗口宽度，这与常见的仪器设置一致。例如 ``2000 ppm`` 表示计算范围为低于目标峰 ``1000 ppm`` 至高于目标峰 ``1000 ppm``。存在有效目标峰时，``ppm`` 与 ``m/z`` 之间可互相转换。
+界面使用全窗口宽度，这与常见的仪器设置一致。例如 ``2000 ppm`` 表示计算范围为低于目标峰 ``1000 ppm`` 至高于目标峰 ``1000 ppm``。GUI 使用 ``ppm`` 窗口；Python API 仍使用 ``m/z`` 半宽作为 ``targetrange``。
 
 仪器 MRP
 ~~~~~~~~
@@ -182,6 +187,13 @@ Python API
 开发
 ----
 
+分支策略：
+
+- ``main``：无机材料 / 无机质谱专用主线，包含 GDMS、ICP-MS、SIMS 工作流，是默认发布分支。
+- ``maintenance/original``：原始功能维护线，保留通用分子枚举和同位素比计算的产品边界，用于对原作者代码进行可维护重构。
+
+版本发布采用 GitHub Actions 自动化。更新 ``__version__`` 和 ``CHANGELOG.md`` 后，推送 ``vX.Y.Z`` 标签会自动运行测试、构建源码包 / wheel、Windows ``.exe`` 和 macOS ``.dmg``，并用当前版本的 changelog 生成 GitHub Release。
+
 运行测试：
 
 .. code-block:: bash
@@ -203,30 +215,31 @@ BSD 3-Clause Clear。详见 ``LICENSE.rst``。
 
 .. _english-section:
 
-================================
-Interference Calculator 2.0
-================================
+===========================
+Interference Calculator 2.1
+===========================
 
 **English** | `中文 <chinese-section_>`_
 
 Interference Calculator is a scientific desktop tool for mass-spectrometry peak
-interference screening. Version 2.0 turns the original general molecular
-interference calculator into a modern inorganic mass-spectrometry workflow for
-GDMS, ICP-MS, and SIMS.
+interference screening. The current ``main`` branch is the inorganic-materials
+edition for GDMS, ICP-MS, and SIMS; a separate maintenance branch keeps the
+original general-calculator scope for conservative refactoring.
 
 The application combines a bilingual PyQt GUI, GDMS-first defaults,
 template-based inorganic interference generation, CIAAW 2024 / AME2020 isotope
-data, ppm or absolute m/z windows, target-centered spectra, and a compact
-data-dense results table.
+data, full-width ``ppm`` target windows, an interactive target-centered
+spectrum, and a compact data-dense results table.
 
 .. image:: docs/images/main_zh.png
    :align: center
    :alt: Chinese UI screenshot
 
-What Changed In 2.0
+What Changed In 2.1
 -------------------
 
-Version 2.0 is a major project iteration:
+Version 2.x is a major project iteration. Version 2.1 clarifies the project
+branch model and strengthens the bilingual GUI and spectrum workflow:
 
 * Modern scientific-tool GUI with a clearer control panel, result summary chips,
   empty state, improved table density, and bilingual language switching.
@@ -242,17 +255,18 @@ Version 2.0 is a major project iteration:
   matrix clusters.
 * ``relative risk`` ranking based on isotope probability and method-specific
   formation factors. It is a screening score, not a quantitative correction.
-* Target-centered spectrum display using ``Δppm`` or ``Δm/z`` when a target
-  peak is present.
+* Interactive target-centered spectrum display using ``Δppm`` when a target
+  peak is present, with peak hover details, click-to-table selection, an
+  instrument-MRP unresolved band, and PNG export.
 * Updated isotope database generated from CIAAW 2024 isotopic compositions and
   AME2020 atomic masses, including uncertainty and abundance interval metadata.
 * Python 3 modernization and focused unit tests for core molecule parsing,
-  interference search, inorganic screening, and data schema.
+  interference search, inorganic screening, bilingual coverage, and data schema.
 
 Project Metadata
 ----------------
 
-Current version: ``2.0.4``
+Current version: ``2.1.0``
 
 Original author: Zan Peeters
 
@@ -308,14 +322,16 @@ Quick GDMS workflow
 
 1. Select ``GDMS`` mode.
 2. Enter a target peak such as ``75As`` or ``56Fe``.
-3. Keep the default ``2000 ppm`` full window or switch to absolute ``m/z``.
-4. Enter sample, matrix, plasma, and background elements, for example
-   ``Ar Cl As O H``, or add the all-elements preset for a broad screen.
+3. Keep the default ``2000 ppm`` full window.
+4. Use the element **Add** button to choose sample, matrix, plasma, and
+   background elements, for example ``Ar Cl As O H``, or add the all-elements
+   preset for a broad screen.
 5. Set ion model and instrument MRP if needed.
 6. Click **Calculate**.
 7. Review candidate peaks, ``Δppm``, required MRP, relative risk, and whether
    each candidate is resolvable.
-8. Open the spectrum view to inspect the target-centered peak display.
+8. Open the spectrum view to inspect the target-centered peak display; hover a
+   peak for details and click a peak to select the corresponding result row.
 
 .. image:: docs/images/spectrum_zh.png
    :align: center
@@ -328,6 +344,11 @@ The illustrated user manual:
 
 `docs/USER_MANUAL.md <docs/USER_MANUAL.md>`_
 
+Maintenance and release documents:
+
+- `Branching model / 分支模型 <docs/BRANCHING.md>`_
+- `Release guide / 发布指南 <docs/RELEASE.md>`_
+
 Core concepts
 -------------
 
@@ -336,8 +357,8 @@ Window width
 
 The GUI uses full window width to match common instrument settings. For
 example, ``2000 ppm`` means the calculation searches ``1000 ppm`` below and
-``1000 ppm`` above the target peak. When a valid target peak exists, switching
-between ``ppm`` and ``m/z`` converts the displayed value automatically.
+``1000 ppm`` above the target peak. The GUI uses ``ppm`` windows; the Python API
+still uses ``m/z`` half-width as ``targetrange``.
 
 Instrument MRP
 ~~~~~~~~~~~~~~
@@ -410,6 +431,19 @@ Isotope ratio table:
 
 Development
 -----------
+
+Branch model:
+
+- ``main``: inorganic-materials / inorganic-MS specialist edition, including
+  the GDMS, ICP-MS, and SIMS workflows. This is the default release branch.
+- ``maintenance/original``: original-function maintenance line, preserving the
+  general molecular enumeration and isotope-ratio product boundary while making
+  the upstream-style code easier to maintain.
+
+Releases are automated with GitHub Actions. After updating ``__version__`` and
+``CHANGELOG.md``, pushing a ``vX.Y.Z`` tag runs tests, builds the source
+package / wheel, Windows ``.exe``, and macOS ``.dmg``, then creates a GitHub
+Release from the matching changelog section.
 
 Run the test suite:
 

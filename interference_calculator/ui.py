@@ -130,7 +130,7 @@ _UI_TEXT = {
         'mode': 'mode',
         'target_group': 'target peak',
         'target': 'target',
-        'window_width': 'window width',
+        'sweep': 'sweep',
         'target_hint': 'Full-width window; GDMS defaults to 2000 ppm.',
         'sample_plasma': 'sample / plasma',
         'elements': 'elements',
@@ -151,6 +151,7 @@ _UI_TEXT = {
         'off': 'off',
         'calculate': 'Calculate',
         'ratios': 'Ratios',
+        'interferences': 'Interferences',
         'convert_invalid_target': 'Enter a valid target before converting the window unit.',
         'convert_target_required': 'Enter a target peak before converting the window unit.',
         'empty_atoms': 'Enter at least one element or isotope.',
@@ -159,6 +160,7 @@ _UI_TEXT = {
         'invalid_target': 'Enter target as a number or as a molecular formula.',
         'candidate_count': '{} candidate peaks',
         'isotope_count': '{} isotope rows',
+        'interference_restored': 'Restored interference results.',
         'help_title': 'Interference calculator help',
         'results_title': 'Results',
         'empty_title': 'Ready for peak screening',
@@ -178,6 +180,51 @@ _UI_TEXT = {
         'export_no_data': 'No data to export.',
         'filter_results': 'Filter results…',
         'show_all_columns': 'Show all columns',
+        'copy': 'Copy',
+        'select_all': 'Select All',
+        'add_element': '+ Add',
+        'add_element_tooltip': 'Open element selector',
+        'elements_empty_hint': 'Click Add to choose elements',
+        'remove_element_tooltip': 'Double-click to remove',
+        'select_elements_title': 'Select elements',
+        'search_elements': 'Search elements…',
+        'select_all_visible': 'Select visible',
+        'clear_selection': 'Clear',
+        'add_selected': 'Add selected',
+        'all_elements_added': 'All elements have been added.',
+        'target_element_placeholder': 'Select element…',
+        'target_isotope_placeholder': 'Select isotope…',
+        'zoom_out_y': 'Zoom out (Y axis)',
+        'zoom_in_y': 'Zoom in (Y axis)',
+        'reset_view': 'Reset view',
+        'export_spectrum': 'Export spectrum',
+        'export_spectrum_tooltip': 'Export current spectrum as PNG',
+        'spectrum_png_filter': 'PNG Image (*.png)',
+        'spectrum_exported': 'Spectrum exported to {}',
+        'spectrum_export_error': 'Spectrum export error',
+        'spectrum_mrp_band': 'MRP {} unresolved band',
+        'spectrum_peak_selected': 'Selected spectrum peak row {}.',
+        'spectrum_source_row': 'row',
+        'filter_unresolved': 'Unresolved',
+        'filter_risk_high': 'Risk > 0.01',
+        'filter_risk_medium': 'Risk > 0.001',
+        'filter_atomic': 'Atomic',
+        'filter_oxide': 'Oxide',
+        'filter_hydride': 'Hydride',
+        'filter_sulfide_halide': 'Sulfide|Halide',
+        'filter_doubly': '2+',
+        'filter_plasma': 'Plasma',
+        'filter_target_peak': 'Target peak',
+        'element_count': '{} elements',
+        'element_count_error': '{} elements · {}',
+        'calculating': 'Calculating…',
+        'exported_rows': 'Exported {} rows to {}',
+        'export_error': 'Export Error',
+        'missing_dependency': 'Missing dependency',
+        'excel_export_missing': 'Excel export requires openpyxl.\n\nInstall: pip install interference-calculator[export]\n\nContinue with CSV instead?',
+        'csv_files_filter': 'CSV Files (*.csv)',
+        'excel_files_filter': 'Excel Files (*.xlsx)',
+        'calculation_error': 'Calculation Error',
         'yes': 'yes',
         'no': 'no',
     },
@@ -199,7 +246,7 @@ _UI_TEXT = {
         'mode': '模式',
         'target_group': '目标峰',
         'target': '目标',
-        'window_width': '窗口宽度',
+        'sweep': '扫描窗口',
         'target_hint': '完整窗口宽度；GDMS 默认 2000 ppm。',
         'sample_plasma': '样品 / 等离子体',
         'elements': '元素',
@@ -220,6 +267,7 @@ _UI_TEXT = {
         'off': '关闭',
         'calculate': '计算',
         'ratios': '同位素比',
+        'interferences': '干扰峰',
         'convert_invalid_target': '切换窗口单位前，请先输入有效目标峰。',
         'convert_target_required': '切换窗口单位前，请先输入目标峰。',
         'empty_atoms': '请至少输入一个元素或同位素。',
@@ -228,6 +276,7 @@ _UI_TEXT = {
         'invalid_target': '目标峰请输入数值或分子式。',
         'candidate_count': '{} 个候选峰',
         'isotope_count': '{} 行同位素数据',
+        'interference_restored': '已恢复干扰峰结果。',
         'help_title': '软件介绍',
         'results_title': '结果',
         'empty_title': '准备开始峰干扰筛查',
@@ -247,6 +296,51 @@ _UI_TEXT = {
         'export_no_data': '没有数据可导出。',
         'filter_results': '筛选结果…',
         'show_all_columns': '显示全部列',
+        'copy': '复制',
+        'select_all': '全选',
+        'add_element': '+ 添加',
+        'add_element_tooltip': '打开元素选择器',
+        'elements_empty_hint': '点击“添加”选择元素',
+        'remove_element_tooltip': '双击移除',
+        'select_elements_title': '选择元素',
+        'search_elements': '搜索元素…',
+        'select_all_visible': '选择当前可见',
+        'clear_selection': '清除选择',
+        'add_selected': '添加所选',
+        'all_elements_added': '所有元素都已添加。',
+        'target_element_placeholder': '选择元素…',
+        'target_isotope_placeholder': '选择同位素…',
+        'zoom_out_y': '缩小 Y 轴',
+        'zoom_in_y': '放大 Y 轴',
+        'reset_view': '重置视图',
+        'export_spectrum': '导出谱图',
+        'export_spectrum_tooltip': '将当前谱图导出为 PNG',
+        'spectrum_png_filter': 'PNG 图像 (*.png)',
+        'spectrum_exported': '谱图已导出到 {}',
+        'spectrum_export_error': '谱图导出错误',
+        'spectrum_mrp_band': 'MRP {} 未分辨区',
+        'spectrum_peak_selected': '已选择谱图峰第 {} 行。',
+        'spectrum_source_row': '行',
+        'filter_unresolved': '未分辨',
+        'filter_risk_high': '风险 > 0.01',
+        'filter_risk_medium': '风险 > 0.001',
+        'filter_atomic': '原子离子',
+        'filter_oxide': '氧化物',
+        'filter_hydride': '氢化物',
+        'filter_sulfide_halide': '硫化物|卤化物',
+        'filter_doubly': '2+',
+        'filter_plasma': '等离子体',
+        'filter_target_peak': '目标峰',
+        'element_count': '{} 个元素',
+        'element_count_error': '{} 个元素 · {}',
+        'calculating': '计算中…',
+        'exported_rows': '已导出 {} 行到 {}',
+        'export_error': '导出错误',
+        'missing_dependency': '缺少依赖',
+        'excel_export_missing': 'Excel 导出需要 openpyxl。\n\n安装命令：pip install interference-calculator[export]\n\n是否改为导出 CSV？',
+        'csv_files_filter': 'CSV 文件 (*.csv)',
+        'excel_files_filter': 'Excel 文件 (*.xlsx)',
+        'calculation_error': '计算错误',
         'yes': '是',
         'no': '否',
     },
@@ -263,6 +357,14 @@ def _type_display(language, value):
 
 def _column_display(language, value):
     return _COLUMN_DISPLAY.get(language, _COLUMN_DISPLAY['en']).get(value, value)
+
+def _ui_font(point_size=None, weight=None):
+    font = QtGui.QFont()
+    if point_size is not None:
+        font.setPointSize(point_size)
+    if weight is not None:
+        font.setWeight(weight)
+    return font
 
 def _resource_path(name):
     return str(resources.files('interference_calculator').joinpath(name))
@@ -344,9 +446,29 @@ QLineEdit:disabled, QPlainTextEdit:disabled, QSpinBox:disabled, QDoubleSpinBox:d
     color: #64748b;
     border-color: #dbe4f0;
 }
-QPlainTextEdit#elementsInput {
-    min-height: 118px;
-    max-height: 156px;
+QWidget#elementsInput {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+}
+QWidget#elementChipCanvas {
+    background: transparent;
+    border: none;
+}
+QFrame#elementChip {
+    min-height: 18px;
+    max-height: 18px;
+}
+QScrollArea#elementScroll {
+    background: transparent;
+    border: none;
+}
+QLabel#elementPlaceholder {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 400;
 }
 QLabel#helperText {
     color: #64748b;
@@ -490,8 +612,6 @@ class TableModel(QtCore.QAbstractTableModel):
             if role == QtCore.Qt.DisplayRole:
                 colname = self._data.columns[index.column()]
                 value = self._data.iloc[index.row(), index.column()]
-                if index.row() < 2 and index.column() == 0:
-                    print(f"[DEBUG] data() row={index.row()} col=0 colname={colname!r} value={value!r} table={self.table}")
                 if self.table == 'interference':
                     if colname in ('molecule', 'ion'):
                         # formula
@@ -588,6 +708,7 @@ class TableView(widgets.QTableView):
     """ Implement a QTableView which can display HTML in arbitrary columns """
     def __init__(self, html_cols=None, parent=None):
         widgets.QTableView.__init__(self, parent=parent)
+        self.language = 'en'
         self.setSortingEnabled(True)
         self.setAlternatingRowColors(True)
         self.setSelectionBehavior(widgets.QAbstractItemView.SelectRows)
@@ -602,14 +723,17 @@ class TableView(widgets.QTableView):
                 html_cols = [html_cols]
             [self.setItemDelegateForColumn(c, HTMLDelegate(parent=parent)) for c in html_cols]
 
+    def set_language(self, language):
+        self.language = language
+
     def copy(self):
         self.model().copy(self.selectedIndexes())
 
     def contextMenuEvent(self, event):
         menu = widgets.QMenu(self)
-        copy_action = menu.addAction('Copy')
+        copy_action = menu.addAction(_text(self.language, 'copy'))
         copy_action.setShortcut('Ctrl+C')
-        select_all_action = menu.addAction('Select All')
+        select_all_action = menu.addAction(_text(self.language, 'select_all'))
         select_all_action.setShortcut('Ctrl+A')
         action = menu.exec_(self.mapToGlobal(event.pos()))
 
@@ -619,80 +743,286 @@ class TableView(widgets.QTableView):
             self.selectAll()
 
 
-class ElementInput(widgets.QPlainTextEdit):
-    """Compact multi-line input for element lists."""
+class ElementInput(widgets.QWidget):
+    """Chip-based element input supporting add/remove/search elements."""
     editingFinished = QtCore.pyqtSignal()
+    elementsChanged = QtCore.pyqtSignal(list)
 
     def __init__(self, parent=None):
-        widgets.QPlainTextEdit.__init__(self, parent=parent)
+        widgets.QWidget.__init__(self, parent=parent)
         self.setObjectName('elementsInput')
-        self.setLineWrapMode(widgets.QPlainTextEdit.WidgetWidth)
-        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.setMinimumHeight(118)
-        self.setMaximumHeight(156)
-        if hasattr(self, 'setTabChangesFocus'):
-            self.setTabChangesFocus(True)
-        self._completer = None
+        self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
+        self.setToolTip('')
+        self.language = 'en'
+        self._elements = []
+        self._read_only = False
+
+        self._chip_container = widgets.QWidget()
+        self._chip_container.setObjectName('elementChipCanvas')
+        self._chip_container.setToolTip('')
+        self._chip_container.setSizePolicy(widgets.QSizePolicy.Expanding, widgets.QSizePolicy.MinimumExpanding)
+        self._chip_widgets = []
+
+        self._placeholder_text = _text(self.language, 'elements_empty_hint')
+        self._placeholder_label = widgets.QLabel(self._placeholder_text, self._chip_container)
+        self._placeholder_label.setObjectName('elementPlaceholder')
+        self._placeholder_label.setToolTip('')
+
+        self._add_btn = widgets.QPushButton(_text(self.language, 'add_element'), self._chip_container)
+        self._add_btn.setFixedHeight(20)
+        self._add_btn.setMinimumWidth(42)
+        self._add_btn.setStyleSheet("font-size: 11px; font-weight: 600; background: #dbeafe; border: 1px solid #bfdbfe; border-radius: 3px; padding: 0 5px; min-height: 20px; max-height: 20px;")
+        self._add_btn.setToolTip(_text(self.language, 'add_element_tooltip'))
+        self._add_btn.clicked.connect(self._show_element_picker)
+
+        self._scroll_area = widgets.QScrollArea(self)
+        self._scroll_area.setObjectName('elementScroll')
+        self._scroll_area.setToolTip('')
+        self._scroll_area.setFrameShape(widgets.QFrame.NoFrame)
+        self._scroll_area.setWidgetResizable(False)
+        self._scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self._scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self._scroll_area.setWidget(self._chip_container)
+        self._scroll_area.viewport().installEventFilter(self)
+
+        layout = widgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self._scroll_area)
+        self._rebuild_chips()
 
     def text(self):
-        return self.toPlainText()
+        return ' '.join(self._elements)
 
     def setText(self, text):
-        self.setPlainText(text)
+        atoms = re.findall(_isotope_rx, str(text))
+        self.set_elements(atoms)
+
+    def elements(self):
+        return list(self._elements)
+
+    def set_elements(self, elements):
+        self._elements = []
+        for el in elements:
+            if el and (periodic_table['element'] == el).any():
+                if el not in self._elements:
+                    self._elements.append(el)
+        self._rebuild_chips()
+        self.elementsChanged.emit(self._elements)
+
+    def add_elements(self, new_elements):
+        changed = False
+        for el in new_elements:
+            if el and (periodic_table['element'] == el).any() and el not in self._elements:
+                self._elements.append(el)
+                changed = True
+        if changed:
+            self._rebuild_chips()
+            self.elementsChanged.emit(self._elements)
+
+    def _rebuild_chips(self):
+        for chip in self._chip_widgets:
+            if chip not in (self._add_btn, self._placeholder_label):
+                chip.deleteLater()
+        self._chip_widgets = []
+        for el in self._elements:
+            chip = self._create_chip(el)
+            self._chip_widgets.append(chip)
+        self._add_btn.setVisible(not self._read_only)
+        self._add_btn.setEnabled(not self._read_only)
+        if not self._read_only:
+            self._add_btn.show()
+        self._chip_widgets.append(self._add_btn)
+        if not self._elements and not self._read_only and self._placeholder_text:
+            self._placeholder_label.setText(self._placeholder_text)
+            self._placeholder_label.show()
+            self._chip_widgets.append(self._placeholder_label)
+        else:
+            self._placeholder_label.hide()
+        self._sync_container_height()
+        QtCore.QTimer.singleShot(0, self._sync_container_height)
+
+    def _create_chip(self, element):
+        dense_mode = len(self._elements) > 36
+        chip = widgets.QFrame(self._chip_container)
+        chip.setObjectName('elementChip')
+        chip.setSizePolicy(widgets.QSizePolicy.Fixed, widgets.QSizePolicy.Fixed)
+        chip.setFixedHeight(18)
+        chip.setStyleSheet(
+            "QFrame#elementChip { background: #dbeafe; border: 1px solid #bfdbfe; "
+            "border-radius: 3px; padding: 0; }"
+        )
+        if dense_mode and not self._read_only:
+            chip.setToolTip(_text(self.language, 'remove_element_tooltip'))
+            chip.setCursor(QtCore.Qt.PointingHandCursor)
+            chip.mouseDoubleClickEvent = lambda event, e=element: self._remove_element(e)
+        layout = widgets.QHBoxLayout(chip)
+        layout.setContentsMargins(4, 0, 4 if dense_mode else 3, 0)
+        layout.setSpacing(2)
+        label = widgets.QLabel(element, chip)
+        label.setStyleSheet("color: #1e40af; font-size: 11px; font-weight: 600;")
+        layout.addWidget(label)
+        extra_width = 10
+        if not dense_mode:
+            btn = widgets.QPushButton('×', chip)
+            btn.setFixedSize(12, 14)
+            btn.setVisible(not self._read_only)
+            btn.setStyleSheet(
+                "QPushButton { background: transparent; border: none; color: #64748b; font-size: 11px; padding: 0; min-width: 12px; max-width: 12px; min-height: 14px; max-height: 14px; }"
+                "QPushButton:hover { color: #dc2626; font-weight: bold; }"
+            )
+            btn.clicked.connect(lambda checked, e=element: self._remove_element(e))
+            layout.addWidget(btn)
+            extra_width = 26
+        chip.setLayout(layout)
+        chip.setFixedWidth(label.sizeHint().width() + extra_width)
+        chip.show()
+        return chip
+
+    def set_language(self, language):
+        self.language = language
+        self._add_btn.setText(_text(self.language, 'add_element'))
+        self._add_btn.setToolTip(_text(self.language, 'add_element_tooltip'))
+        self.setPlaceholderText(_text(self.language, 'elements_empty_hint'))
+        for chip in self._chip_widgets:
+            if chip is not self._add_btn and chip.toolTip():
+                chip.setToolTip(_text(self.language, 'remove_element_tooltip'))
+
+    def _remove_element(self, element):
+        if self._read_only:
+            return
+        if element in self._elements:
+            self._elements.remove(element)
+            self._rebuild_chips()
+            self.elementsChanged.emit(self._elements)
+
+    def _show_element_picker(self):
+        if self._read_only:
+            return
+        dialog = widgets.QDialog(self)
+        dialog.setWindowTitle(_text(self.language, 'select_elements_title'))
+        dialog.resize(500, 500)
+        layout = widgets.QVBoxLayout(dialog)
+
+        search_input = widgets.QLineEdit(dialog)
+        search_input.setPlaceholderText(_text(self.language, 'search_elements'))
+        layout.addWidget(search_input)
+
+        list_widget = widgets.QListWidget(dialog)
+        list_widget.setSelectionMode(widgets.QAbstractItemView.MultiSelection)
+        layout.addWidget(list_widget, stretch=1)
+
+        btn_layout = widgets.QHBoxLayout()
+        select_all_btn = widgets.QPushButton(_text(self.language, 'select_all_visible'), dialog)
+        clear_btn = widgets.QPushButton(_text(self.language, 'clear_selection'), dialog)
+        btn_layout.addWidget(select_all_btn)
+        btn_layout.addWidget(clear_btn)
+        btn_layout.addStretch(1)
+        ok_btn = widgets.QPushButton(_text(self.language, 'add_selected'), dialog)
+        ok_btn.setObjectName('primaryButton')
+        btn_layout.addWidget(ok_btn)
+        layout.addLayout(btn_layout)
+
+        all_elements = self._available_element_rows()
+        _all_items = []
+        for _, row in all_elements.iterrows():
+            item = widgets.QListWidgetItem(f"{row['element']}  ({row['element name']})")
+            item.setData(QtCore.Qt.UserRole, row['element'])
+            list_widget.addItem(item)
+            _all_items.append(item)
+
+        if not _all_items:
+            item = widgets.QListWidgetItem(_text(self.language, 'all_elements_added'))
+            item.setFlags(QtCore.Qt.NoItemFlags)
+            list_widget.addItem(item)
+            search_input.setEnabled(False)
+            select_all_btn.setEnabled(False)
+            clear_btn.setEnabled(False)
+            ok_btn.setEnabled(False)
+
+        def apply_search(text):
+            query = text.lower()
+            for item in _all_items:
+                item.setHidden(query not in item.text().lower())
+
+        def select_visible():
+            list_widget.clearSelection()
+            for item in _all_items:
+                if not item.isHidden():
+                    item.setSelected(True)
+
+        search_input.textChanged.connect(apply_search)
+        select_all_btn.clicked.connect(select_visible)
+        clear_btn.clicked.connect(list_widget.clearSelection)
+
+        def add_selected():
+            selected = [item.data(QtCore.Qt.UserRole) for item in list_widget.selectedItems()]
+            self.add_elements(selected)
+            dialog.accept()
+
+        ok_btn.clicked.connect(add_selected)
+        dialog.exec_()
+
+    def _available_element_rows(self):
+        """Return periodic-table elements that are not already selected."""
+        selected = set(self._elements)
+        all_elements = periodic_table[['element', 'element name']].drop_duplicates().sort_values('element')
+        if not selected:
+            return all_elements
+        return all_elements[~all_elements['element'].isin(selected)]
 
     def setPlaceholderText(self, text):
-        if hasattr(widgets.QPlainTextEdit, 'setPlaceholderText'):
-            widgets.QPlainTextEdit.setPlaceholderText(self, text)
+        self._placeholder_text = str(text or '')
+        self._placeholder_label.setText(self._placeholder_text)
+        self._rebuild_chips()
 
-    def setCompleter(self, completer):
-        """Attach a QCompleter to this text edit."""
-        if self._completer:
-            self._completer.activated.disconnect()
-        self._completer = completer
-        if completer is None:
-            return
-        completer.setWidget(self)
-        completer.setCompletionMode(widgets.QCompleter.PopupCompletion)
-        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        completer.setFilterMode(QtCore.Qt.MatchContains)
-        completer.activated.connect(self._insert_completion)
+    def setReadOnly(self, read_only):
+        """Compatibility with the previous text edit based element input."""
+        self._read_only = bool(read_only)
+        self._rebuild_chips()
 
-    def _insert_completion(self, completion):
-        """Replace the current word with the selected completion."""
-        if self._completer.widget() != self:
-            return
-        symbol = completion.split(' ', 1)[0]
-        tc = self.textCursor()
-        tc.select(QtGui.QTextCursor.WordUnderCursor)
-        tc.removeSelectedText()
-        tc.insertText(symbol)
-        self.setTextCursor(tc)
+    def resizeEvent(self, event):
+        widgets.QWidget.resizeEvent(self, event)
+        self._sync_container_height()
+        QtCore.QTimer.singleShot(0, self._sync_container_height)
 
-    def keyPressEvent(self, event):
-        if self._completer and self._completer.popup().isVisible():
-            if event.key() in (QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return,
-                               QtCore.Qt.Key_Escape, QtCore.Qt.Key_Tab):
-                event.ignore()
-                return
-        super(ElementInput, self).keyPressEvent(event)
-        if self._completer is None:
-            return
-        tc = self.textCursor()
-        tc.select(QtGui.QTextCursor.WordUnderCursor)
-        current_word = tc.selectedText().strip()
-        if not current_word:
-            self._completer.popup().hide()
-            return
-        self._completer.setCompletionPrefix(current_word)
-        if self._completer.completionCount() > 0:
-            self._completer.complete()
-        else:
-            self._completer.popup().hide()
+    def eventFilter(self, obj, event):
+        if obj is self._scroll_area.viewport() and event.type() == QtCore.QEvent.Resize:
+            QtCore.QTimer.singleShot(0, self._sync_container_height)
+        return widgets.QWidget.eventFilter(self, obj, event)
 
-    def focusOutEvent(self, event):
-        self.editingFinished.emit()
-        widgets.QPlainTextEdit.focusOutEvent(self, event)
+    def _sync_container_height(self):
+        """Resize the chip canvas so QScrollArea scrolls instead of clipping."""
+        if not hasattr(self, '_scroll_area'):
+            return
+        width = max(40, self._scroll_area.viewport().width())
+        spacing = 2
+        margin = 3
+        x = margin
+        y = margin
+        line_height = 0
+        max_x = max(width - margin, margin + 1)
+        for widget in self._chip_widgets:
+            if widget.isHidden():
+                continue
+            hint = widget.sizeHint()
+            if widget is self._placeholder_label:
+                widget_width = min(hint.width(), max(max_x - x, 80))
+            else:
+                widget_width = widget.width() if widget.width() > 0 else hint.width()
+            widget_height = widget.height() if widget.height() > 0 else hint.height()
+            widget_width = max(widget_width, widget.minimumWidth())
+            widget_height = max(widget_height, widget.minimumHeight())
+            if x + widget_width > max_x and x > margin:
+                x = margin
+                y += line_height + spacing
+                line_height = 0
+            widget.setGeometry(x, y, widget_width, widget_height)
+            x += widget_width + spacing
+            line_height = max(line_height, widget_height)
+        height = max(y + line_height + margin, 30)
+        self._chip_container.setMinimumSize(width, height)
+        self._chip_container.resize(width, height)
 
 
 class HTMLDelegate(widgets.QStyledItemDelegate):
@@ -739,6 +1069,7 @@ class HTMLDelegate(widgets.QStyledItemDelegate):
 
 class Spectrum(widgets.QWidget):
     """Interactive stem-plot spectrum drawn with Qt QPainter (no matplotlib)."""
+    peakSelected = QtCore.pyqtSignal(int)
 
     # ── colour palette ──────────────────────────────────────────────
     _BLUE     = QtGui.QColor(0x25, 0x63, 0xeb)   # candidate peaks
@@ -752,9 +1083,11 @@ class Spectrum(widgets.QWidget):
     _BORDER   = QtGui.QColor(0xdb, 0xe4, 0xf0)
     _TEXT     = QtGui.QColor(0x17, 0x20, 0x33)
     _TICK_CLR = QtGui.QColor(0x33, 0x41, 0x55)
+    _MRP_BAND = QtGui.QColor(0xef, 0x44, 0x44, 26)
 
     MAX_LABELS = 8
     _PLOT_FLOOR = 1.0e-4
+    _PICK_RADIUS = 14
 
     # ── init ────────────────────────────────────────────────────────
     def __init__(self, data=None, parent=None, language='en'):
@@ -775,13 +1108,13 @@ class Spectrum(widgets.QWidget):
 
         self._zoom_out_btn = widgets.QToolButton(self)
         self._zoom_out_btn.setText('−')
-        self._zoom_out_btn.setToolTip('Zoom out (Y axis)')
+        self._zoom_out_btn.setToolTip(_text(self.language, 'zoom_out_y'))
         self._zoom_out_btn.clicked.connect(self._on_zoom_out)
         self.toolbar.addWidget(self._zoom_out_btn)
 
         self._zoom_in_btn = widgets.QToolButton(self)
         self._zoom_in_btn.setText('+')
-        self._zoom_in_btn.setToolTip('Zoom in (Y axis)')
+        self._zoom_in_btn.setToolTip(_text(self.language, 'zoom_in_y'))
         self._zoom_in_btn.clicked.connect(self._on_zoom_in)
         self.toolbar.addWidget(self._zoom_in_btn)
 
@@ -789,9 +1122,17 @@ class Spectrum(widgets.QWidget):
 
         self._reset_btn = widgets.QToolButton(self)
         self._reset_btn.setText('↺')
-        self._reset_btn.setToolTip('Reset view')
+        self._reset_btn.setToolTip(_text(self.language, 'reset_view'))
         self._reset_btn.clicked.connect(self._on_reset_view)
         self.toolbar.addWidget(self._reset_btn)
+
+        self.toolbar.addSeparator()
+
+        self._export_btn = widgets.QToolButton(self)
+        self._export_btn.setText('PNG')
+        self._export_btn.setToolTip(_text(self.language, 'export_spectrum_tooltip'))
+        self._export_btn.clicked.connect(self.export_png)
+        self.toolbar.addWidget(self._export_btn)
 
         # ── chart canvas ─────────────────────────────────────────
         self._canvas = _SpectrumCanvas(self)
@@ -817,6 +1158,8 @@ class Spectrum(widgets.QWidget):
         self.intensity_column = 'probability'
         self._y_zoom = 1.0           # multiplier on y upper bound
         self._plot_floor = self._PLOT_FLOOR
+        self._peak_points = []
+        self._selected_source_row = None
 
         if data is not None:
             self.data = data
@@ -831,12 +1174,18 @@ class Spectrum(widgets.QWidget):
     def data(self, newdata):
         self._plot_window = dict(getattr(newdata, 'attrs', {}))
         self._data = newdata.copy().sort_values('mass/charge').reset_index(drop=True)
+        if '_source_row' not in self._data.columns:
+            self._data['_source_row'] = np.arange(self._data.shape[0])
         self._target_mask = self._target_mask_for(self._data)
         self.x, self.x_label, self.x_centered = self._x_values_for(self._data, self._target_mask)
         self._unresolved_mask = self._unresolved_mask_for(self._data)
         self.intensity_column = self._intensity_column_for(self._data)
         raw_y = pd.to_numeric(self._data[self.intensity_column], errors='coerce').fillna(0.0).values
         self.y = self._normalise_intensity(raw_y, self._target_mask)
+        if self._selected_source_row is not None:
+            source_rows = set(self._data['_source_row'].astype(int).tolist())
+            if self._selected_source_row not in source_rows:
+                self._selected_source_row = None
         self._y_zoom = 1.0
         self._canvas.update()
 
@@ -855,15 +1204,10 @@ class Spectrum(widgets.QWidget):
         self._update_toolbar_tooltips()
 
     def _update_toolbar_tooltips(self):
-        lang = self.language
-        if lang == 'zh':
-            self._zoom_out_btn.setToolTip('缩小 Y 轴')
-            self._zoom_in_btn.setToolTip('放大 Y 轴')
-            self._reset_btn.setToolTip('重置视图')
-        else:
-            self._zoom_out_btn.setToolTip('Zoom out (Y axis)')
-            self._zoom_in_btn.setToolTip('Zoom in (Y axis)')
-            self._reset_btn.setToolTip('Reset view')
+        self._zoom_out_btn.setToolTip(_text(self.language, 'zoom_out_y'))
+        self._zoom_in_btn.setToolTip(_text(self.language, 'zoom_in_y'))
+        self._reset_btn.setToolTip(_text(self.language, 'reset_view'))
+        self._export_btn.setToolTip(_text(self.language, 'export_spectrum_tooltip'))
 
     # ── toolbar slots ───────────────────────────────────────────────
     def _on_zoom_out(self):
@@ -877,6 +1221,31 @@ class Spectrum(widgets.QWidget):
     def _on_reset_view(self):
         self._y_zoom = 1.0
         self._canvas.update()
+
+    def export_png(self):
+        """Export the currently rendered spectrum canvas as a PNG image."""
+        path, _ = widgets.QFileDialog.getSaveFileName(
+            self, _text(self.language, 'export_spectrum'), '', _text(self.language, 'spectrum_png_filter')
+        )
+        if not path:
+            return
+        if not path.lower().endswith('.png'):
+            path += '.png'
+        try:
+            image = QtGui.QImage(self._canvas.size(), QtGui.QImage.Format_ARGB32)
+            image.fill(self._BG)
+            painter = QtGui.QPainter(image)
+            try:
+                self._canvas.render(painter)
+            finally:
+                painter.end()
+            if not image.save(path, 'PNG'):
+                raise IOError(path)
+        except Exception as exc:
+            widgets.QMessageBox.critical(self, _text(self.language, 'spectrum_export_error'), str(exc))
+        else:
+            widgets.QMessageBox.information(self, _text(self.language, 'export_spectrum'),
+                                            _text(self.language, 'spectrum_exported').format(path))
 
     # ── data-processing helpers (identical to old matplotlib version) ─
     def _target_mask_for(self, data):
@@ -950,6 +1319,7 @@ class Spectrum(widgets.QWidget):
                 selected.append(row)
             if len(selected) >= self.MAX_LABELS:
                 break
+        return selected
     def _formula_label(self, value):
         """Return a plain-text formula label suitable for QPainter rendering."""
         try:
@@ -965,11 +1335,122 @@ class Spectrum(widgets.QWidget):
 
 
 
+    def _source_row_for_peak(self, row_number):
+        if self._data is None or row_number is None:
+            return None
+        if '_source_row' in self._data.columns:
+            try:
+                return int(self._data.iloc[row_number]['_source_row'])
+            except Exception:
+                return None
+        return int(row_number)
+
+    def _format_peak_value(self, value, digits=6):
+        try:
+            if pd.isna(value):
+                return ''
+        except Exception:
+            pass
+        if isinstance(value, (int, float, np.integer, np.floating)):
+            if np.isinf(value):
+                return '∞'
+            return f'{float(value):.{digits}g}'
+        return str(value)
+
+    def _peak_tooltip_html(self, row_number):
+        row = self._data.iloc[row_number]
+        formula = self._formula_label(row.get('molecule', ''))
+        source_row = self._source_row_for_peak(row_number)
+        lines = [f'<b>{formula}</b>']
+        if 'type' in row:
+            lines.append(f"{_column_display(self.language, 'type')}: {_type_display(self.language, row['type'])}")
+        if 'mass/charge' in row:
+            lines.append(f"m/z: {self._format_peak_value(row['mass/charge'], 7)}")
+        if 'mass/charge diff' in row:
+            lines.append(f"Δm/z: {self._format_peak_value(row['mass/charge diff'], 7)}")
+        if 'Δppm' in row:
+            lines.append(f"Δppm: {self._format_peak_value(row['Δppm'], 4)}")
+        if 'MRP' in row:
+            lines.append(f"MRP: {self._format_peak_value(row['MRP'], 5)}")
+        if 'relative risk' in row:
+            lines.append(f"{_column_display(self.language, 'risk')}: {self._format_peak_value(row['relative risk'], 4)}")
+        if 'resolved' in row and row['resolved'] != '':
+            resolved = _text(self.language, 'yes') if bool(row['resolved']) else _text(self.language, 'no')
+            lines.append(f"{_column_display(self.language, 'ok')}: {resolved}")
+        if source_row is not None:
+            lines.append(f"{_text(self.language, 'spectrum_source_row')}: {source_row + 1}")
+        return '<br/>'.join(lines)
+
+    def _update_peak_points(self, x2p, y2p):
+        self._peak_points = []
+        if self._data is None or self.x is None or self.y is None:
+            return
+        for row_number in range(self._data.shape[0]):
+            xi = self.x[row_number]
+            yi = self.y[row_number]
+            if not (np.isfinite(xi) and np.isfinite(yi)):
+                continue
+            self._peak_points.append((row_number, x2p(xi), y2p(yi), self._source_row_for_peak(row_number)))
+
+    def _peak_at_pos(self, pos):
+        if not self._peak_points:
+            return None
+        px = pos.x()
+        py = pos.y()
+        radius2 = self._PICK_RADIUS * self._PICK_RADIUS
+        best = None
+        best_dist = None
+        for row_number, xpix, ypix, source_row in self._peak_points:
+            dist = (px - xpix) ** 2 + (py - ypix) ** 2
+            if dist <= radius2 and (best_dist is None or dist < best_dist):
+                best = row_number
+                best_dist = dist
+        return best
+
+    def tooltip_for_pos(self, pos):
+        row_number = self._peak_at_pos(pos)
+        if row_number is None:
+            return ''
+        return self._peak_tooltip_html(row_number)
+
+    def select_peak_at(self, pos):
+        row_number = self._peak_at_pos(pos)
+        if row_number is None:
+            return False
+        source_row = self._source_row_for_peak(row_number)
+        if source_row is None:
+            return False
+        self._selected_source_row = source_row
+        self._canvas.update()
+        self.peakSelected.emit(source_row)
+        return True
+
     def _window_span_for_axis(self):
-        if self.x_label.startswith('\u0394ppm'):
+        if 'ppm' in self.x_label:
             return self._plot_window.get('window_half_ppm')
-        if self.x_label.startswith('\u0394m/z'):
+        if 'm/z' in self.x_label:
             return self._plot_window.get('window_half_mz')
+        return None
+
+    def _mrp_half_width_for_axis(self):
+        mrp = self._plot_window.get('instrument_mrp')
+        try:
+            mrp = float(mrp)
+        except (TypeError, ValueError):
+            return None
+        if mrp <= 0 or not self.x_centered:
+            return None
+        if 'ppm' in self.x_label:
+            return 1.0e6 / mrp
+        if 'm/z' in self.x_label:
+            target_mz = self._plot_window.get('target_mz')
+            try:
+                target_mz = float(target_mz)
+            except (TypeError, ValueError):
+                return None
+            if target_mz <= 0:
+                return None
+            return target_mz / mrp
         return None
 
     # ── drawing helpers (public for _SpectrumCanvas) ─────────────────
@@ -989,8 +1470,9 @@ class Spectrum(widgets.QWidget):
         painter.drawRect(cr)
 
         if self._data is None or self._data.empty:
+            self._peak_points = []
             painter.setPen(self._TEXT)
-            painter.setFont(QtGui.QFont('sans-serif', 13))
+            painter.setFont(_ui_font(13))
             painter.drawText(cr, QtCore.Qt.AlignCenter, _text(self.language, 'empty_title'))
             return
 
@@ -1036,9 +1518,12 @@ class Spectrum(widgets.QWidget):
             llo = math.log10(y_lo)
             return cr.bottom() - (lv - llo) / (lhi - llo) * cr.height()
 
+        self._update_peak_points(x2p, y2p)
+        self._draw_mrp_band(painter, x2p, cr)
+
         # ── grid ─────────────────────────────────────────────────
         import math
-        painter.setFont(QtGui.QFont('sans-serif', 9))
+        painter.setFont(_ui_font(9))
         # Y grid (log ticks: powers of 10)
         lo_exp = int(math.floor(math.log10(y_lo)))
         hi_exp = int(math.ceil(math.log10(y_hi)))
@@ -1082,7 +1567,7 @@ class Spectrum(widgets.QWidget):
                 painter.drawText(QtCore.QPointF(px - tw / 2, cr.bottom() + 14), lbl)
 
         # ── axis labels ──────────────────────────────────────────
-        painter.setFont(QtGui.QFont('sans-serif', 11))
+        painter.setFont(_ui_font(11))
         painter.setPen(self._TEXT)
         # X label
         xlab = self.x_label
@@ -1098,7 +1583,7 @@ class Spectrum(widgets.QWidget):
         painter.restore()
 
         # ── title ────────────────────────────────────────────────
-        painter.setFont(QtGui.QFont('sans-serif', 13, QtGui.QFont.Bold))
+        painter.setFont(_ui_font(13, QtGui.QFont.Bold))
         ttl = _text(self.language, 'spectrum_target_title') if self.x_centered else _text(self.language, 'spectrum_title')
         ttw = painter.fontMetrics().horizontalAdvance(ttl)
         painter.drawText(QtCore.QPointF(cr.center().x() - ttw / 2, cr.top() - 14), ttl)
@@ -1119,6 +1604,7 @@ class Spectrum(widgets.QWidget):
                             _text(self.language, 'not_resolved'), x2p, y2p, cr)
         self._draw_stems_qp(painter, target_mask, self._RED, 3.4, 1.0,
                             _text(self.language, 'target_peak'), x2p, y2p, cr)
+        self._draw_selected_peak(painter, x2p, y2p)
 
         # ── legend ───────────────────────────────────────────────
         ly = cr.top() + 8
@@ -1132,12 +1618,65 @@ class Spectrum(widgets.QWidget):
             painter.setBrush(color)
             painter.drawRect(QtCore.QRectF(lx, ly, 12, 12))
             painter.setPen(self._TEXT)
-            painter.setFont(QtGui.QFont('sans-serif', 9))
+            painter.setFont(_ui_font(9))
             painter.drawText(QtCore.QRectF(lx + 16, ly, 160, 14), QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, label)
             ly += 16
 
         # ── peak annotations ─────────────────────────────────────
         self._draw_annotations(painter, x2p, y2p, cr)
+
+    def _draw_mrp_band(self, painter, x2p, cr):
+        """Draw the instrument-MRP unresolved zone around the calibrated target."""
+        half_width = self._mrp_half_width_for_axis()
+        if half_width is None or half_width <= 0:
+            return
+        left = max(cr.left(), x2p(-half_width))
+        right = min(cr.right(), x2p(half_width))
+        if right <= cr.left() or left >= cr.right() or right <= left:
+            return
+        band_rect = QtCore.QRectF(left, cr.top(), right - left, cr.height())
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(self._MRP_BAND)
+        painter.drawRect(band_rect)
+        painter.setPen(QtGui.QPen(self._RED, 1, QtCore.Qt.DotLine))
+        painter.drawLine(QtCore.QPointF(left, cr.top()), QtCore.QPointF(left, cr.bottom()))
+        painter.drawLine(QtCore.QPointF(right, cr.top()), QtCore.QPointF(right, cr.bottom()))
+
+        label = _text(self.language, 'spectrum_mrp_band').format(
+            self._format_peak_value(self._plot_window.get('instrument_mrp'), 5)
+        )
+        painter.setFont(_ui_font(8))
+        fm = painter.fontMetrics()
+        label_width = fm.horizontalAdvance(label) + 8
+        x = min(max(left + 4, cr.left() + 4), cr.right() - label_width - 4)
+        y = cr.bottom() - fm.height() - 6
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(QtGui.QColor(255, 255, 255, 210))
+        painter.drawRoundedRect(QtCore.QRectF(x, y, label_width, fm.height() + 4), 3, 3)
+        painter.setPen(self._RED)
+        painter.drawText(QtCore.QRectF(x + 4, y + 2, label_width - 8, fm.height()),
+                         QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, label)
+
+    def _draw_selected_peak(self, painter, x2p, y2p):
+        """Highlight the spectrum peak most recently selected by clicking."""
+        if self._selected_source_row is None or self._data is None:
+            return
+        selected_rows = [
+            row_number for row_number in range(self._data.shape[0])
+            if self._source_row_for_peak(row_number) == self._selected_source_row
+        ]
+        if not selected_rows:
+            return
+        row_number = selected_rows[0]
+        px = x2p(self.x[row_number])
+        py = y2p(self.y[row_number])
+        color = self._RED if self._target_mask[row_number] else (
+            self._AMBER if self._unresolved_mask[row_number] else self._BLUE
+        )
+        painter.setBrush(QtCore.Qt.NoBrush)
+        pen = QtGui.QPen(color, 2.2)
+        painter.setPen(pen)
+        painter.drawEllipse(QtCore.QPointF(px, py), 10, 10)
 
     def _draw_stems_qp(self, painter, mask, colour, lw, alpha, label, x2p, y2p, cr):
         """Draw vertical stem lines + diamond markers for one category."""
@@ -1172,7 +1711,7 @@ class Spectrum(widgets.QWidget):
         """Label top peaks with molecule formulas (up to MAX_LABELS)."""
         label_indices = self._label_indices()
         offsets = [(-18, -28), (0, -42), (18, -28), (-28, -46), (28, -46)]
-        painter.setFont(QtGui.QFont('sans-serif', 9))
+        painter.setFont(_ui_font(9))
         for label_number, row_number in enumerate(label_indices):
             row = self._data.iloc[row_number]
             label = self._formula_label(row['molecule'])
@@ -1242,15 +1781,43 @@ class _SpectrumCanvas(widgets.QWidget):
         elif delta < 0:
             self._spectrum._on_zoom_out()
 
+    def mouseMoveEvent(self, event):
+        if self._spectrum is None:
+            return widgets.QWidget.mouseMoveEvent(self, event)
+        tooltip = self._spectrum.tooltip_for_pos(event.pos())
+        if tooltip:
+            self.setCursor(QtCore.Qt.PointingHandCursor)
+            widgets.QToolTip.showText(event.globalPos(), tooltip, self)
+        else:
+            self.unsetCursor()
+            widgets.QToolTip.hideText()
+        return widgets.QWidget.mouseMoveEvent(self, event)
+
+    def leaveEvent(self, event):
+        self.unsetCursor()
+        widgets.QToolTip.hideText()
+        return widgets.QWidget.leaveEvent(self, event)
+
+    def mousePressEvent(self, event):
+        if self._spectrum is not None and event.button() == QtCore.Qt.LeftButton:
+            if self._spectrum.select_peak_at(event.pos()):
+                event.accept()
+                return
+        return widgets.QWidget.mousePressEvent(self, event)
+
 
 
 class InterferenceFilterProxy(QtCore.QSortFilterProxyModel):
     """Filter proxy for interference results supporting query syntax.
 
-    Query syntax (space-separated tokens, AND logic):
-    - Plain text: case-insensitive substring match in 'ion' column.
-    - col:val:  substring match — column 'col' contains 'val'.
-    - col>N, col<N, col>=N, col<=N: numeric comparison.
+    Query syntax (space-separated tokens, AND logic; | for OR within a token):
+    - Plain text: case-insensitive substring match in ALL columns.
+    - col:val      substring match — column 'col' contains 'val'.
+    - col=val      exact match (case-insensitive).
+    - col>N, col<N, col>=N, col<=N  numeric comparison.
+    - col~rx       regex match — 'col' matches Python re pattern.
+    - -token       negation — reject row if token appears in ANY column.
+    - expr1|expr2  OR within a single token (e.g. oxide|hydride).
     """
     def __init__(self, parent=None):
         QtCore.QSortFilterProxyModel.__init__(self, parent=parent)
@@ -1278,6 +1845,105 @@ class InterferenceFilterProxy(QtCore.QSortFilterProxyModel):
         except (ValueError, TypeError):
             return super().lessThan(left, right)
 
+    @staticmethod
+    def _token_matches(token, data_row):
+        """Return True if a single token matches the row (OR branches resolved)."""
+        # Split on | for OR logic — if ANY sub-token matches, accept
+        for sub in token.split('|'):
+            sub = sub.strip()
+            if not sub:
+                continue
+            if InterferenceFilterProxy._sub_token_matches(sub, data_row):
+                return True
+        return False
+
+    @staticmethod
+    def _sub_token_matches(token, data_row):
+        """Match a single (non-OR) token against a row."""
+        # Negation
+        if token.startswith('-') and len(token) > 1:
+            neg_val = token[1:].lower()
+            for c in data_row.index:
+                if neg_val in str(data_row[c]).lower():
+                    return False
+            return True
+
+        # Regex operator ~
+        if '~' in token:
+            col, _, pat = token.partition('~')
+            col = col.strip()
+            pat = pat.strip()
+            if col in data_row.index and pat:
+                try:
+                    return bool(re.search(pat, str(data_row[col])))
+                except re.error:
+                    return False
+            return True
+
+        # Exact match =
+        if '=' in token and '>=' not in token and '<=' not in token:
+            col, _, val = token.partition('=')
+            col = col.strip()
+            val = val.strip()
+            if col in data_row.index:
+                return str(data_row[col]).lower() == val.lower()
+            return True
+
+        # Comparison operators (longer ops first)
+        for op in ('>=', '<='):
+            if op in token:
+                col, _, val_str = token.partition(op)
+                col = col.strip()
+                if col in data_row.index:
+                    cell_val = data_row[col]
+                    if cell_val == '' or (isinstance(cell_val, float) and np.isnan(cell_val)):
+                        return False
+                    try:
+                        cv = float(cell_val)
+                        qv = float(val_str)
+                        if op == '>=':
+                            return cv >= qv
+                        if op == '<=':
+                            return cv <= qv
+                    except (ValueError, TypeError):
+                        pass
+                return True
+
+        for op in ('>', '<'):
+            if op in token:
+                col, _, val_str = token.partition(op)
+                col = col.strip()
+                if col in data_row.index:
+                    cell_val = data_row[col]
+                    if cell_val == '' or (isinstance(cell_val, float) and np.isnan(cell_val)):
+                        return False
+                    try:
+                        cv = float(cell_val)
+                        qv = float(val_str)
+                        if op == '>':
+                            return cv > qv
+                        if op == '<':
+                            return cv < qv
+                    except (ValueError, TypeError):
+                        pass
+                return True
+
+        # Colon operator — substring match on named column
+        if ':' in token:
+            col, _, val = token.partition(':')
+            col = col.strip()
+            val = val.strip()
+            if col in data_row.index:
+                return val.lower() in str(data_row[col]).lower()
+            return True
+
+        # Default: search ALL columns
+        token_lower = token.lower()
+        for c in data_row.index:
+            if token_lower in str(data_row[c]).lower():
+                return True
+        return False
+
     def filterAcceptsRow(self, source_row, source_parent):
         if not self._filter_text.strip():
             return True
@@ -1289,91 +1955,9 @@ class InterferenceFilterProxy(QtCore.QSortFilterProxyModel):
         tokens = self._filter_text.strip().split()
         data_row = model._data.iloc[source_row]
 
+        # AND logic across space-separated tokens
         for token in tokens:
-            matched = False
-
-            # Comparison operators (longer ops first)
-            for op in ('>=', '<='):
-                if op in token:
-                    col, _, val_str = token.partition(op)
-                    col = col.strip()
-                    if col in data_row.index:
-                        try:
-                            cell_val = data_row[col]
-                            if cell_val == '' or (isinstance(cell_val, float) and np.isnan(cell_val)):
-                                return False
-                            cell_val = float(cell_val)
-                            query_val = float(val_str)
-                            if op == '>=' and not (cell_val >= query_val):
-                                return False
-                            if op == '<=' and not (cell_val <= query_val):
-                                return False
-                        except (ValueError, TypeError):
-                            pass
-                    matched = True
-                    break
-
-            if matched:
-                continue
-
-            for op in ('>', '<'):
-                if op in token:
-                    col, _, val_str = token.partition(op)
-                    col = col.strip()
-                    if col in data_row.index:
-                        try:
-                            cell_val = data_row[col]
-                            if cell_val == '' or (isinstance(cell_val, float) and np.isnan(cell_val)):
-                                return False
-                            cell_val = float(cell_val)
-                            query_val = float(val_str)
-                            if op == '>' and not (cell_val > query_val):
-                                return False
-                            if op == '<' and not (cell_val < query_val):
-                                return False
-                        except (ValueError, TypeError):
-                            pass
-                    matched = True
-                    break
-
-            if matched:
-                continue
-
-            # Colon operator — substring match on named column
-            if ':' in token:
-                col, _, val = token.partition(':')
-                col = col.strip()
-                val = val.strip()
-                if col in data_row.index:
-                    cell = str(data_row[col]).lower()
-                    if val.lower() not in cell:
-                        return False
-                    matched = True
-
-            if matched:
-                continue
-
-            # Negation operator — token starts with `-`
-            if token.startswith('-') and len(token) > 1:
-                neg_val = token[1:].lower()
-                # If neg_val matches ANY column, reject the row
-                matches_any = False
-                for c in data_row.index:
-                    if neg_val in str(data_row[c]).lower():
-                        matches_any = True
-                        break
-                if matches_any:
-                    return False
-                continue
-
-            # Default: search ALL columns (was ion-only)
-            token_lower = token.lower()
-            matches_any = False
-            for c in data_row.index:
-                if token_lower in str(data_row[c]).lower():
-                    matches_any = True
-                    break
-            if not matches_any:
+            if not self._token_matches(token, data_row):
                 return False
 
         return True
@@ -1498,6 +2082,9 @@ class MainWidget(widgets.QWidget):
         self.result_metrics = {'kind': 'ready'}
         self._filter_active = False
         self._result_count_base = ''
+        self._last_interference_display_data = None
+        self._last_interference_spectrum_data = None
+        self._last_interference_metrics = None
         self._calc_request_id = 0
         self._calc_thread = None
         self._calc_worker = None
@@ -1514,13 +2101,11 @@ class MainWidget(widgets.QWidget):
         self.mode_input.addItem('SIMS', 'sims')
 
         self.atoms_input = ElementInput(parent=self)
-        self.atoms_input.setPlaceholderText('Fe Ni Cu Zn Ar O H C N Cl S')
-        self._elements_validation_timer = QtCore.QTimer(self)
-        self._elements_validation_timer.setSingleShot(True)
-        self._elements_validation_timer.setInterval(300)
-        self._elements_validation_timer.timeout.connect(self._validate_elements_input)
-        self.atoms_input.textChanged.connect(self._elements_validation_timer.start)
+        self.atoms_input.setMinimumHeight(132)
+        self.atoms_input.setMaximumHeight(170)
+        self.atoms_input.elementsChanged.connect(self._on_elements_changed)
 
+        # Element preset combo replaces existing elements
         self.element_set_input = widgets.QComboBox(parent=self)
         self.element_set_input.addItem(_text(self.language, 'add_set_empty'), ())
         self.element_set_input.addItem(_text(self.language, 'all_inorganic_elements'), _COMMON_INORGANIC_ELEMENTS)
@@ -1529,15 +2114,6 @@ class MainWidget(widgets.QWidget):
         self.element_set_input.addItem(_text(self.language, 'halogens_sulfur'), ('F', 'Cl', 'Br', 'I', 'S'))
         self.element_set_input.addItem(_text(self.language, 'transition_matrix'), ('Fe', 'Ni', 'Cu', 'Zn', 'Co', 'Cr', 'Mn'))
         self.element_set_input.addItem(_text(self.language, 'silicate_matrix'), ('Si', 'Al', 'Ca', 'Mg', 'Na', 'K', 'O'))
-
-        # Auto-completion for element symbols
-        _element_data = periodic_table[['element', 'element name']].drop_duplicates()
-        _completer_entries = sorted(
-            f"{row['element']} ({row['element name']})"
-            for _, row in _element_data.iterrows()
-        )
-        self._element_completer = widgets.QCompleter(_completer_entries, self)
-        self.atoms_input.setCompleter(self._element_completer)
 
         self.maxsize_label = widgets.QLabel(_text(self.language, 'max_size'), parent=self)
         self.maxsize_input = widgets.QSpinBox(parent=self)
@@ -1554,27 +2130,37 @@ class MainWidget(widgets.QWidget):
         self.charge_preset_input.setCurrentIndex(1)
 
         self.mz_input = widgets.QLineEdit(parent=self)
-        self.mz_input.setPlaceholderText('56Fe or 75As or 55.9349')
+        self.mz_input.setVisible(False)
         self._mz_preview_label = widgets.QLabel(parent=self)
-        self._mz_preview_label.setObjectName('helperText')
+        self._mz_preview_label.setVisible(False)
         self._mz_preview_timer = QtCore.QTimer(self)
         self._mz_preview_timer.setSingleShot(True)
         self._mz_preview_timer.setInterval(300)
         self._mz_preview_timer.timeout.connect(self._update_mz_preview)
         self.mz_input.textChanged.connect(self._mz_preview_timer.start)
 
-        self.mzrange_label = widgets.QLabel(_text(self.language, 'window_width'), parent=self)
-        self.mzrange_input = widgets.QDoubleSpinBox(parent=self)
-        self.mzrange_input.setValue(self.mzrange)
-        self.mzrange_input.setSingleStep(0.1)
-        self.mzrange_input.setDecimals(3)
-        self.mzrange_input.setRange(0.001, 100.0)
+        # Element + isotope selector for target
+        self._target_element_input = widgets.QComboBox(parent=self)
+        self._target_element_input.setEditable(True)
+        self._target_element_input.setInsertPolicy(widgets.QComboBox.NoInsert)
+        self._target_element_input.setPlaceholderText(_text(self.language, 'target_element_placeholder'))
+        self._target_element_input.setToolTip(tooltip_text(self.language, 'mz'))
+        _sorted_elements = sorted(
+            periodic_table[['element', 'element name']].drop_duplicates().to_records(index=False),
+            key=lambda x: x[0]
+        )
+        for elem, name in _sorted_elements:
+            self._target_element_input.addItem(f'{elem}  ({name})', elem)
+        self._target_element_input.setCurrentIndex(-1)
+        self._target_element_input.setMinimumWidth(130)
 
-        self.window_unit_input = widgets.QComboBox(parent=self)
-        self.window_unit_input.addItem('ppm', 'ppm')
-        self.window_unit_input.addItem('m/z', 'mz')
-        self._applying_preset = False
-        self._window_unit = _current_data(self.window_unit_input)
+        self._target_isotope_input = widgets.QComboBox(parent=self)
+        self._target_isotope_input.setEnabled(False)
+        self._target_isotope_input.setPlaceholderText(_text(self.language, 'target_isotope_placeholder'))
+        self._target_isotope_input.setToolTip(tooltip_text(self.language, 'mz'))
+        self._target_isotope_input.setMinimumWidth(150)
+        self._target_element_input.currentIndexChanged.connect(self._on_target_element_changed)
+        self._target_isotope_input.currentIndexChanged.connect(self._on_target_isotope_changed)
 
         self.instrument_mrp_label = widgets.QLabel(_text(self.language, 'instrument_mrp'), parent=self)
         self.instrument_mrp_input = widgets.QSpinBox(parent=self)
@@ -1583,6 +2169,7 @@ class MainWidget(widgets.QWidget):
         self.instrument_mrp_input.setSingleStep(500)
         self.instrument_mrp_input.setSpecialValueText(_text(self.language, 'off'))
 
+        # No separate mzrange/window_unit picker — sweep_input replaces both
         self.language_label = widgets.QLabel(_text(self.language, 'language'), parent=self)
         self.language_label.setObjectName('appSubtitle')
         self.language_input = widgets.QComboBox(parent=self)
@@ -1599,10 +2186,10 @@ class MainWidget(widgets.QWidget):
         self.spectrum_button = widgets.QToolButton(parent=self)
         self.spectrum_button.setObjectName('iconButton')
         self.spectrum_button.setIcon(QtGui.QIcon(_display_button_icon))
-        self.export_button = widgets.QPushButton('Export ▾', parent=self)
+        self.export_button = widgets.QPushButton('{} ▾'.format(_text(self.language, 'export')), parent=self)
         self.export_menu = widgets.QMenu(self)
-        self.export_menu.addAction('CSV…', self.export_csv)
-        self.export_menu.addAction('Excel…', self.export_xlsx)
+        self.export_menu.addAction(_text(self.language, 'export_csv'), self.export_csv)
+        self.export_menu.addAction(_text(self.language, 'export_xlsx'), self.export_xlsx)
         self.export_button.setMenu(self.export_menu)
 
         # Table and spectrum output
@@ -1612,6 +2199,7 @@ class MainWidget(widgets.QWidget):
         _header.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         _header.customContextMenuRequested.connect(self._show_column_menu)
         self.spectrum_window = Spectrum(parent=self)
+        self.spectrum_window.peakSelected.connect(self._select_result_row_from_spectrum)
 
         # Show input errors on statusbar
         self.statusbar = self.parent().statusBar()
@@ -1665,36 +2253,44 @@ class MainWidget(widgets.QWidget):
 
         self.workflow_group = widgets.QGroupBox(_text(self.language, 'workflow'))
         self.workflow_group.setObjectName('workflowGroup')
-        self.workflow_layout = widgets.QGridLayout()
+        self.workflow_layout = widgets.QFormLayout()
         self.workflow_layout.setContentsMargins(12, 16, 12, 8)
-        self.workflow_layout.setHorizontalSpacing(8)
-        self.workflow_layout.setVerticalSpacing(4)
+        self.workflow_layout.setHorizontalSpacing(12)
+        self.workflow_layout.setVerticalSpacing(6)
         self.mode_label = self.create_field_label(_text(self.language, 'mode'))
-        self.mode_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.workflow_layout.addWidget(self.mode_label, 0, 0)
-        self.workflow_layout.addWidget(self.mode_input, 0, 1, 1, 2)
+        self.workflow_layout.addRow(self.mode_label, self.mode_input)
+        target_group = widgets.QWidget()
+        target_group_layout = widgets.QVBoxLayout(target_group)
+        target_group_layout.setContentsMargins(0, 0, 0, 0)
+        target_group_layout.setSpacing(2)
+        sel_row = widgets.QHBoxLayout()
+        sel_row.setSpacing(4)
+        sel_row.addWidget(self._target_element_input)
+        sel_row.addWidget(self._target_isotope_input)
+        sel_row.addStretch(1)
+        target_group_layout.addLayout(sel_row)
+        mz_label = widgets.QLabel(parent=self)
+        mz_label.setObjectName('helperText')
+        mz_label.setStyleSheet("color: #1e40af; font-size: 13px; font-weight: bold;")
+        mz_label.setToolTip(tooltip_text(self.language, 'mz'))
+        self._target_mz_result_label = mz_label
+        target_group_layout.addWidget(mz_label)
         self.target_label = self.create_field_label(_text(self.language, 'target'))
-        self.target_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.workflow_layout.addWidget(self.target_label, 1, 0)
-        self.target_mz_container = widgets.QHBoxLayout()
-        self.target_mz_container.setSpacing(4)
-        self.target_mz_container.addWidget(self.mz_input, stretch=1)
-        self.target_mz_container.addWidget(self._mz_preview_label)
-        self.workflow_layout.addLayout(self.target_mz_container, 1, 1, 1, 2)
-        self.window_width_label = self.create_field_label(_text(self.language, 'window_width'))
-        self.window_width_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.workflow_layout.addWidget(self.window_width_label, 2, 0)
-        self.target_range_layout = widgets.QHBoxLayout()
-        self.target_range_layout.setSpacing(6)
-        self.target_range_layout.addWidget(self.mzrange_input, stretch=1)
-        self.target_range_layout.addWidget(self.window_unit_input)
-        self.workflow_layout.addLayout(self.target_range_layout, 2, 1, 1, 2)
-        self.target_hint_label = widgets.QLabel(parent=self.workflow_group)
-        self.target_hint_label.setObjectName('helperText')
-        self.target_hint_label.setWordWrap(True)
-        self.workflow_layout.addWidget(self.target_hint_label, 3, 1, 1, 2)
-        self.target_hint_label.hide()
-
+        self.workflow_layout.addRow(self.target_label, target_group)
+        self.sweep_label = self.create_field_label(_text(self.language, 'sweep'))
+        sweep_widget = widgets.QWidget()
+        sweep_widget_layout = widgets.QHBoxLayout(sweep_widget)
+        sweep_widget_layout.setContentsMargins(0, 0, 0, 0)
+        sweep_widget_layout.setSpacing(4)
+        sweep_input = widgets.QSpinBox(parent=self)
+        sweep_input.setRange(100, 100000)
+        sweep_input.setValue(2000)
+        sweep_input.setSuffix(' ppm')
+        sweep_input.setSingleStep(100)
+        sweep_input.setToolTip(tooltip_text(self.language, 'mzrange'))
+        sweep_widget_layout.addWidget(sweep_input, stretch=1)
+        self.workflow_layout.addRow(self.sweep_label, sweep_widget)
+        self.sweep_input = sweep_input
         self.ion_model_label = self.create_field_label(_text(self.language, 'ion_model'))
         self.ion_model_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.parameter_row_layout = widgets.QHBoxLayout()
@@ -1717,10 +2313,11 @@ class MainWidget(widgets.QWidget):
         self.parameter_row_layout.addLayout(self.charge_field_layout, stretch=2)
         self.parameter_row_layout.addLayout(self.maxsize_field_layout, stretch=1)
         self.parameter_row_layout.addLayout(self.mrp_field_layout, stretch=2)
-        self.workflow_layout.addWidget(self.ion_model_label, 4, 0)
-        self.workflow_layout.addLayout(self.parameter_row_layout, 4, 1, 1, 2)
-        self.workflow_layout.setColumnMinimumWidth(0, 70)
-        self.workflow_layout.setColumnStretch(1, 1)
+        ion_row = widgets.QWidget()
+        ion_row_layout = widgets.QHBoxLayout(ion_row)
+        ion_row_layout.setContentsMargins(0, 0, 0, 0)
+        ion_row_layout.addLayout(self.parameter_row_layout)
+        self.workflow_layout.addRow(self.ion_model_label, ion_row)
         self.workflow_group.setLayout(self.workflow_layout)
 
         self.atoms_group = widgets.QGroupBox(_text(self.language, 'sample_plasma'))
@@ -1728,15 +2325,15 @@ class MainWidget(widgets.QWidget):
         self.atoms_layout.setContentsMargins(14, 16, 14, 10)
         self.atoms_layout.setSpacing(5)
         self.elements_label = self.create_field_label(_text(self.language, 'elements'))
-        self.add_set_label = self.create_field_label(_text(self.language, 'add_set'))
         self.atoms_layout.addWidget(self.elements_label)
-        self.atoms_layout.addWidget(self.atoms_input)
+        self.atoms_layout.addWidget(self.atoms_input, stretch=1)
         self.elements_count_label = widgets.QLabel(parent=self.atoms_group)
         self.elements_count_label.setObjectName('helperText')
         self.elements_count_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.atoms_layout.addWidget(self.elements_count_label)
         self.element_set_row_layout = widgets.QHBoxLayout()
         self.element_set_row_layout.setSpacing(8)
+        self.add_set_label = self.create_field_label(_text(self.language, 'add_set'))
         self.add_set_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.add_set_label.setMinimumWidth(70)
         self.element_set_row_layout.addWidget(self.add_set_label)
@@ -1822,7 +2419,7 @@ class MainWidget(widgets.QWidget):
         _filter_container_layout = widgets.QHBoxLayout(self.filter_container)
         _filter_container_layout.setContentsMargins(16, 4, 16, 4)
         self.filter_bar = widgets.QLineEdit(parent=self.filter_container)
-        self.filter_bar.setPlaceholderText('Filter results…')
+        self.filter_bar.setPlaceholderText(_text(self.language, 'filter_results'))
         self.filter_bar.setClearButtonEnabled(True)
         self.filter_bar.textChanged.connect(self._apply_filter)
         _filter_container_layout.addWidget(self.filter_bar)
@@ -1836,20 +2433,27 @@ class MainWidget(widgets.QWidget):
         _chip_layout.setContentsMargins(16, 0, 16, 4)
         _chip_layout.setSpacing(6)
 
-        self._chip_unresolved = self._make_filter_chip('Unresolved', 'ok:no', '#fef3c7')
-        self._chip_risk_high = self._make_filter_chip('Risk > 0.01', 'risk>0.01', '#fee2e2')
-        self._chip_risk_medium = self._make_filter_chip('Risk > 0.001', 'risk>0.001', '#fff7ed')
-        self._chip_oxide = self._make_filter_chip('Oxide', 'type:oxide', '#e0f2fe')
-        self._chip_sulfide = self._make_filter_chip('Sulfide', 'type:sulfide', '#f3e8ff')
-        self._chip_hydride = self._make_filter_chip('Hydride', 'type:hydride', '#ecfdf5')
-        self._chip_target = self._make_filter_chip('Target peak', 'target:True', '#fef2f2')
+        self._filter_chips = []
+        self._chip_unresolved = self._make_filter_chip('filter_unresolved', 'ok:no', '#fef3c7')
+        self._chip_risk_high = self._make_filter_chip('filter_risk_high', 'risk>0.01', '#fee2e2')
+        self._chip_risk_medium = self._make_filter_chip('filter_risk_medium', 'risk>0.001', '#fff7ed')
+        self._chip_atomic = self._make_filter_chip('filter_atomic', 'type:atomic', '#e0f2fe')
+        self._chip_oxide = self._make_filter_chip('filter_oxide', 'type:oxide|type:dioxide', '#e0f2fe')
+        self._chip_hydride = self._make_filter_chip('filter_hydride', 'type:hydride|type:hydroxide', '#ecfdf5')
+        self._chip_sulfide = self._make_filter_chip('filter_sulfide_halide', 'type:sulfide|type:halide', '#f3e8ff')
+        self._chip_doubly = self._make_filter_chip('filter_doubly', 'z:2', '#fed7aa')
+        self._chip_plasma = self._make_filter_chip('filter_plasma', 'type:plasma', '#fce7f3')
+        self._chip_target = self._make_filter_chip('filter_target_peak', 'target:True', '#fef2f2')
 
         _chip_layout.addWidget(self._chip_unresolved)
         _chip_layout.addWidget(self._chip_risk_high)
         _chip_layout.addWidget(self._chip_risk_medium)
+        _chip_layout.addWidget(self._chip_atomic)
         _chip_layout.addWidget(self._chip_oxide)
-        _chip_layout.addWidget(self._chip_sulfide)
         _chip_layout.addWidget(self._chip_hydride)
+        _chip_layout.addWidget(self._chip_sulfide)
+        _chip_layout.addWidget(self._chip_doubly)
+        _chip_layout.addWidget(self._chip_plasma)
         _chip_layout.addWidget(self._chip_target)
         _chip_layout.addStretch(1)
         self.results_layout.addWidget(self._filter_chip_bar)
@@ -1877,20 +2481,20 @@ class MainWidget(widgets.QWidget):
         self.help_button.clicked.connect(self.show_help)
         self.language_input.currentIndexChanged.connect(self.apply_language)
         self.mode_input.currentIndexChanged.connect(self.apply_mode_preset)
-        self.window_unit_input.currentIndexChanged.connect(self.apply_window_unit)
+        self.charge_preset_input.currentIndexChanged.connect(self._on_target_isotope_changed)
+
         self.element_set_input.activated.connect(self.add_element_set)
-        self.atoms_input.editingFinished.connect(self.check_atoms_input)
         self.mz_input.editingFinished.connect(self.check_mz_input)
-        self.mzrange_input.valueChanged.connect(self.update_result_summary)
+        # sweep_input handled below
         self.instrument_mrp_input.valueChanged.connect(self.update_result_summary)
         self.spectrum_button.clicked.connect(self.toggle_spectrum)
 
         # Set jump order for tab
         self.setTabOrder(self.language_input, self.mode_input)
         self.setTabOrder(self.mode_input, self.mz_input)
-        self.setTabOrder(self.mz_input, self.mzrange_input)
-        self.setTabOrder(self.mzrange_input, self.window_unit_input)
-        self.setTabOrder(self.window_unit_input, self.atoms_input)
+        self.sweep_input.valueChanged.connect(self.update_result_summary)
+        self.setTabOrder(self.mz_input, self.sweep_input)
+        self.setTabOrder(self.sweep_input, self.atoms_input)
         self.setTabOrder(self.atoms_input, self.element_set_input)
         self.setTabOrder(self.element_set_input, self.charge_preset_input)
         self.setTabOrder(self.charge_preset_input, self.maxsize_input)
@@ -1944,19 +2548,18 @@ class MainWidget(widgets.QWidget):
         self.language_label.setText(self._tr('language'))
         self.workflow_group.setTitle(self._tr('workflow'))
         self.mode_label.setText(self._tr('mode'))
+        self.sweep_label.setText(self._tr('sweep'))
         self.target_label.setText(self._tr('target'))
-        self.window_width_label.setText(self._tr('window_width'))
-        self.target_hint_label.setText(self._tr('target_hint'))
         self.atoms_group.setTitle(self._tr('sample_plasma'))
         self.elements_label.setText(self._tr('elements'))
         self.add_set_label.setText(self._tr('add_set'))
         self.ion_model_label.setText(self._tr('ion_model'))
         self.charge_preset_label.setText(self._tr('ions'))
         self.maxsize_label.setText(self._tr('max_size'))
-        self.mzrange_label.setText(self._tr('window_width'))
+
         self.instrument_mrp_label.setText(self._tr('instrument_mrp'))
         self.interference_button.setText(self._tr('calculate'))
-        self.standard_ratio_button.setText(self._tr('ratios'))
+        self._update_ratio_button_label()
         self.results_title_label.setText(self._tr('results_title'))
         self.empty_title_label.setText(self._tr('empty_title'))
         self.empty_body_label.setText(self._tr('empty_body'))
@@ -1966,6 +2569,13 @@ class MainWidget(widgets.QWidget):
         self.export_menu.actions()[0].setText(self._tr('export_csv'))
         self.export_menu.actions()[1].setText(self._tr('export_xlsx'))
         self.filter_bar.setPlaceholderText(self._tr('filter_results'))
+        self._target_element_input.setPlaceholderText(self._tr('target_element_placeholder'))
+        self._target_isotope_input.setPlaceholderText(self._tr('target_isotope_placeholder'))
+        self.atoms_input.set_language(self.language)
+        self.table_output.set_language(self.language)
+        for chip in getattr(self, '_filter_chips', []):
+            chip.setText(self._tr(chip._label_key))
+        self._validate_elements_input()
 
         self.set_tooltips()
         self.spectrum_window.set_language(self.language)
@@ -1975,12 +2585,15 @@ class MainWidget(widgets.QWidget):
     def set_tooltips(self):
         """Set localized widget tooltips."""
         self.mode_input.setToolTip(tooltip_text(self.language, 'mode'))
-        self.atoms_input.setToolTip(tooltip_text(self.language, 'atoms'))
+        self.atoms_input.setToolTip('')
         self.element_set_input.setToolTip(tooltip_text(self.language, 'element_set'))
         self.charge_preset_input.setToolTip(tooltip_text(self.language, 'charge_preset'))
         self.mz_input.setToolTip(tooltip_text(self.language, 'mz'))
-        self.mzrange_input.setToolTip(tooltip_text(self.language, 'mzrange'))
-        self.window_unit_input.setToolTip(tooltip_text(self.language, 'window_unit'))
+        self._target_element_input.setToolTip(tooltip_text(self.language, 'mz'))
+        self._target_isotope_input.setToolTip(tooltip_text(self.language, 'mz'))
+        self._target_mz_result_label.setToolTip(tooltip_text(self.language, 'mz'))
+        self.sweep_input.setToolTip(tooltip_text(self.language, 'mzrange'))
+
         self.maxsize_input.setToolTip(tooltip_text(self.language, 'maxsize'))
         self.instrument_mrp_input.setToolTip(tooltip_text(self.language, 'instrument_mrp'))
         self.interference_button.setToolTip(tooltip_text(self.language, 'interference_button'))
@@ -2012,12 +2625,7 @@ class MainWidget(widgets.QWidget):
             return
 
         mode = self.mode_input.currentText()
-        unit = self.window_unit_input.currentText()
-        window_value = self.mzrange_input.value()
-        if _current_data(self.window_unit_input) == 'ppm':
-            window = '{:.1f} {}'.format(window_value, unit)
-        else:
-            window = '{:.6f} {}'.format(window_value, unit)
+        window = '{:.0f} ppm'.format(self.sweep_input.value())
 
         mrp_value = self.instrument_mrp_input.value()
         mrp = self._tr('off') if mrp_value == 0 else '{:d}'.format(mrp_value)
@@ -2034,85 +2642,112 @@ class MainWidget(widgets.QWidget):
             count_text = self._tr('summary_ready')
 
         self.mode_metric_label.setText('{}: {}'.format(self._tr('summary_mode'), mode))
-        self.window_metric_label.setText('{}: {}'.format(self._tr('summary_window'), window))
+        self.window_metric_label.setText('{}: {}'.format(self._tr('summary_window'), window)
+        )
         self.mrp_metric_label.setText('{}: {}'.format(self._tr('summary_mrp'), mrp))
         self.count_metric_label.setText(count_text)
         self._result_count_base = count_text
 
+    def _copy_table_data(self, data):
+        """Copy a DataFrame while preserving attrs used by the spectrum."""
+        copied = data.copy()
+        copied.attrs = dict(getattr(data, 'attrs', {}))
+        return copied
+
+    def _has_interference_cache(self):
+        """Return True when a previous interference result can be restored."""
+        return (
+            self._last_interference_display_data is not None and
+            self._last_interference_spectrum_data is not None and
+            self._last_interference_metrics is not None
+        )
+
+    def _update_ratio_button_label(self):
+        """Switch the ratio button label based on the active result view."""
+        if not hasattr(self, 'standard_ratio_button'):
+            return
+        if self.result_metrics.get('kind') == 'ratios' and self._has_interference_cache():
+            self.standard_ratio_button.setText(self._tr('interferences'))
+        else:
+            self.standard_ratio_button.setText(self._tr('ratios'))
+
+    def _set_filter_text(self, text):
+        """Set filter text and proxy state without recursive signal churn."""
+        self.filter_bar.blockSignals(True)
+        self.filter_bar.setText(text)
+        self.filter_bar.blockSignals(False)
+        model = self.table_output.model()
+        if isinstance(model, InterferenceFilterProxy):
+            model.set_filter_text(text)
+        self._update_filtered_count()
+
+    def _show_interference_results(self, display_data, spectrum_data, metrics,
+                                   filter_text='', status_text=None):
+        """Display cached or freshly calculated interference results."""
+        self.table_output.setUpdatesEnabled(False)
+        self.table_output.setVisible(False)
+
+        model = TableModel(display_data, table='interference', language=self.language)
+        proxy = InterferenceFilterProxy(self)
+        proxy.setSourceModel(model)
+        self.table_output.setModel(proxy)
+        self.table_output.setColumnHidden(display_data.columns.get_loc('target'), True)
+        self.resize_table_sections()
+        self.filter_container.setVisible(True)
+        self._filter_chip_bar.setVisible(True)
+
+        self._spectrum_data = self._copy_table_data(spectrum_data)
+        self.result_metrics = dict(metrics)
+        self.results_stack.setCurrentWidget(self.table_output)
+        self.update_result_summary()
+        self._set_filter_text(filter_text)
+        self.spectrum_window.plot_spectrum(self._spectrum_data)
+        self._update_ratio_button_label()
+
+        self.table_output.setVisible(True)
+        self.table_output.setUpdatesEnabled(True)
+        self.table_output.setFocus()
+
+        if status_text:
+            self.set_status(status_text, time=5000)
+
+    def _cache_interference_results(self, display_data, spectrum_data, metrics):
+        """Cache the latest interference result so ratios can be toggled back."""
+        self._last_interference_display_data = self._copy_table_data(display_data)
+        self._last_interference_spectrum_data = self._copy_table_data(spectrum_data)
+        self._last_interference_metrics = dict(metrics)
+
+    def _restore_interference_results(self):
+        """Restore the last interference table without recalculating."""
+        if not self._has_interference_cache():
+            return False
+        self._show_interference_results(
+            self._last_interference_display_data,
+            self._last_interference_spectrum_data,
+            self._last_interference_metrics,
+            filter_text='',
+            status_text=self._tr('interference_restored'),
+        )
+        return True
+
     def apply_mode_preset(self, index=None):
         """ Apply UI defaults for the selected calculation preset. """
         preset = self.MODE_PRESETS.get(self.mode_input.currentText())
-        self._applying_preset = True
-        try:
-            if preset:
-                self.charge_preset_input.setCurrentIndex(preset['charge_index'])
-                self.maxsize_input.setValue(preset['maxsize'])
-                self.instrument_mrp_input.setValue(preset['mrp'])
-                self.window_unit_input.setCurrentIndex(
-                    self.window_unit_input.findText(preset['window_unit'])
-                )
-                self.apply_window_unit()
-                self.mzrange_input.setValue(preset['window'])
-                self.atoms_input.setPlaceholderText(preset['atoms'])
-                self.mz_input.setPlaceholderText(preset['target'])
-        finally:
-            self._applying_preset = False
-            self._window_unit = _current_data(self.window_unit_input)
-            self.update_result_summary()
-
-    def apply_window_unit(self, index=None):
-        """Adjust range input precision and convert m/z/ppm window width values."""
-        new_unit = _current_data(self.window_unit_input)
-        old_unit = getattr(self, '_window_unit', new_unit)
-        old_value = self.mzrange_input.value()
-        converted_value = None
-        if not self._applying_preset and old_unit != new_unit:
-            converted_value = self.convert_window_value(old_value, old_unit, new_unit)
-
-        if new_unit == 'ppm':
-            self.mzrange_input.setDecimals(1)
-            self.mzrange_input.setRange(0.1, 1000000.0)
-            self.mzrange_input.setSingleStep(10.0)
-        else:
-            self.mzrange_input.setDecimals(6)
-            self.mzrange_input.setRange(0.0001, 100.0)
-            self.mzrange_input.setSingleStep(0.001)
-
-        if converted_value is not None:
-            self.mzrange_input.setValue(converted_value)
-        self._window_unit = new_unit
+        if preset:
+            self.charge_preset_input.setCurrentIndex(preset['charge_index'])
+            self.maxsize_input.setValue(preset['maxsize'])
+            self.instrument_mrp_input.setValue(preset['mrp'])
+            self.sweep_input.setValue(int(preset['window']))
+            self.atoms_input.setPlaceholderText(self._tr('elements_empty_hint'))
+            self.mz_input.setPlaceholderText(preset['target'])
         self.update_result_summary()
 
-    def convert_window_value(self, value, old_unit, new_unit):
-        """Convert current full-window value between m/z and ppm."""
-        if old_unit == new_unit:
-            return value
-
-        if not self.check_charges_input() or not self.check_mz_input():
-            self.warn(self._tr('convert_invalid_target'))
-            return None
-
-        target_mz = self.target_mz()
-        if not target_mz:
-            self.warn(self._tr('convert_target_required'))
-            return None
-
-        if old_unit == 'mz' and new_unit == 'ppm':
-            return value / target_mz * 1e6
-        if old_unit == 'ppm' and new_unit == 'mz':
-            return target_mz * value / 1e6
-        return None
-
     def add_element_set(self, index):
-        """Append a selected element set to the element input."""
+        """Replace element input with selected preset."""
         elements = _current_data(self.element_set_input)
         if not elements:
             return
-        current = re.findall(_isotope_rx, str(self.atoms_input.text()))
-        for element in elements:
-            if element not in current:
-                current.append(element)
-        self.atoms_input.setText(' '.join(current))
+        self.atoms_input.set_elements(list(elements))
         self.element_set_input.setCurrentIndex(0)
 
     def warn(self, text, time=5000):
@@ -2125,10 +2760,21 @@ class MainWidget(widgets.QWidget):
         self.statusbar.setStyleSheet('color: #475569; font-weight: 400;')
         self.statusbar.showMessage(text, msecs=time)
 
+    def _on_elements_changed(self, elements):
+        """Update atoms list and count display when elements change."""
+        self.atoms = elements
+        count = len(elements)
+        if count > 0:
+            self.elements_count_label.setText(self._tr('element_count').format(count))
+            self.elements_count_label.setStyleSheet("color: #64748b; font-size: 11px;")
+        else:
+            self.elements_count_label.setText('')
+        # Also update validate-style display for edge cases
+        self._validate_elements_input()
+
     def _validate_elements_input(self):
         """Check element input for invalid tokens; update border and count label."""
-        text = self.atoms_input.text()
-        tokens = re.findall(_isotope_rx, text) if text.strip() else []
+        tokens = self.atoms if hasattr(self, 'atoms') else []
         invalid = []
         valid_count = 0
         for t in tokens:
@@ -2137,28 +2783,65 @@ class MainWidget(widgets.QWidget):
             else:
                 invalid.append(t)
 
-        if invalid:
-            self.atoms_input.setStyleSheet(
-                "QPlainTextEdit#elementsInput { border: 2px solid #dc2626; }"
-            )
-        elif tokens:
-            self.atoms_input.setStyleSheet("")
-        else:
-            self.atoms_input.setStyleSheet("")
+        # Chip input handles styling natively
 
         if invalid:
             msg = _text(self.language, 'missing_element').format(invalid[0])
             self.elements_count_label.setText(
-                f"{valid_count} elements \xb7 {msg}"
+                self._tr('element_count_error').format(valid_count, msg)
             )
             self.elements_count_label.setStyleSheet("color: #dc2626; font-size: 11px;")
         elif valid_count > 0:
             self.elements_count_label.setText(
-                f"{valid_count} elements"
+                self._tr('element_count').format(valid_count)
             )
             self.elements_count_label.setStyleSheet("color: #64748b; font-size: 11px;")
         else:
             self.elements_count_label.setText("")
+
+    def _on_target_element_changed(self, index):
+        """Populate isotope selector when element is chosen."""
+        elem = self._target_element_input.currentData()
+        if not elem:
+            self._target_isotope_input.setEnabled(False)
+            self._target_isotope_input.clear()
+            self.mz_input.clear()
+            if hasattr(self, '_target_mz_result_label'):
+                self._target_mz_result_label.setText('')
+            return
+        isotopes = periodic_table[periodic_table['element'] == elem]
+        self._target_isotope_input.blockSignals(True)
+        self._target_isotope_input.clear()
+        for _, row in isotopes.iterrows():
+            abun = row['abundance']
+            label = f"{row['isotope']}  ({abun*100:.1f}%)"
+            self._target_isotope_input.addItem(label, row['isotope'])
+        self._target_isotope_input.blockSignals(False)
+        self._target_isotope_input.setEnabled(True)
+        # Auto-select the most abundant isotope
+        max_pos = isotopes['abundance'].idxmax()
+        for pos in range(len(isotopes)):
+            if isotopes.index[pos] == max_pos:
+                self._target_isotope_input.setCurrentIndex(pos)
+                break
+
+    def _on_target_isotope_changed(self, index):
+        """Update target m/z display when isotope is selected."""
+        isotope = self._target_isotope_input.currentData()
+        if not isotope:
+            self._target_mz_result_label.setText('')
+            self.mz_input.clear()
+            return
+        row = periodic_table[periodic_table['isotope'] == isotope].iloc[0]
+        mass = row['mass']
+        charges, _ = _current_data(self.charge_preset_input)
+        charge = charges[0]
+        mz = mass / charge
+        self.mz_input.blockSignals(True)
+        self.mz_input.setText(str(isotope))
+        self.mz_input.blockSignals(False)
+        self.mz = str(isotope)
+        self._target_mz_result_label.setText(f'{isotope}  →  m/z = {mz:.4f}')
 
     def _update_mz_preview(self):
         """Parse the target input and show m/z preview."""
@@ -2202,15 +2885,15 @@ class MainWidget(widgets.QWidget):
             source = model
         df = source._data
         path, _ = widgets.QFileDialog.getSaveFileName(
-            self, self._tr('export_csv'), '', 'CSV Files (*.csv)'
+            self, self._tr('export_csv'), '', self._tr('csv_files_filter')
         )
         if not path:
             return
         try:
             df.to_csv(path, index=False)
-            self.set_status(f'Exported {len(df)} rows to {path}')
+            self.set_status(self._tr('exported_rows').format(len(df), path))
         except Exception as e:
-            widgets.QMessageBox.critical(self, 'Export Error', str(e))
+            widgets.QMessageBox.critical(self, self._tr('export_error'), str(e))
 
     def export_xlsx(self):
         """Export current result table as Excel (.xlsx)."""
@@ -2222,10 +2905,8 @@ class MainWidget(widgets.QWidget):
             import openpyxl  # noqa: F401
         except ImportError:
             reply = widgets.QMessageBox.question(
-                self, 'Missing dependency',
-                'Excel export requires openpyxl.\n\n'
-                'Install: pip install interference-calculator[export]\n\n'
-                'Continue with CSV instead?',
+                self, self._tr('missing_dependency'),
+                self._tr('excel_export_missing'),
                 widgets.QMessageBox.Yes | widgets.QMessageBox.No
             )
             if reply == widgets.QMessageBox.Yes:
@@ -2237,19 +2918,19 @@ class MainWidget(widgets.QWidget):
             source = model
         df = source._data
         path, _ = widgets.QFileDialog.getSaveFileName(
-            self, self._tr('export_xlsx'), '', 'Excel Files (*.xlsx)'
+            self, self._tr('export_xlsx'), '', self._tr('excel_files_filter')
         )
         if not path:
             return
         try:
             df.to_excel(path, index=False, engine='openpyxl')
-            self.set_status(f'Exported {len(df)} rows to {path}')
+            self.set_status(self._tr('exported_rows').format(len(df), path))
         except Exception as e:
-            widgets.QMessageBox.critical(self, 'Export Error', str(e))
+            widgets.QMessageBox.critical(self, self._tr('export_error'), str(e))
 
-    def _make_filter_chip(self, label, query, bg_color):
+    def _make_filter_chip(self, label_key, query, bg_color):
         """Create a clickable quick-filter preset chip."""
-        chip = widgets.QLabel(label, parent=self.results_panel)
+        chip = widgets.QLabel(self._tr(label_key), parent=self.results_panel)
         chip.setObjectName('filterChip')
         chip.setStyleSheet(
             f"QLabel#filterChip {{ background: {bg_color}; border: 1px solid #cbd5e1; "
@@ -2257,8 +2938,10 @@ class MainWidget(widgets.QWidget):
             "QLabel#filterChip:hover { border-color: #1e40af; }"
         )
         chip.setCursor(QtCore.Qt.PointingHandCursor)
+        chip._label_key = label_key
         chip._filter_query = query
         chip.mousePressEvent = lambda evt, q=query: self._apply_chip_filter(q)
+        self._filter_chips.append(chip)
         return chip
 
     def _apply_chip_filter(self, query):
@@ -2269,12 +2952,78 @@ class MainWidget(widgets.QWidget):
             self.filter_bar.setText(query)
 
     def _apply_filter(self):
-        """Apply filter text to the result table proxy model."""
+        """Apply filter text to the result table proxy model and update spectrum."""
         model = self.table_output.model()
         if isinstance(model, InterferenceFilterProxy):
             model.set_filter_text(self.filter_bar.text())
         # Update count metric label when filter changes
         self._update_filtered_count()
+        # Sync spectrum to filtered data
+        self._sync_filtered_spectrum()
+
+    def _sync_filtered_spectrum(self):
+        """Re-plot spectrum with only currently visible rows."""
+        if self.result_metrics.get('kind') != 'interference':
+            return
+        spectrum_data = getattr(self, '_spectrum_data', None)
+        if spectrum_data is None:
+            return
+        proxy = self.table_output.model()
+        if not isinstance(proxy, InterferenceFilterProxy):
+            self.spectrum_window.plot_spectrum(spectrum_data)
+            return
+        src = proxy.sourceModel()
+        if src is None or not hasattr(src, '_data'):
+            return
+        # proxy sourceModel has same row count as spectrum_data
+        visible_rows = []
+        for row in range(src.rowCount()):
+            if proxy.filterAcceptsRow(row, QtCore.QModelIndex()):
+                visible_rows.append(row)
+        # Always include the target row in the spectrum
+        target_col = 'target'
+        target_rows_indices = []
+        if target_col in src._data.columns:
+            target_series = src._data[target_col]
+            for idx in range(len(target_series)):
+                if target_series.iloc[idx] == True:
+                    target_rows_indices.append(idx)
+        for tr in target_rows_indices:
+            if tr not in visible_rows:
+                visible_rows.append(tr)
+        visible_rows = sorted(visible_rows)
+
+        if len(visible_rows) == src.rowCount():
+            self.spectrum_window.plot_spectrum(spectrum_data)
+        else:
+            filtered = spectrum_data.iloc[visible_rows].reset_index(drop=True)
+            self.spectrum_window.plot_spectrum(filtered)
+
+    def _select_result_row_from_spectrum(self, source_row):
+        """Select the result-table row corresponding to a clicked spectrum peak."""
+        model = self.table_output.model()
+        if model is None:
+            return
+        view_index = QtCore.QModelIndex()
+        if isinstance(model, InterferenceFilterProxy):
+            source_model = model.sourceModel()
+            if source_model is None or source_row < 0 or source_row >= source_model.rowCount():
+                return
+            source_index = source_model.index(source_row, 0)
+            view_index = model.mapFromSource(source_index)
+            if not view_index.isValid():
+                self._set_filter_text('')
+                view_index = model.mapFromSource(source_index)
+        else:
+            if source_row < 0 or source_row >= model.rowCount():
+                return
+            view_index = model.index(source_row, 0)
+        if not view_index.isValid():
+            return
+        self.table_output.selectRow(view_index.row())
+        self.table_output.scrollTo(view_index, widgets.QAbstractItemView.PositionAtCenter)
+        self.table_output.setFocus()
+        self.set_status(self._tr('spectrum_peak_selected').format(source_row + 1), time=3000)
 
     def _update_filtered_count(self):
         """Show filtered/total row count in the count metric label."""
@@ -2336,7 +3085,7 @@ class MainWidget(widgets.QWidget):
         """Handle clicks on quick-filter chips."""
         if obj is self.count_metric_label and event.type() == QtCore.QEvent.MouseButtonPress:
             kind = self.result_metrics.get('kind')
-            if kind in ('interference', 'ratios'):
+            if kind == 'interference':
                 if self._filter_active:
                     # Clear filter
                     self._filter_active = False
@@ -2422,7 +3171,7 @@ class MainWidget(widgets.QWidget):
         """ Validate input for atoms_input.
             Returns True on proper validation, False on error.
         """
-        atoms = re.findall(_isotope_rx, str(self.atoms_input.text()))
+        atoms = self.atoms_input.elements() if hasattr(self, 'atoms_input') else self.atoms
         if not atoms:
             self.warn(self._tr('empty_atoms'))
             return False
@@ -2430,7 +3179,7 @@ class MainWidget(widgets.QWidget):
             if not (periodic_table['element'] == a).any(): 
                 self.warn(self._tr('missing_element').format(a))
                 return False
-        self.atoms = atoms
+        self.atoms = list(atoms)
         return True
 
     def check_charges_input(self):
@@ -2458,9 +3207,7 @@ class MainWidget(widgets.QWidget):
 
     def targetrange_mz(self):
         """Return selected full target window as a half-width in m/z units."""
-        half_window = self.mzrange_input.value() / 2.0
-        if _current_data(self.window_unit_input) != 'ppm':
-            return half_window
+        half_window = self.sweep_input.value() / 2.0
 
         target_mz = self.target_mz()
         if target_mz is None:
@@ -2547,35 +3294,63 @@ class MainWidget(widgets.QWidget):
         # Show progress bar
         self._progress_bar.setValue(0)
         self._progress_bar.setVisible(True)
-        self.set_status('Calculating\u2026' if self.language == 'en' else '\u8ba1\u7b97\u4e2d\u2026')
+        self.set_status(self._tr('calculating'))
 
         # Create and start the background worker
-        self._calc_worker = CalculationWorker(
+        worker = CalculationWorker(
             self.atoms, self.mz, self.mzrange, self.maxsize,
             self.charges, self.chargesign, risk_preset,
             instrument_mrp=self.instrument_mrp_input.value(),
             language=self.language,
         )
-        self._calc_thread = QtCore.QThread(self)
-        self._calc_worker.moveToThread(self._calc_thread)
-        self._calc_worker.progress.connect(self._progress_bar.setValue)
-        self._calc_worker.finished.connect(
+        thread = QtCore.QThread(self)
+        self._calc_worker = worker
+        self._calc_thread = thread
+        worker.moveToThread(thread)
+        worker.progress.connect(self._progress_bar.setValue)
+        worker.finished.connect(
             lambda data, rid=request_id: self._on_calc_finished(data, rid)
         )
-        self._calc_worker.error.connect(self._on_calc_error)
-        self._calc_thread.started.connect(self._calc_worker.run)
-        self._calc_thread.finished.connect(self._calc_thread.deleteLater)
-        self._calc_thread.start()
+        worker.error.connect(self._on_calc_error)
+        worker.finished.connect(thread.quit)
+        worker.error.connect(thread.quit)
+        thread.started.connect(worker.run)
+        thread.finished.connect(
+            lambda t=thread, w=worker: self._on_calc_thread_finished(t, w)
+        )
+        thread.finished.connect(worker.deleteLater)
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
 
     def _cleanup_calc_thread(self):
         """Cancel and clean up any running calculation thread."""
-        if self._calc_worker is not None:
-            self._calc_worker.cancel()
-        if self._calc_thread is not None and self._calc_thread.isRunning():
-            self._calc_thread.quit()
-            self._calc_thread.wait(1000)
+        thread = self._calc_thread
+        worker = self._calc_worker
         self._calc_thread = None
         self._calc_worker = None
+        if thread is not None:
+            try:
+                running = thread.isRunning()
+            except RuntimeError:
+                return
+            if running:
+                if worker is not None:
+                    try:
+                        worker.cancel()
+                    except RuntimeError:
+                        pass
+                try:
+                    thread.quit()
+                    thread.wait(2000)
+                except RuntimeError:
+                    pass
+
+    def _on_calc_thread_finished(self, thread, worker):
+        """Clear stale Qt thread wrappers once Qt has finished the worker thread."""
+        if self._calc_thread is thread:
+            self._calc_thread = None
+        if self._calc_worker is worker:
+            self._calc_worker = None
 
     def _on_calc_finished(self, data, request_id):
         """Handle completion of background calculation."""
@@ -2592,9 +3367,13 @@ class MainWidget(widgets.QWidget):
             target_mz = np.nan
 
         spectrum_data = data.copy()
+        spectrum_data['_source_row'] = np.arange(data.shape[0])
         spectrum_data.attrs['window_half_mz'] = float(self.mzrange)
+        spectrum_data.attrs['instrument_mrp'] = float(self.instrument_mrp_input.value())
         if target_mz and np.isfinite(target_mz):
+            spectrum_data.attrs['target_mz'] = float(target_mz)
             spectrum_data.attrs['window_half_ppm'] = float(self.mzrange / target_mz * 1e6)
+        self._spectrum_data = spectrum_data
 
         display_data = data[['molecule', 'type', 'charge', 'mass/charge',
                              'mass/charge diff', '\u0394ppm', 'MRP',
@@ -2607,40 +3386,23 @@ class MainWidget(widgets.QWidget):
         candidate_count = int((~display_data['target'].astype(bool)).sum())
         unresolved_count = int(sum((value != '') and not bool(value) for value in display_data['ok']))
 
-        # Optimisation: batch UI updates using setUpdatesEnabled
-        self.table_output.setUpdatesEnabled(False)
-        self.table_output.setVisible(False)
-
-        model = TableModel(display_data, table='interference', language=self.language)
-        proxy = InterferenceFilterProxy(self)
-        proxy.setSourceModel(model)
-        self.table_output.setModel(proxy)
-        self.table_output.setColumnHidden(display_data.columns.get_loc('target'), True)
-        self.resize_table_sections()
-        self.filter_container.setVisible(True)
-        self._filter_chip_bar.setVisible(True)
-        self.filter_bar.clear()
-
-        # Re-enable painting
-        self.table_output.setVisible(True)
-        self.table_output.setUpdatesEnabled(True)
-        self.table_output.setFocus()
-
-        self.result_metrics = {
+        metrics = {
             'kind': 'interference',
             'candidate_count': candidate_count,
             'unresolved_count': unresolved_count,
         }
-        self.results_stack.setCurrentWidget(self.table_output)
-        self.update_result_summary()
-        self.spectrum_window.plot_spectrum(spectrum_data)
-        self.set_status(self._tr('candidate_count').format(candidate_count), time=5000)
+        self._cache_interference_results(display_data, spectrum_data, metrics)
+        self._show_interference_results(
+            display_data, spectrum_data, metrics,
+            filter_text='',
+            status_text=self._tr('candidate_count').format(candidate_count),
+        )
 
     def _on_calc_error(self, err_msg):
         """Handle error from background calculation."""
         self._progress_bar.setVisible(False)
         self._re_enable_inputs()
-        widgets.QMessageBox.critical(self, 'Calculation Error', err_msg)
+        widgets.QMessageBox.critical(self, self._tr('calculation_error'), err_msg)
 
     def _re_enable_inputs(self):
         """Re-enable inputs after calculation completes or errors."""
@@ -2652,7 +3414,10 @@ class MainWidget(widgets.QWidget):
 
     @QtCore.pyqtSlot()
     def show_standard_ratio(self):
-        """ Show the standard ratios. """
+        """Show isotope ratios, or restore interference results from ratio view."""
+        if self.result_metrics.get('kind') == 'ratios' and self._restore_interference_results():
+            return
+
         if not self.check_atoms_input():
             return
 
@@ -2674,12 +3439,13 @@ class MainWidget(widgets.QWidget):
         self.resize_table_sections()
         self._unbatch_table_update()
         self.filter_container.setVisible(True)
-        self._filter_chip_bar.setVisible(True)
-        self.filter_bar.clear()
+        self._filter_chip_bar.setVisible(False)
+        self._set_filter_text('')
         self.filter_bar.setFocus()
         self.result_metrics = {'kind': 'ratios', 'isotope_count': data.shape[0]}
         self.results_stack.setCurrentWidget(self.table_output)
         self.update_result_summary()
+        self._update_ratio_button_label()
         self.set_status(self._tr('isotope_count').format(data.shape[0]), time=5000)
 
     @QtCore.pyqtSlot()

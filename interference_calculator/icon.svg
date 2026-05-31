@@ -104,7 +104,6 @@
   <!-- Delta-m label -->
   <text x="274" y="425"
         fill="rgba(255,255,255,0.4)"
-        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
         font-size="18" font-weight="500" text-anchor="middle"
         letter-spacing="1">Δm/z</text>
 </svg>

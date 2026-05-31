@@ -106,7 +106,8 @@ spectrum_button_tooltip = '''
 <html><head/><body>
 <p>Show the interference spectrum ({}-D). Unresolved peaks are highlighted
 using the instrument MRP setting. With a target peak, the x-axis is centered
-on the target.</p>
+on the target. Hover a peak for details, click a peak to select its table row,
+and export the current spectrum from the spectrum toolbar.</p>
 </body></html>
 '''.format(_modifier)
 
@@ -346,7 +347,8 @@ _TOOLTIPS = {
 '''.format(_modifier),
         'spectrum_button': '''
 <html><head/><body>
-<p>显示干扰谱图 ({}-D)。未分辨峰会根据仪器 MRP 高亮；存在目标峰时，横轴以目标峰为中心。</p>
+<p>显示干扰谱图 ({}-D)。未分辨峰会根据仪器 MRP 高亮；存在目标峰时，横轴以目标峰为中心。
+悬停峰可查看详情，点击峰可定位表格行，也可以在谱图工具栏导出当前谱图。</p>
 </body></html>
 '''.format(_modifier),
     },

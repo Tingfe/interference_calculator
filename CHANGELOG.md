@@ -1,3 +1,35 @@
+# Changelog
+
+## [2.1.0] - 2026-05-31
+
+### Added
+- Defined the project branch model: `main` is the inorganic-materials
+  specialist edition, while the original-function maintenance line is kept for
+  conservative refactoring of the upstream-style calculator.
+- Completed bilingual coverage for visible GUI text, tooltips, dialogs, status
+  messages, filters, element selector controls, and help-related UI paths.
+- Added localization regression tests to keep Chinese and English UI keys in
+  sync.
+- Added an element selector that only offers elements not already selected.
+- Added interactive spectrum tools: peak hover details, click-to-select result
+  table rows, instrument-MRP unresolved band shading, and PNG export.
+
+### Changed
+- Element input now starts empty, uses compact chips, and has a cleaner empty
+  state for selecting elements rather than typing long lists.
+- Spectrum drawing now uses the Qt default UI font to avoid missing-font alias
+  warnings.
+- Standalone release builds include Excel export support via `openpyxl`.
+
+### Fixed
+- Fixed stale `QThread` references after calculation completion, which could
+  crash the GUI on a subsequent calculation.
+- Fixed the isotope-ratio view toggle so users can return to interference
+  results without recalculating.
+- Fixed element-input styling so the inner chip canvas no longer inherits an
+  extra border, and removed empty tooltips from the blank element area.
+- Fixed Chinese spectrum-window scaling so the target-centered axis respects
+  the full GDMS ppm window and MRP band in both languages.
 
 ## [2.0.6] - 2026-05-30
 
@@ -33,8 +65,6 @@
 ### Changed
 - README usage section now recommends ``pip install`` and the
   ``interference_calculator`` CLI entry point as the primary workflow.
-
-# Changelog
 
 ## [2.0.3] - 2026-05-30
 
@@ -102,6 +132,7 @@
 - Modernised the codebase to Python 3.9+.
 - Periodic table data cleaned up and re-generated.
 
+[2.1.0]: https://github.com/Tingfe/interference_calculator/compare/v2.0.6...v2.1.0
 [2.0.6]: https://github.com/Tingfe/interference_calculator/compare/v2.0.5...v2.0.6
 [2.0.5]: https://github.com/Tingfe/interference_calculator/compare/v2.0.4...v2.0.5
 [2.0.4]: https://github.com/Tingfe/interference_calculator/compare/v2.0.3...v2.0.4
