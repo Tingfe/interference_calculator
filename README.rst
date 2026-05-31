@@ -7,7 +7,7 @@
 .. _chinese-section:
 
 ==========================================
-干扰计算器 / Interference Calculator 2.1
+干扰计算器 / Interference Calculator 2.2
 ==========================================
 
 `English <english-section_>`_ | **中文**
@@ -20,13 +20,15 @@
    :align: center
    :alt: 中文界面截图
 
-2.1 版更新内容
+2.2 版更新内容
 --------------
 
-2.x 是一次重大迭代，2.1 版进一步把项目定位、双语覆盖和谱图排查流程稳定下来：
+2.x 是一次重大迭代，2.2 版在 2.1 的无机质谱主线基础上增加了 GDMS Excel
+谱图导入，让用户可以直接从仪器导出数据选择目标峰：
 
 * 现代化科学工具 GUI：更清晰的控制面板、结果概览标签、空状态提示、更紧凑的表格布局，并支持中英文界面切换。
 * GDMS、ICP-MS 和 SIMS 预设：提供电荷态、目标窗口、风险模型和仪器质量分辨力（MRP）的实用默认值。
+* GDMS Excel 谱图导入：自动读取导出文件中的 ``Fe{56}`` 这类同位素谱图，填充元素列表，并提供实测目标峰选择。
 * 常用无机元素集：包含适用于无机质谱筛查的全元素集。
 * GDMS 默认目标窗口为 ``2000 ppm``（全窗口宽度），等同于目标峰校准后 ``±1000 ppm`` 的范围。
 * 新的无机质谱算法：基于干扰模板生成原子离子、双电荷离子、氧化物、氢化物、氢氧化物、氮化物、碳化物、硫化物、卤化物、等离子体加合物、背景分子及小型基质团簇的干扰。
@@ -38,7 +40,7 @@
 项目信息
 --------
 
-当前版本：``2.1.0``
+当前版本：``2.2.0``
 
 原作者：Zan Peeters
 
@@ -62,6 +64,13 @@
 .. code-block:: bash
 
    pip install interference_calculator
+
+如需在源码 / PyPI 安装版中使用 GDMS Excel 导入或 Excel 导出，请安装可选 Excel
+依赖：
+
+.. code-block:: bash
+
+   pip install "interference_calculator[export]"
 
 也可从 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
 下载 wheel 包手动安装：
@@ -90,13 +99,14 @@ GDMS 快速工作流
 ---------------
 
 1. 选择 ``GDMS`` 模式。
-2. 输入目标峰，如 ``75As`` 或 ``56Fe``。
-3. 保持默认 ``2000 ppm`` 全窗口。
-4. 点击元素区的 **添加** 按钮选择样品、基质、等离子体及背景元素，例如 ``Ar Cl As O H``，或添加全元素无机预设进行广泛筛查。
-5. 根据需要设置离子模型和仪器 MRP。
-6. 点击 **计算**。
-7. 查阅候选峰、``Δppm``、所需 MRP、相对风险及每个峰是否可分辨。
-8. 打开谱图视图查看以目标峰为中心的峰分布；悬停峰可看详情，点击峰可定位表格行。
+2. 如有 GDMS 导出的 Excel 谱图文件，点击 **导入GDMS**，软件会自动提取文件中的元素和可选目标峰。
+3. 从导入目标峰列表选择目标峰，或手动选择 / 输入 ``75As``、``56Fe`` 等目标。
+4. 保持默认 ``2000 ppm`` 全窗口。
+5. 如未导入文件，点击元素区的 **添加** 按钮选择样品、基质、等离子体及背景元素，例如 ``Ar Cl As O H``，或添加全元素无机预设进行广泛筛查。
+6. 根据需要设置离子模型和仪器 MRP。
+7. 点击 **计算**。
+8. 查阅候选峰、``Δppm``、所需 MRP、相对风险及每个峰是否可分辨。
+9. 打开谱图视图查看以目标峰为中心的峰分布；悬停峰可看详情，点击峰可定位表格行。
 
 .. image:: docs/images/spectrum_zh.png
    :align: center
@@ -216,7 +226,7 @@ BSD 3-Clause Clear。详见 ``LICENSE.rst``。
 .. _english-section:
 
 ===========================
-Interference Calculator 2.1
+Interference Calculator 2.2
 ===========================
 
 **English** | `中文 <chinese-section_>`_
@@ -237,16 +247,19 @@ spectrum, and a compact data-dense results table.
    :align: center
    :alt: Chinese UI screenshot
 
-What Changed In 2.1
+What Changed In 2.2
 -------------------
 
-Version 2.x is a major project iteration. Version 2.1 clarifies the project
-branch model and strengthens the bilingual GUI and spectrum workflow:
+Version 2.x is a major project iteration. Version 2.2 builds on the 2.1
+inorganic-MS workflow by adding GDMS Excel profile import for target selection
+from instrument-exported data:
 
 * Modern scientific-tool GUI with a clearer control panel, result summary chips,
   empty state, improved table density, and bilingual language switching.
 * GDMS, ICP-MS, and SIMS presets with practical defaults for charge state,
   target window, risk model, and instrument mass resolving power.
+* GDMS Excel profile import that reads exported isotope profiles such as
+  ``Fe{56}``, fills the element list, and provides measured target choices.
 * Common inorganic element sets, including an all-elements set tuned for
   inorganic MS screening.
 * GDMS default target window is ``2000 ppm`` as a full window width, equivalent
@@ -268,7 +281,7 @@ branch model and strengthens the bilingual GUI and spectrum workflow:
 Project Metadata
 ----------------
 
-Current version: ``2.1.0``
+Current version: ``2.2.0``
 
 Original author: Zan Peeters
 
@@ -295,6 +308,13 @@ and run directly:
 .. code-block:: bash
 
    pip install interference_calculator
+
+For GDMS Excel import or Excel export in source / PyPI installs, include the
+optional Excel dependency:
+
+.. code-block:: bash
+
+   pip install "interference_calculator[export]"
 
 You can also install a downloaded wheel manually:
 
@@ -323,16 +343,19 @@ Quick GDMS workflow
 -------------------
 
 1. Select ``GDMS`` mode.
-2. Enter a target peak such as ``75As`` or ``56Fe``.
-3. Keep the default ``2000 ppm`` full window.
-4. Use the element **Add** button to choose sample, matrix, plasma, and
-   background elements, for example ``Ar Cl As O H``, or add the all-elements
-   preset for a broad screen.
-5. Set ion model and instrument MRP if needed.
-6. Click **Calculate**.
-7. Review candidate peaks, ``Δppm``, required MRP, relative risk, and whether
+2. If you have a GDMS Excel profile export, click **Import GDMS** so the
+   software can extract elements and selectable target peaks from the file.
+3. Select a target from the imported target list, or manually choose / enter
+   ``75As``, ``56Fe``, or another target.
+4. Keep the default ``2000 ppm`` full window.
+5. If no file was imported, use the element **Add** button to choose sample,
+   matrix, plasma, and background elements, for example ``Ar Cl As O H``, or add
+   the all-elements preset for a broad screen.
+6. Set ion model and instrument MRP if needed.
+7. Click **Calculate**.
+8. Review candidate peaks, ``Δppm``, required MRP, relative risk, and whether
    each candidate is resolvable.
-8. Open the spectrum view to inspect the target-centered peak display; hover a
+9. Open the spectrum view to inspect the target-centered peak display; hover a
    peak for details and click a peak to select the corresponding result row.
 
 .. image:: docs/images/spectrum_zh.png

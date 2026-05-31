@@ -1,5 +1,30 @@
 # Changelog / 更新日志
 
+## [2.2.0] - 2026-05-31
+
+### English
+
+#### Added
+- Added GDMS Excel profile import so exported isotope profiles can populate
+  the element list and provide selectable target peaks with observed m/z
+  summaries.
+- Added unit coverage for GDMS profile label parsing and peak-profile summary
+  statistics.
+
+#### Changed
+- Updated README, help text, and the illustrated user manual for the imported
+  GDMS profile workflow.
+
+### 中文
+
+#### 新增
+- 增加 GDMS Excel 谱图导入，可从导出的同位素谱图中自动填充元素列表，并提供
+  带实测 m/z 摘要的目标峰选择。
+- 增加 GDMS 谱图标签解析和峰形摘要统计的单元测试。
+
+#### 变更
+- 更新 README、软件介绍和图文用户手册，补充导入 GDMS 谱图的工作流。
+
 ## [2.1.0] - 2026-05-31
 
 ### English
@@ -250,6 +275,7 @@
 - 代码库现代化到 Python 3.9+。
 - 清理并重新生成周期表数据。
 
+[2.2.0]: https://github.com/Tingfe/interference_calculator/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Tingfe/interference_calculator/compare/v2.0.6...v2.1.0
 [2.0.6]: https://github.com/Tingfe/interference_calculator/compare/v2.0.5...v2.0.6
 [2.0.5]: https://github.com/Tingfe/interference_calculator/compare/v2.0.4...v2.0.5

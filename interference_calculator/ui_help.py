@@ -111,6 +111,14 @@ and export the current spectrum from the spectrum toolbar.</p>
 </body></html>
 '''.format(_modifier)
 
+gdms_import_tooltip = '''
+<html><head/><body>
+<p><b>Import GDMS Excel profile data.</b></p>
+<p>Reads isotope profile exports, extracts target peaks such as Fe{56}, and
+fills the element list from the exported plasma/sample profiles.</p>
+</body></html>
+'''
+
 mz_warning = '''
 <html><head/><body>
 <p>If you do not specify a target, <b>ALL</b> combinations up to
@@ -151,6 +159,11 @@ clusters. This makes the result set more focused for GDMS peak-interference revi
 all-elements inorganic MS preset. The all-elements preset focuses on commonly
 measurable inorganic MS elements, keeps Th/U, and excludes short-lived or unusual
 radioactive elements.</p>
+
+<p>GDMS Excel profile exports can be imported directly. The software reads
+exported isotope profiles such as Fe{56}, fills the element list from the file,
+and lets users select a target peak from the measured profile list before
+running the interference calculation.</p>
 
 <p>The GDMS target window defaults to 2000 ppm and is entered as a full window
 width. For example, a 2000 ppm window means the software searches 1000 ppm lower
@@ -219,6 +232,9 @@ help_text_zh = '''
 <p>元素组合菜单提供常见等离子体、背景、基体以及无机质谱全元素预设。全元素
 预设面向常见无机质谱可测元素，保留 Th/U，并排除短寿命或非常规放射性元素。</p>
 
+<p>软件可以直接导入 GDMS Excel 谱图导出文件，读取 Fe{56} 这类同位素谱图，
+用文件中的谱图元素填充元素列表，并在计算前从实测谱图列表中选择目标峰。</p>
+
 <p>GDMS 的目标窗口默认使用 2000 ppm，并按完整窗口宽度输入。例如 2000 ppm 表示
 软件会在校准后的目标峰两侧各搜索 1000 ppm。也可以切换为绝对 m/z 窗口。</p>
 
@@ -268,6 +284,7 @@ _TOOLTIPS = {
         'standard_ratio_button': standard_ratio_button_tooltip,
         'help_button': help_button_tooltip,
         'spectrum_button': spectrum_button_tooltip,
+        'gdms_import': gdms_import_tooltip,
     },
     'zh': {
         'atoms': '''
@@ -351,6 +368,13 @@ _TOOLTIPS = {
 悬停峰可查看详情，点击峰可定位表格行，也可以在谱图工具栏导出当前谱图。</p>
 </body></html>
 '''.format(_modifier),
+        'gdms_import': '''
+<html><head/><body>
+<p><b>导入 GDMS Excel 谱图数据。</b></p>
+<p>读取导出的同位素谱图，自动提取 Fe{56} 这类目标峰，并用文件中的等离子体 /
+样品谱图填充元素列表。</p>
+</body></html>
+''',
     },
 }
 

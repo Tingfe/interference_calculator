@@ -27,9 +27,13 @@ class _LazyModule:
 np = _LazyModule("numpy")
 pd = _LazyModule("pandas")
 
-import sys, re
+import os, sys, re
 from importlib import resources
 from pyparsing import ParseException
+from interference_calculator.gdms_import import (
+    extract_profile_elements,
+    parse_gdms_profile_xlsx,
+)
 from interference_calculator.inorganic import inorganic_interference
 from interference_calculator.main import standard_ratio
 from interference_calculator.molecule import Molecule, periodic_table
@@ -194,6 +198,16 @@ _UI_TEXT = {
         'all_elements_added': 'All elements have been added.',
         'target_element_placeholder': 'Select element…',
         'target_isotope_placeholder': 'Select isotope…',
+        'import_gdms': 'Import GDMS',
+        'imported_target_placeholder': 'Imported targets…',
+        'gdms_profile_files_filter': 'GDMS Excel Profiles (*.xlsx *.xlsm);;All Files (*)',
+        'gdms_import_missing': 'GDMS Excel import requires openpyxl.\n\nInstall: pip install interference-calculator[export]',
+        'gdms_import_error': 'GDMS Import Error',
+        'gdms_import_no_profiles': 'No GDMS isotope profiles were found in this file.',
+        'gdms_import_loaded': 'Imported {} targets and {} elements from {}.',
+        'gdms_import_target_status': 'Selected imported target {}.',
+        'gdms_observed': 'observed',
+        'gdms_fwhm': 'FWHM',
         'zoom_out_y': 'Zoom out (Y axis)',
         'zoom_in_y': 'Zoom in (Y axis)',
         'reset_view': 'Reset view',
@@ -310,6 +324,16 @@ _UI_TEXT = {
         'all_elements_added': '所有元素都已添加。',
         'target_element_placeholder': '选择元素…',
         'target_isotope_placeholder': '选择同位素…',
+        'import_gdms': '导入GDMS',
+        'imported_target_placeholder': '导入的目标峰…',
+        'gdms_profile_files_filter': 'GDMS Excel 谱图 (*.xlsx *.xlsm);;所有文件 (*)',
+        'gdms_import_missing': 'GDMS Excel 导入需要 openpyxl。\n\n安装命令：pip install interference-calculator[export]',
+        'gdms_import_error': 'GDMS 导入错误',
+        'gdms_import_no_profiles': '未在该文件中找到 GDMS 同位素谱图。',
+        'gdms_import_loaded': '已导入 {} 个目标峰和 {} 个元素，来源：{}。',
+        'gdms_import_target_status': '已选择导入目标峰 {}。',
+        'gdms_observed': '实测',
+        'gdms_fwhm': 'FWHM',
         'zoom_out_y': '缩小 Y 轴',
         'zoom_in_y': '放大 Y 轴',
         'reset_view': '重置视图',
@@ -2162,6 +2186,16 @@ class MainWidget(widgets.QWidget):
         self._target_element_input.currentIndexChanged.connect(self._on_target_element_changed)
         self._target_isotope_input.currentIndexChanged.connect(self._on_target_isotope_changed)
 
+        self._gdms_import_profiles = []
+        self.import_gdms_button = widgets.QPushButton(_text(self.language, 'import_gdms'), parent=self)
+        self.import_gdms_button.setToolTip(tooltip_text(self.language, 'gdms_import'))
+        self.import_gdms_button.setMinimumWidth(96)
+        self.imported_target_input = widgets.QComboBox(parent=self)
+        self.imported_target_input.addItem(_text(self.language, 'imported_target_placeholder'), None)
+        self.imported_target_input.setEnabled(False)
+        self.imported_target_input.setVisible(False)
+        self.imported_target_input.setMinimumWidth(180)
+
         self.instrument_mrp_label = widgets.QLabel(_text(self.language, 'instrument_mrp'), parent=self)
         self.instrument_mrp_input = widgets.QSpinBox(parent=self)
         self.instrument_mrp_input.setRange(0, 1000000)
@@ -2265,10 +2299,14 @@ class MainWidget(widgets.QWidget):
         target_group_layout.setSpacing(2)
         sel_row = widgets.QHBoxLayout()
         sel_row.setSpacing(4)
-        sel_row.addWidget(self._target_element_input)
-        sel_row.addWidget(self._target_isotope_input)
-        sel_row.addStretch(1)
+        sel_row.addWidget(self._target_element_input, stretch=1)
+        sel_row.addWidget(self._target_isotope_input, stretch=1)
         target_group_layout.addLayout(sel_row)
+        import_row = widgets.QHBoxLayout()
+        import_row.setSpacing(4)
+        import_row.addWidget(self.import_gdms_button)
+        import_row.addWidget(self.imported_target_input, stretch=1)
+        target_group_layout.addLayout(import_row)
         mz_label = widgets.QLabel(parent=self)
         mz_label.setObjectName('helperText')
         mz_label.setStyleSheet("color: #1e40af; font-size: 13px; font-weight: bold;")
@@ -2479,6 +2517,8 @@ class MainWidget(widgets.QWidget):
         self.interference_button.clicked.connect(self.calculate_interference)
         self.standard_ratio_button.clicked.connect(self.show_standard_ratio)
         self.help_button.clicked.connect(self.show_help)
+        self.import_gdms_button.clicked.connect(self.import_gdms_profiles)
+        self.imported_target_input.currentIndexChanged.connect(self._on_imported_target_changed)
         self.language_input.currentIndexChanged.connect(self.apply_language)
         self.mode_input.currentIndexChanged.connect(self.apply_mode_preset)
         self.charge_preset_input.currentIndexChanged.connect(self._on_target_isotope_changed)
@@ -2491,9 +2531,12 @@ class MainWidget(widgets.QWidget):
 
         # Set jump order for tab
         self.setTabOrder(self.language_input, self.mode_input)
-        self.setTabOrder(self.mode_input, self.mz_input)
+        self.setTabOrder(self.mode_input, self._target_element_input)
+        self.setTabOrder(self._target_element_input, self._target_isotope_input)
+        self.setTabOrder(self._target_isotope_input, self.import_gdms_button)
+        self.setTabOrder(self.import_gdms_button, self.imported_target_input)
         self.sweep_input.valueChanged.connect(self.update_result_summary)
-        self.setTabOrder(self.mz_input, self.sweep_input)
+        self.setTabOrder(self.imported_target_input, self.sweep_input)
         self.setTabOrder(self.sweep_input, self.atoms_input)
         self.setTabOrder(self.atoms_input, self.element_set_input)
         self.setTabOrder(self.element_set_input, self.charge_preset_input)
@@ -2571,6 +2614,10 @@ class MainWidget(widgets.QWidget):
         self.filter_bar.setPlaceholderText(self._tr('filter_results'))
         self._target_element_input.setPlaceholderText(self._tr('target_element_placeholder'))
         self._target_isotope_input.setPlaceholderText(self._tr('target_isotope_placeholder'))
+        self.import_gdms_button.setText(self._tr('import_gdms'))
+        if self.imported_target_input.count() > 0:
+            self.imported_target_input.setItemText(0, self._tr('imported_target_placeholder'))
+        self._refresh_imported_target_labels()
         self.atoms_input.set_language(self.language)
         self.table_output.set_language(self.language)
         for chip in getattr(self, '_filter_chips', []):
@@ -2592,6 +2639,8 @@ class MainWidget(widgets.QWidget):
         self._target_element_input.setToolTip(tooltip_text(self.language, 'mz'))
         self._target_isotope_input.setToolTip(tooltip_text(self.language, 'mz'))
         self._target_mz_result_label.setToolTip(tooltip_text(self.language, 'mz'))
+        self.import_gdms_button.setToolTip(tooltip_text(self.language, 'gdms_import'))
+        self.imported_target_input.setToolTip(tooltip_text(self.language, 'gdms_import'))
         self.sweep_input.setToolTip(tooltip_text(self.language, 'mzrange'))
 
         self.maxsize_input.setToolTip(tooltip_text(self.language, 'maxsize'))
@@ -2749,6 +2798,131 @@ class MainWidget(widgets.QWidget):
             return
         self.atoms_input.set_elements(list(elements))
         self.element_set_input.setCurrentIndex(0)
+
+    def import_gdms_profiles(self):
+        """Import GDMS Excel profile exports and use them as target choices."""
+        path, _ = widgets.QFileDialog.getOpenFileName(
+            self, self._tr('import_gdms'), '', self._tr('gdms_profile_files_filter')
+        )
+        if not path:
+            return
+        try:
+            profiles = parse_gdms_profile_xlsx(path)
+        except RuntimeError:
+            widgets.QMessageBox.critical(
+                self, self._tr('missing_dependency'), self._tr('gdms_import_missing')
+            )
+            return
+        except Exception as e:
+            widgets.QMessageBox.critical(self, self._tr('gdms_import_error'), str(e))
+            return
+
+        if not profiles:
+            self.warn(self._tr('gdms_import_no_profiles'))
+            return
+
+        elements = [
+            element for element in extract_profile_elements(profiles)
+            if (periodic_table['element'] == element).any()
+        ]
+        self._gdms_import_profiles = list(profiles)
+        self.atoms_input.set_elements(elements)
+        self._refresh_imported_target_labels()
+        self.imported_target_input.setCurrentIndex(0)
+        self.set_status(
+            self._tr('gdms_import_loaded').format(
+                len(profiles), len(elements), os.path.basename(path)
+            ),
+            time=7000,
+        )
+
+    def _refresh_imported_target_labels(self):
+        """Refresh imported target selector text after import or language switch."""
+        if not hasattr(self, 'imported_target_input'):
+            return
+        current = _current_data(self.imported_target_input)
+        self.imported_target_input.blockSignals(True)
+        self.imported_target_input.clear()
+        self.imported_target_input.addItem(self._tr('imported_target_placeholder'), None)
+        for profile in getattr(self, '_gdms_import_profiles', []):
+            self.imported_target_input.addItem(
+                self._format_imported_target_label(profile), profile
+            )
+        has_profiles = bool(getattr(self, '_gdms_import_profiles', []))
+        self.imported_target_input.setVisible(has_profiles)
+        self.imported_target_input.setEnabled(has_profiles)
+        if current is not None:
+            index = self._find_combo_data(self.imported_target_input, current)
+            if index >= 0:
+                self.imported_target_input.setCurrentIndex(index)
+        self.imported_target_input.blockSignals(False)
+
+    def _format_imported_target_label(self, profile):
+        observed = profile.centroid_mz if profile.centroid_mz is not None else profile.apex_mz
+        if observed is not None:
+            return '{}  m/z {:.4f}'.format(profile.label, observed)
+        return '{}  {}'.format(profile.label, profile.isotope)
+
+    def _on_imported_target_changed(self, index):
+        """Apply a target selected from imported GDMS profiles."""
+        profile = _current_data(self.imported_target_input)
+        if profile is None:
+            return
+        self._set_target_from_isotope(profile.isotope)
+        self._set_target_mz_label_from_profile(profile)
+        self.set_status(
+            self._tr('gdms_import_target_status').format(profile.label), time=3000
+        )
+
+    def _set_target_from_isotope(self, isotope):
+        """Select the target element/isotope controls from a string like 56Fe."""
+        match = re.match(r'^(\d+)([A-Z][a-z]?)$', str(isotope or ''))
+        if not match:
+            return False
+        element = match.group(2)
+        element_index = self._find_combo_data(self._target_element_input, element)
+        if element_index < 0:
+            return False
+        self._target_element_input.setCurrentIndex(element_index)
+        isotope_index = self._find_combo_data(self._target_isotope_input, isotope)
+        if isotope_index >= 0:
+            self._target_isotope_input.setCurrentIndex(isotope_index)
+        else:
+            self.mz_input.blockSignals(True)
+            self.mz_input.setText(str(isotope))
+            self.mz_input.blockSignals(False)
+            self.mz = str(isotope)
+        return True
+
+    def _set_target_mz_label_from_profile(self, profile):
+        """Show theoretical and observed m/z for an imported target."""
+        isotope = profile.isotope
+        label = self._target_mz_result_label.text()
+        rows = periodic_table[periodic_table['isotope'] == isotope]
+        if not rows.empty:
+            mass = rows.iloc[0]['mass']
+            charges, _ = _current_data(self.charge_preset_input)
+            charge = charges[0]
+            label = '{}  \u2192  m/z = {:.4f}'.format(isotope, mass / charge)
+        observed = profile.centroid_mz if profile.centroid_mz is not None else profile.apex_mz
+        extras = []
+        if observed is not None:
+            extras.append('{} {:.4f}'.format(self._tr('gdms_observed'), observed))
+        if profile.fwhm is not None:
+            extras.append('{} {:.4g}'.format(self._tr('gdms_fwhm'), profile.fwhm))
+        if extras:
+            label = '{}  ·  {}'.format(label, '  ·  '.join(extras))
+        self._target_mz_result_label.setText(label)
+
+    def _find_combo_data(self, combo, value):
+        """Return the first combo index with matching user data."""
+        try:
+            return combo.findData(value)
+        except AttributeError:
+            for index in range(combo.count()):
+                if combo.itemData(index) == value:
+                    return index
+        return -1
 
     def warn(self, text, time=5000):
         """ Display a warning message in the status bar. """
