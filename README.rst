@@ -40,7 +40,7 @@
 项目信息
 --------
 
-当前版本：``2.4.1``
+当前版本：``2.4.2``
 
 原作者：Zan Peeters
 
@@ -305,7 +305,7 @@ target selection, release packaging, and startup experience:
 Project Metadata
 ----------------
 
-Current version: ``2.4.1``
+Current version: ``2.4.2``
 
 Original author: Zan Peeters
 

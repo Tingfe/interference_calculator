@@ -105,6 +105,21 @@ class UIImportedElementSetTests(unittest.TestCase):
         self.assertEqual(widget.language_input.itemData(0), 'zh')
         window.close()
 
+    def test_help_dialog_opens_in_both_languages(self):
+        old_exec = self.ui.widgets.QDialog.exec_
+        self.ui.widgets.QDialog.exec_ = lambda dialog: 0
+        try:
+            window = self.ui.MainWindow()
+            widget = window.centralWidget()
+            widget.show_help()
+            widget.language_input.setCurrentIndex(
+                widget._find_combo_data(widget.language_input, 'en')
+            )
+            widget.show_help()
+            window.close()
+        finally:
+            self.ui.widgets.QDialog.exec_ = old_exec
+
     def test_imported_element_set_restores_gdms_import_elements(self):
         window = self.ui.MainWindow()
         widget = window.centralWidget()

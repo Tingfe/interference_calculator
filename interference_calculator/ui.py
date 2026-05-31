@@ -4642,7 +4642,7 @@ class MainWidget(widgets.QWidget):
         btn.setIconSize(QtCore.QSize(128, 128))
         btn.move(20, 20)
         text = widgets.QTextBrowser(parent=dialog)
-        text.setHtml(help_text_for(self.language).format(__version__))
+        text.setHtml(render_help_text(self.language, __version__))
         text.setOpenExternalLinks(True)
         text.setFrameShape(widgets.QFrame.NoFrame)
         text.setStyleSheet('background: #ffffff; padding: 16px;')

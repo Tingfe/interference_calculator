@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """ Help and tooltip text for ui.py """
+from html import escape
 import sys
 
 atoms_input_tooltip = '''
@@ -155,8 +156,8 @@ help_text = '''
 <html><head/>
 <body>
 <div style="margin-left: 128px" align="center">
-        <h1>Interference calculator</h1>
-        <p><strong>version {}</strong></p>
+        <h1>Inorganic MS Interference Calculator</h1>
+        <p><strong>version __VERSION__</strong></p>
         <p><strong>&copy; 2017, Zan Peeters</strong></p>
         <p><strong>Latest contributor: Tingfe</strong></p>
         <p><a href="https://github.com/Tingfe/interference_calculator">https://github.com/Tingfe/interference_calculator</a>
@@ -243,8 +244,8 @@ help_text_zh = '''
 <html><head/>
 <body>
 <div style="margin-left: 128px" align="center">
-        <h1>质谱峰干扰计算器</h1>
-        <p><strong>版本 {}</strong></p>
+        <h1>无机质谱峰干扰计算器</h1>
+        <p><strong>版本 __VERSION__</strong></p>
         <p><strong>&copy; 2017, Zan Peeters</strong></p>
         <p><strong>最新贡献者：Tingfe</strong></p>
         <p><a href="https://github.com/Tingfe/interference_calculator">https://github.com/Tingfe/interference_calculator</a>
@@ -460,6 +461,11 @@ def tooltip_text(language, key):
 def help_text_for(language):
     """Return localized help HTML."""
     return help_text_zh if language == 'zh' else help_text
+
+
+def render_help_text(language, version):
+    """Return localized help HTML with the application version inserted."""
+    return help_text_for(language).replace('__VERSION__', escape(str(version)))
 
 
 def mz_warning_for(language):

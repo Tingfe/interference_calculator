@@ -10,6 +10,21 @@
 
 - 暂无未发布变更。
 
+## [2.4.2] - 2026-05-31
+
+### English
+
+#### Fixed
+- Prevent the Help window from crashing when help text contains isotope labels
+  such as `Fe{56}` by rendering the version placeholder without formatting the
+  entire HTML document.
+
+### 中文
+
+#### 修复
+- 修复帮助窗口在帮助文本包含 `Fe{56}` 这类同位素标签时崩溃的问题；版本号改为
+  单独替换，不再对整段 HTML 执行格式化。
+
 ## [2.4.1] - 2026-05-31
 
 ### English
@@ -431,7 +446,8 @@
 - 代码库现代化到 Python 3.9+。
 - 清理并重新生成周期表数据。
 
-[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.4.1...HEAD
+[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.4.2...HEAD
+[2.4.2]: https://github.com/Tingfe/interference_calculator/compare/v2.4.1...v2.4.2
 [2.4.1]: https://github.com/Tingfe/interference_calculator/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/Tingfe/interference_calculator/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/Tingfe/interference_calculator/compare/v2.2.0...v2.3.0

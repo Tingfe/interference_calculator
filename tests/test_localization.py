@@ -1,5 +1,6 @@
 import importlib
 import unittest
+from interference_calculator import __version__
 
 
 class LocalizationTests(unittest.TestCase):
@@ -29,6 +30,12 @@ class LocalizationTests(unittest.TestCase):
         self.assertIn('软件介绍', self.ui_help.help_text_for('zh'))
         self.assertIn('Are you sure?', self.ui_help.mz_warning_for('en'))
         self.assertIn('确定继续吗？', self.ui_help.mz_warning_for('zh'))
+
+    def test_help_text_renders_version_without_interpreting_isotope_braces(self):
+        for language in ('en', 'zh'):
+            rendered = self.ui_help.render_help_text(language, __version__)
+            self.assertIn(__version__, rendered)
+            self.assertIn('Fe{56}', rendered)
 
 
 if __name__ == '__main__':
