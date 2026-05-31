@@ -13,6 +13,8 @@
 - Simplified the GDMS profile import button label to `Import` / `导入`.
 - Ordered manual and imported target selectors by periodic-table order, with
   imported isotopes sorted by mass number within the same element.
+- Wrapped the imported target m/z summary across multiple lines to avoid
+  clipping in the left control panel.
 - Added a dynamic imported-elements preset after GDMS Excel import so users can
   restore all file-derived elements after accidental edits.
 - Clarified that profile centroid/apex m/z is calculated from imported
@@ -48,6 +50,7 @@
 - 将导入的 GDMS 谱图目标峰作为首选目标选择路径，手动目标选择改为显式手动覆盖。
 - 将 GDMS 谱图导入按钮文案简化为 `Import` / `导入`。
 - 将手动和导入的目标峰选择器改为按周期表顺序排列，同一元素内按同位素质量数排列。
+- 将导入目标峰的 m/z 摘要改为多行显示，避免在左侧控制栏中被遮挡或截断。
 - GDMS Excel 导入后自动增加“导入元素”动态预设，误删后可一键恢复文件中的全部元素。
 - 明确谱图质心 / 峰顶 m/z 由导入的 Mass / Values 点计算，而 Δm/z、Δppm、MRP
   和谱图中心均以理论目标 m/z 为参考点。

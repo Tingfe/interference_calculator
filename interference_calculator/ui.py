@@ -2390,6 +2390,10 @@ class MainWidget(widgets.QWidget):
         mz_label = widgets.QLabel(parent=self)
         mz_label.setObjectName('helperText')
         mz_label.setStyleSheet("color: #1e40af; font-size: 13px; font-weight: bold;")
+        mz_label.setWordWrap(True)
+        mz_label.setTextFormat(QtCore.Qt.PlainText)
+        mz_label.setSizePolicy(widgets.QSizePolicy.Expanding, widgets.QSizePolicy.Preferred)
+        mz_label.setMinimumWidth(0)
         mz_label.setToolTip(tooltip_text(self.language, 'mz'))
         self._target_mz_result_label = mz_label
         target_group_layout.addWidget(mz_label)
@@ -3121,24 +3125,23 @@ class MainWidget(widgets.QWidget):
     def _set_target_mz_label_from_profile(self, profile):
         """Show theoretical m/z and processed profile m/z for an imported target."""
         isotope = profile.isotope
-        label = self._target_mz_result_label.text()
+        lines = [str(isotope)]
         rows = periodic_table[periodic_table['isotope'] == isotope]
         if not rows.empty:
-            label = '{}  ·  {} {} m/z {:.4f}'.format(
-                isotope,
+            lines.append('{} {} m/z {:.4f}'.format(
                 self._tr('gdms_delta_reference'),
                 self._tr('gdms_theoretical'),
                 self._theoretical_target_mz_for_isotope(isotope),
-            )
+            ))
         observed, observed_label = self._profile_observed_mz(profile)
         extras = []
         if observed is not None:
-            extras.append('{} {:.4f}'.format(self._tr(observed_label), observed))
+            extras.append('{} m/z {:.4f}'.format(self._tr(observed_label), observed))
         if profile.fwhm is not None:
             extras.append('{} {:.4g}'.format(self._tr('gdms_fwhm'), profile.fwhm))
         if extras:
-            label = '{}  ·  {}'.format(label, '  ·  '.join(extras))
-        self._target_mz_result_label.setText(label)
+            lines.append('  ·  '.join(extras))
+        self._target_mz_result_label.setText('\n'.join(lines))
         self._target_mz_result_label.setToolTip(self._tr('gdms_reference_tooltip'))
 
     def _find_combo_data(self, combo, value):

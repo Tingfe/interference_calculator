@@ -152,6 +152,25 @@ class UIImportedElementSetTests(unittest.TestCase):
         self.assertEqual(labels, ['B{11}', 'Fe{56}', 'Fe{57}', 'U{238}'])
         window.close()
 
+    def test_imported_target_summary_wraps_across_lines(self):
+        from interference_calculator.gdms_import import GDMSProfile
+
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+        profile = GDMSProfile(
+            'Fe{56}', 'Fe', 56, '56Fe', 1, 20, 55.928, 1000.0, 55.9279, 0.0123
+        )
+
+        widget._set_target_mz_label_from_profile(profile)
+        label = widget._target_mz_result_label
+
+        self.assertTrue(label.wordWrap())
+        self.assertEqual(label.text().splitlines()[0], '56Fe')
+        self.assertIn('theoretical m/z', label.text())
+        self.assertIn('profile centroid m/z 55.9279', label.text())
+        self.assertGreaterEqual(label.text().count('\n'), 2)
+        window.close()
+
 
 if __name__ == '__main__':
     unittest.main()
