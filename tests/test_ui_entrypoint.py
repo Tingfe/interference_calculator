@@ -42,5 +42,44 @@ class UISourceEntrypointTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
 
 
+class UICalculationReferenceTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        try:
+            from interference_calculator import ui
+            cls.ui = ui
+        except ImportError as exc:
+            raise unittest.SkipTest(f'GUI calculation reference tests require UI dependencies: {exc}')
+
+    def test_delta_ppm_uses_theoretical_target_mz_reference(self):
+        data_out = []
+        errors = []
+        worker = self.ui.CalculationWorker(
+            ['Ar', 'Cl', 'As'],
+            '75As',
+            targetrange=0.05,
+            maxsize=2,
+            charge=(1,),
+            chargesign='+',
+            risk_preset='gdms',
+            instrument_mrp=4000,
+        )
+        worker.finished.connect(data_out.append)
+        worker.error.connect(errors.append)
+        worker.run()
+
+        self.assertFalse(errors)
+        self.assertTrue(data_out)
+        data = data_out[0]
+        target_mz = data.loc[data['target'].astype(bool), 'mass/charge'].iat[0]
+        self.assertEqual(data.attrs['delta_reference'], 'theoretical_target_mz')
+        self.assertAlmostEqual(data.attrs['delta_reference_mz'], target_mz)
+        non_target = data.loc[~data['target'].astype(bool)].copy()
+        self.assertFalse(non_target.empty)
+        expected_ppm = non_target['mass/charge diff'] / target_mz * 1e6
+        for actual, expected in zip(non_target['Δppm'], expected_ppm):
+            self.assertAlmostEqual(actual, expected)
+
+
 if __name__ == '__main__':
     unittest.main()

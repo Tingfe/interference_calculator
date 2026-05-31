@@ -4,6 +4,13 @@
 
 ### English
 
+#### Changed
+- Made imported GDMS profile targets the primary target-selection path and moved
+  manual target selection behind an explicit manual override.
+- Clarified that profile centroid/apex m/z is calculated from imported
+  Mass/Values points, while Δm/z, Δppm, MRP, and the spectrum center use the
+  theoretical target m/z as the reference.
+
 #### Fixed
 - Promoted `openpyxl` to a default dependency because GDMS Excel import is now
   part of the primary workflow, not only an optional export path.
@@ -22,6 +29,11 @@
   workflow secrets.
 
 ### 中文
+
+#### 变更
+- 将导入的 GDMS 谱图目标峰作为首选目标选择路径，手动目标选择改为显式手动覆盖。
+- 明确谱图质心 / 峰顶 m/z 由导入的 Mass / Values 点计算，而 Δm/z、Δppm、MRP
+  和谱图中心均以理论目标 m/z 为参考点。
 
 #### 修复
 - 将 `openpyxl` 提升为默认依赖，因为 GDMS Excel 导入已经是主工作流的一部分，

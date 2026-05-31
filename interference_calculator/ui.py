@@ -205,6 +205,7 @@ _UI_TEXT = {
         'all_elements_added': 'All elements have been added.',
         'target_element_placeholder': 'Select element…',
         'target_isotope_placeholder': 'Select isotope…',
+        'manual_target': 'Manual target',
         'import_gdms': 'Import GDMS',
         'imported_target_placeholder': 'Imported targets…',
         'gdms_profile_files_filter': 'GDMS Excel Profiles (*.xlsx *.xlsm);;All Files (*)',
@@ -213,7 +214,19 @@ _UI_TEXT = {
         'gdms_import_no_profiles': 'No GDMS isotope profiles were found in this file.',
         'gdms_import_loaded': 'Imported {} targets and {} elements from {}.',
         'gdms_import_target_status': 'Selected imported target {}.',
-        'gdms_observed': 'observed',
+        'gdms_delta_reference': 'Δ reference',
+        'gdms_theoretical': 'theoretical',
+        'gdms_centroid': 'profile centroid',
+        'gdms_apex': 'profile apex',
+        'gdms_reference_tooltip': (
+            '<html><body><p><b>Reference point</b></p>'
+            '<p>Δm/z, Δppm, MRP, and the spectrum center are calculated relative '
+            'to the theoretical target m/z. The profile centroid/apex is computed '
+            'from imported Mass/Values points and is shown only as the measured '
+            'peak summary. Do not subtract theoretical candidate m/z directly from '
+            'a raw observed target position unless the same calibration offset is '
+            'applied to every candidate.</p></body></html>'
+        ),
         'gdms_fwhm': 'FWHM',
         'zoom_out_y': 'Zoom out (Y axis)',
         'zoom_in_y': 'Zoom in (Y axis)',
@@ -331,6 +344,7 @@ _UI_TEXT = {
         'all_elements_added': '所有元素都已添加。',
         'target_element_placeholder': '选择元素…',
         'target_isotope_placeholder': '选择同位素…',
+        'manual_target': '手动目标',
         'import_gdms': '导入GDMS',
         'imported_target_placeholder': '导入的目标峰…',
         'gdms_profile_files_filter': 'GDMS Excel 谱图 (*.xlsx *.xlsm);;所有文件 (*)',
@@ -339,7 +353,17 @@ _UI_TEXT = {
         'gdms_import_no_profiles': '未在该文件中找到 GDMS 同位素谱图。',
         'gdms_import_loaded': '已导入 {} 个目标峰和 {} 个元素，来源：{}。',
         'gdms_import_target_status': '已选择导入目标峰 {}。',
-        'gdms_observed': '实测',
+        'gdms_delta_reference': 'Δ参考',
+        'gdms_theoretical': '理论',
+        'gdms_centroid': '谱图质心',
+        'gdms_apex': '谱图峰顶',
+        'gdms_reference_tooltip': (
+            '<html><body><p><b>参考点</b></p>'
+            '<p>Δm/z、Δppm、MRP 和谱图中心均相对理论目标 m/z 计算。谱图质心 / '
+            '峰顶由导入的 Mass / Values 点计算，只作为实测峰形摘要显示。不要直接用'
+            '理论候选峰 m/z 减去原始 observed 目标位置，除非对所有候选峰应用同一个'
+            '校准偏移。</p></body></html>'
+        ),
         'gdms_fwhm': 'FWHM',
         'zoom_out_y': '缩小 Y 轴',
         'zoom_in_y': '放大 Y 轴',
@@ -2041,8 +2065,12 @@ class CalculationWorker(QtCore.QObject):
                 target_mz = None
 
             if target_mz:
+                data.attrs['delta_reference'] = 'theoretical_target_mz'
+                data.attrs['delta_reference_mz'] = float(target_mz)
                 data['Δppm'] = data['mass/charge diff'] / target_mz * 1e6
             else:
+                data.attrs['delta_reference'] = 'none'
+                data.attrs['delta_reference_mz'] = np.nan
                 data['Δppm'] = np.nan
 
             if self.instrument_mrp:
@@ -2194,6 +2222,7 @@ class MainWidget(widgets.QWidget):
         self._target_isotope_input.currentIndexChanged.connect(self._on_target_isotope_changed)
 
         self._gdms_import_profiles = []
+        self._applying_imported_target = False
         self.import_gdms_button = widgets.QPushButton(_text(self.language, 'import_gdms'), parent=self)
         self.import_gdms_button.setToolTip(tooltip_text(self.language, 'gdms_import'))
         self.import_gdms_button.setMinimumWidth(96)
@@ -2202,6 +2231,10 @@ class MainWidget(widgets.QWidget):
         self.imported_target_input.setEnabled(False)
         self.imported_target_input.setVisible(False)
         self.imported_target_input.setMinimumWidth(180)
+        self.manual_target_toggle = widgets.QCheckBox(_text(self.language, 'manual_target'), parent=self)
+        self.manual_target_toggle.setToolTip(tooltip_text(self.language, 'manual_target'))
+        self.manual_target_toggle.setChecked(True)
+        self.manual_target_toggle.setVisible(False)
 
         self.instrument_mrp_label = widgets.QLabel(_text(self.language, 'instrument_mrp'), parent=self)
         self.instrument_mrp_input = widgets.QSpinBox(parent=self)
@@ -2304,16 +2337,19 @@ class MainWidget(widgets.QWidget):
         target_group_layout = widgets.QVBoxLayout(target_group)
         target_group_layout.setContentsMargins(0, 0, 0, 0)
         target_group_layout.setSpacing(2)
-        sel_row = widgets.QHBoxLayout()
-        sel_row.setSpacing(4)
-        sel_row.addWidget(self._target_element_input, stretch=1)
-        sel_row.addWidget(self._target_isotope_input, stretch=1)
-        target_group_layout.addLayout(sel_row)
         import_row = widgets.QHBoxLayout()
         import_row.setSpacing(4)
         import_row.addWidget(self.import_gdms_button)
         import_row.addWidget(self.imported_target_input, stretch=1)
         target_group_layout.addLayout(import_row)
+        target_group_layout.addWidget(self.manual_target_toggle)
+        self.manual_target_controls = widgets.QWidget(parent=target_group)
+        sel_row = widgets.QHBoxLayout(self.manual_target_controls)
+        sel_row.setContentsMargins(0, 0, 0, 0)
+        sel_row.setSpacing(4)
+        sel_row.addWidget(self._target_element_input, stretch=1)
+        sel_row.addWidget(self._target_isotope_input, stretch=1)
+        target_group_layout.addWidget(self.manual_target_controls)
         mz_label = widgets.QLabel(parent=self)
         mz_label.setObjectName('helperText')
         mz_label.setStyleSheet("color: #1e40af; font-size: 13px; font-weight: bold;")
@@ -2526,6 +2562,7 @@ class MainWidget(widgets.QWidget):
         self.help_button.clicked.connect(self.show_help)
         self.import_gdms_button.clicked.connect(self.import_gdms_profiles)
         self.imported_target_input.currentIndexChanged.connect(self._on_imported_target_changed)
+        self.manual_target_toggle.toggled.connect(self._on_manual_target_toggled)
         self.language_input.currentIndexChanged.connect(self.apply_language)
         self.mode_input.currentIndexChanged.connect(self.apply_mode_preset)
         self.charge_preset_input.currentIndexChanged.connect(self._on_target_isotope_changed)
@@ -2538,12 +2575,13 @@ class MainWidget(widgets.QWidget):
 
         # Set jump order for tab
         self.setTabOrder(self.language_input, self.mode_input)
-        self.setTabOrder(self.mode_input, self._target_element_input)
-        self.setTabOrder(self._target_element_input, self._target_isotope_input)
-        self.setTabOrder(self._target_isotope_input, self.import_gdms_button)
+        self.setTabOrder(self.mode_input, self.import_gdms_button)
         self.setTabOrder(self.import_gdms_button, self.imported_target_input)
+        self.setTabOrder(self.imported_target_input, self.manual_target_toggle)
+        self.setTabOrder(self.manual_target_toggle, self._target_element_input)
+        self.setTabOrder(self._target_element_input, self._target_isotope_input)
         self.sweep_input.valueChanged.connect(self.update_result_summary)
-        self.setTabOrder(self.imported_target_input, self.sweep_input)
+        self.setTabOrder(self._target_isotope_input, self.sweep_input)
         self.setTabOrder(self.sweep_input, self.atoms_input)
         self.setTabOrder(self.atoms_input, self.element_set_input)
         self.setTabOrder(self.element_set_input, self.charge_preset_input)
@@ -2621,10 +2659,14 @@ class MainWidget(widgets.QWidget):
         self.filter_bar.setPlaceholderText(self._tr('filter_results'))
         self._target_element_input.setPlaceholderText(self._tr('target_element_placeholder'))
         self._target_isotope_input.setPlaceholderText(self._tr('target_isotope_placeholder'))
+        self.manual_target_toggle.setText(self._tr('manual_target'))
         self.import_gdms_button.setText(self._tr('import_gdms'))
         if self.imported_target_input.count() > 0:
             self.imported_target_input.setItemText(0, self._tr('imported_target_placeholder'))
         self._refresh_imported_target_labels()
+        profile = self._current_imported_profile()
+        if profile is not None:
+            self._set_target_mz_label_from_profile(profile)
         self.atoms_input.set_language(self.language)
         self.table_output.set_language(self.language)
         for chip in getattr(self, '_filter_chips', []):
@@ -2648,6 +2690,7 @@ class MainWidget(widgets.QWidget):
         self._target_mz_result_label.setToolTip(tooltip_text(self.language, 'mz'))
         self.import_gdms_button.setToolTip(tooltip_text(self.language, 'gdms_import'))
         self.imported_target_input.setToolTip(tooltip_text(self.language, 'gdms_import'))
+        self.manual_target_toggle.setToolTip(tooltip_text(self.language, 'manual_target'))
         self.sweep_input.setToolTip(tooltip_text(self.language, 'mzrange'))
 
         self.maxsize_input.setToolTip(tooltip_text(self.language, 'maxsize'))
@@ -2834,8 +2877,13 @@ class MainWidget(widgets.QWidget):
         ]
         self._gdms_import_profiles = list(profiles)
         self.atoms_input.set_elements(elements)
+        self.manual_target_toggle.blockSignals(True)
+        self.manual_target_toggle.setChecked(False)
+        self.manual_target_toggle.blockSignals(False)
         self._refresh_imported_target_labels()
         self.imported_target_input.setCurrentIndex(0)
+        self._clear_manual_target()
+        self._update_target_source_visibility()
         self.set_status(
             self._tr('gdms_import_loaded').format(
                 len(profiles), len(elements), os.path.basename(path)
@@ -2855,27 +2903,101 @@ class MainWidget(widgets.QWidget):
             self.imported_target_input.addItem(
                 self._format_imported_target_label(profile), profile
             )
-        has_profiles = bool(getattr(self, '_gdms_import_profiles', []))
-        self.imported_target_input.setVisible(has_profiles)
-        self.imported_target_input.setEnabled(has_profiles)
         if current is not None:
             index = self._find_combo_data(self.imported_target_input, current)
             if index >= 0:
                 self.imported_target_input.setCurrentIndex(index)
         self.imported_target_input.blockSignals(False)
+        self._update_target_source_visibility()
+
+    def _has_imported_profiles(self):
+        """Return whether GDMS profile targets are available."""
+        return bool(getattr(self, '_gdms_import_profiles', []))
+
+    def _manual_target_active(self):
+        """Return whether the manual target controls should drive the target."""
+        return (not self._has_imported_profiles()) or self.manual_target_toggle.isChecked()
+
+    def _current_imported_profile(self):
+        """Return the selected GDMS profile target, if any."""
+        if not hasattr(self, 'imported_target_input'):
+            return None
+        return _current_data(self.imported_target_input)
+
+    def _update_target_source_visibility(self):
+        """Keep imported target and manual target controls in their active roles."""
+        if not hasattr(self, 'manual_target_controls'):
+            return
+        has_profiles = self._has_imported_profiles()
+        manual_active = self._manual_target_active()
+        self.imported_target_input.setVisible(has_profiles)
+        self.imported_target_input.setEnabled(has_profiles)
+        self.manual_target_toggle.setVisible(has_profiles)
+        self.manual_target_controls.setVisible(manual_active)
+        self._target_element_input.setEnabled(manual_active)
+        self._target_isotope_input.setEnabled(
+            manual_active and self._target_isotope_input.count() > 0
+        )
+
+    def _clear_manual_target(self):
+        """Clear manual target widgets and the hidden target text."""
+        self._target_element_input.blockSignals(True)
+        self._target_isotope_input.blockSignals(True)
+        try:
+            self._target_element_input.setCurrentIndex(-1)
+            self._target_isotope_input.clear()
+            self._target_isotope_input.setEnabled(False)
+        finally:
+            self._target_isotope_input.blockSignals(False)
+            self._target_element_input.blockSignals(False)
+        self.mz_input.blockSignals(True)
+        self.mz_input.clear()
+        self.mz_input.blockSignals(False)
+        self.mz = None
+        self._target_mz_result_label.setText('')
+        self._target_mz_result_label.setToolTip(tooltip_text(self.language, 'mz'))
+
+    def _on_manual_target_toggled(self, checked):
+        """Show or hide manual target controls after GDMS target import."""
+        self._update_target_source_visibility()
+        if checked:
+            self.imported_target_input.blockSignals(True)
+            self.imported_target_input.setCurrentIndex(0)
+            self.imported_target_input.blockSignals(False)
+            return
+        profile = self._current_imported_profile()
+        if profile is None:
+            self._clear_manual_target()
+            return
+        self._applying_imported_target = True
+        try:
+            self._set_target_from_isotope(profile.isotope)
+        finally:
+            self._applying_imported_target = False
+        self._set_target_mz_label_from_profile(profile)
 
     def _format_imported_target_label(self, profile):
-        observed = profile.centroid_mz if profile.centroid_mz is not None else profile.apex_mz
+        observed, _ = self._profile_observed_mz(profile)
         if observed is not None:
             return '{}  m/z {:.4f}'.format(profile.label, observed)
         return '{}  {}'.format(profile.label, profile.isotope)
 
     def _on_imported_target_changed(self, index):
         """Apply a target selected from imported GDMS profiles."""
-        profile = _current_data(self.imported_target_input)
+        profile = self._current_imported_profile()
         if profile is None:
+            if not self._manual_target_active():
+                self._clear_manual_target()
             return
-        self._set_target_from_isotope(profile.isotope)
+        self.manual_target_toggle.blockSignals(True)
+        self.manual_target_toggle.setChecked(False)
+        self.manual_target_toggle.blockSignals(False)
+        self._update_target_source_visibility()
+        self._applying_imported_target = True
+        try:
+            self._set_target_from_isotope(profile.isotope)
+        finally:
+            self._applying_imported_target = False
         self._set_target_mz_label_from_profile(profile)
         self.set_status(
             self._tr('gdms_import_target_status').format(profile.label), time=3000
@@ -2901,25 +3023,50 @@ class MainWidget(widgets.QWidget):
             self.mz = str(isotope)
         return True
 
+    def _profile_observed_mz(self, profile):
+        """Return the processed profile m/z and the label key that describes it."""
+        if profile.centroid_mz is not None:
+            return profile.centroid_mz, 'gdms_centroid'
+        if profile.apex_mz is not None:
+            return profile.apex_mz, 'gdms_apex'
+        return None, None
+
+    def _theoretical_target_mz_for_isotope(self, isotope):
+        """Return theoretical target m/z using the active target charge preset."""
+        charges, chargesign = _current_data(self.charge_preset_input)
+        target = str(isotope)
+        if chargesign not in ('o', '0'):
+            if charges[0] == 1:
+                target = '{} {}'.format(target, chargesign)
+            else:
+                target = '{} {}{}'.format(target, charges[0], chargesign)
+        molecule = Molecule(target)
+        if molecule.charge:
+            return molecule.mass / molecule.charge
+        return molecule.mass
+
     def _set_target_mz_label_from_profile(self, profile):
-        """Show theoretical and observed m/z for an imported target."""
+        """Show theoretical m/z and processed profile m/z for an imported target."""
         isotope = profile.isotope
         label = self._target_mz_result_label.text()
         rows = periodic_table[periodic_table['isotope'] == isotope]
         if not rows.empty:
-            mass = rows.iloc[0]['mass']
-            charges, _ = _current_data(self.charge_preset_input)
-            charge = charges[0]
-            label = '{}  \u2192  m/z = {:.4f}'.format(isotope, mass / charge)
-        observed = profile.centroid_mz if profile.centroid_mz is not None else profile.apex_mz
+            label = '{}  ·  {} {} m/z {:.4f}'.format(
+                isotope,
+                self._tr('gdms_delta_reference'),
+                self._tr('gdms_theoretical'),
+                self._theoretical_target_mz_for_isotope(isotope),
+            )
+        observed, observed_label = self._profile_observed_mz(profile)
         extras = []
         if observed is not None:
-            extras.append('{} {:.4f}'.format(self._tr('gdms_observed'), observed))
+            extras.append('{} {:.4f}'.format(self._tr(observed_label), observed))
         if profile.fwhm is not None:
             extras.append('{} {:.4g}'.format(self._tr('gdms_fwhm'), profile.fwhm))
         if extras:
             label = '{}  ·  {}'.format(label, '  ·  '.join(extras))
         self._target_mz_result_label.setText(label)
+        self._target_mz_result_label.setToolTip(self._tr('gdms_reference_tooltip'))
 
     def _find_combo_data(self, combo, value):
         """Return the first combo index with matching user data."""
@@ -2982,6 +3129,14 @@ class MainWidget(widgets.QWidget):
 
     def _on_target_element_changed(self, index):
         """Populate isotope selector when element is chosen."""
+        if (
+            not self._applying_imported_target
+            and self._has_imported_profiles()
+            and self._manual_target_active()
+        ):
+            self.imported_target_input.blockSignals(True)
+            self.imported_target_input.setCurrentIndex(0)
+            self.imported_target_input.blockSignals(False)
         elem = self._target_element_input.currentData()
         if not elem:
             self._target_isotope_input.setEnabled(False)
@@ -3013,16 +3168,25 @@ class MainWidget(widgets.QWidget):
             self._target_mz_result_label.setText('')
             self.mz_input.clear()
             return
-        row = periodic_table[periodic_table['isotope'] == isotope].iloc[0]
-        mass = row['mass']
-        charges, _ = _current_data(self.charge_preset_input)
-        charge = charges[0]
-        mz = mass / charge
+        if (
+            not self._applying_imported_target
+            and self._has_imported_profiles()
+            and self._manual_target_active()
+        ):
+            self.imported_target_input.blockSignals(True)
+            self.imported_target_input.setCurrentIndex(0)
+            self.imported_target_input.blockSignals(False)
+        mz = self._theoretical_target_mz_for_isotope(isotope)
         self.mz_input.blockSignals(True)
         self.mz_input.setText(str(isotope))
         self.mz_input.blockSignals(False)
         self.mz = str(isotope)
-        self._target_mz_result_label.setText(f'{isotope}  →  m/z = {mz:.4f}')
+        profile = self._current_imported_profile()
+        if profile is not None and profile.isotope == isotope and not self._manual_target_active():
+            self._set_target_mz_label_from_profile(profile)
+        else:
+            self._target_mz_result_label.setText(f'{isotope}  →  m/z = {mz:.4f}')
+            self._target_mz_result_label.setToolTip(tooltip_text(self.language, 'mz'))
 
     def _update_mz_preview(self):
         """Parse the target input and show m/z preview."""
@@ -3551,6 +3715,8 @@ class MainWidget(widgets.QWidget):
         spectrum_data['_source_row'] = np.arange(data.shape[0])
         spectrum_data.attrs['window_half_mz'] = float(self.mzrange)
         spectrum_data.attrs['instrument_mrp'] = float(self.instrument_mrp_input.value())
+        spectrum_data.attrs['delta_reference'] = data.attrs.get('delta_reference')
+        spectrum_data.attrs['delta_reference_mz'] = data.attrs.get('delta_reference_mz')
         if target_mz and np.isfinite(target_mz):
             spectrum_data.attrs['target_mz'] = float(target_mz)
             spectrum_data.attrs['window_half_ppm'] = float(self.mzrange / target_mz * 1e6)

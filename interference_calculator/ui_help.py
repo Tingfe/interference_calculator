@@ -115,7 +115,18 @@ gdms_import_tooltip = '''
 <html><head/><body>
 <p><b>Import GDMS Excel profile data.</b></p>
 <p>Reads isotope profile exports, extracts target peaks such as Fe{56}, and
-fills the element list from the exported plasma/sample profiles.</p>
+fills the element list from the exported plasma/sample profiles. Profile m/z
+is calculated from the imported mass/intensity points as a centroid, or apex
+when a centroid is not available.</p>
+</body></html>
+'''
+
+manual_target_tooltip = '''
+<html><head/><body>
+<p><b>Manual target override.</b></p>
+<p>After importing GDMS profiles, keep this off to choose targets from the
+instrument-exported peak list. Enable it only when you need to calculate a
+target that is not present in the imported file.</p>
 </body></html>
 '''
 
@@ -162,8 +173,10 @@ radioactive elements.</p>
 
 <p>GDMS Excel profile exports can be imported directly. The software reads
 exported isotope profiles such as Fe{56}, fills the element list from the file,
-and lets users select a target peak from the measured profile list before
-running the interference calculation.</p>
+and lets users select a target peak from the imported profile list before
+running the interference calculation. The displayed profile m/z is calculated
+from the imported mass/intensity data as a peak centroid, or from the apex when
+the centroid cannot be calculated.</p>
 
 <p>The GDMS target window defaults to 2000 ppm and is entered as a full window
 width. For example, a 2000 ppm window means the software searches 1000 ppm lower
@@ -233,7 +246,8 @@ help_text_zh = '''
 预设面向常见无机质谱可测元素，保留 Th/U，并排除短寿命或非常规放射性元素。</p>
 
 <p>软件可以直接导入 GDMS Excel 谱图导出文件，读取 Fe{56} 这类同位素谱图，
-用文件中的谱图元素填充元素列表，并在计算前从实测谱图列表中选择目标峰。</p>
+用文件中的谱图元素填充元素列表，并在计算前优先从导入谱图列表中选择目标峰。
+界面显示的谱图 m/z 来自导入质量 / 强度点的质心计算；无法计算质心时使用峰顶位置。</p>
 
 <p>GDMS 的目标窗口默认使用 2000 ppm，并按完整窗口宽度输入。例如 2000 ppm 表示
 软件会在校准后的目标峰两侧各搜索 1000 ppm。也可以切换为绝对 m/z 窗口。</p>
@@ -285,6 +299,7 @@ _TOOLTIPS = {
         'help_button': help_button_tooltip,
         'spectrum_button': spectrum_button_tooltip,
         'gdms_import': gdms_import_tooltip,
+        'manual_target': manual_target_tooltip,
     },
     'zh': {
         'atoms': '''
@@ -372,7 +387,15 @@ _TOOLTIPS = {
 <html><head/><body>
 <p><b>导入 GDMS Excel 谱图数据。</b></p>
 <p>读取导出的同位素谱图，自动提取 Fe{56} 这类目标峰，并用文件中的等离子体 /
-样品谱图填充元素列表。</p>
+样品谱图填充元素列表。谱图 m/z 由导入的质量 / 强度点计算质心；无法计算质心时
+使用峰顶位置。</p>
+</body></html>
+''',
+        'manual_target': '''
+<html><head/><body>
+<p><b>手动覆盖目标峰。</b></p>
+<p>导入 GDMS 谱图后，默认从仪器导出的目标峰列表中选择。只有需要计算导入文件中
+不存在的目标峰时，才启用手动目标。</p>
 </body></html>
 ''',
     },
