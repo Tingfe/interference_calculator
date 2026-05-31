@@ -112,6 +112,22 @@ class UIImportedElementSetTests(unittest.TestCase):
         self.assertEqual(widget.element_set_input.currentIndex(), 0)
         window.close()
 
+    def test_element_set_appends_missing_elements_without_clearing_existing(self):
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+        widget.atoms_input.set_elements(['Fe', 'Ni'])
+
+        ar_background_index = 2
+        widget.element_set_input.setCurrentIndex(ar_background_index)
+        widget.add_element_set(ar_background_index)
+
+        self.assertEqual(
+            widget.atoms_input.elements(),
+            ['Fe', 'Ni', 'Ar', 'O', 'H', 'C', 'N', 'Cl', 'S'],
+        )
+        self.assertEqual(widget.element_set_input.currentIndex(), 0)
+        window.close()
+
     def test_target_element_selector_uses_periodic_order(self):
         window = self.ui.MainWindow()
         widget = window.centralWidget()
@@ -170,6 +186,254 @@ class UIImportedElementSetTests(unittest.TestCase):
         self.assertIn('profile centroid m/z 55.9279', label.text())
         self.assertGreaterEqual(label.text().count('\n'), 2)
         window.close()
+
+    def test_imported_profiles_attach_real_points_to_spectrum_metadata(self):
+        from interference_calculator.gdms_import import GDMSProfile
+
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+        target_profile = GDMSProfile(
+            'Fe{56}', 'Fe', 56, '56Fe', 1, 3, 55.928, 1000.0, 55.9279, 0.0123,
+            profile_points=((55.920, 10.0), (55.9279, 1000.0), (55.936, 12.0)),
+        )
+        neighbor_profile = GDMSProfile(
+            'Fe{57}', 'Fe', 57, '57Fe', 4, 3, 55.982, 800.0, 55.9818, 0.011,
+            profile_points=((55.974, 8.0), (55.9818, 800.0), (55.990, 6.0)),
+        )
+
+        widget._gdms_import_profiles = [target_profile, neighbor_profile]
+        widget._refresh_imported_target_labels()
+        widget.imported_target_input.setCurrentIndex(1)
+        widget.manual_target_toggle.setChecked(False)
+
+        data = self.ui.pd.DataFrame({'mass/charge': [55.934936], 'target': [True]})
+        data.attrs['target_mz'] = 55.934936
+        data.attrs['delta_reference_mz'] = 55.934936
+        widget._attach_gdms_profile_overlays(data)
+
+        overlays = data.attrs['gdms_profile_overlays']
+        self.assertEqual(data.attrs['gdms_profile_reference_mz'], 55.9279)
+        self.assertEqual(len(overlays), 2)
+        self.assertTrue(overlays[0]['is_target'])
+        self.assertEqual(overlays[0]['points'][1], (55.9279, 1000.0))
+        self.assertEqual(overlays[0]['observed_mz'], 55.9279)
+        self.assertAlmostEqual(
+            overlays[0]['match_mz'],
+            widget._theoretical_target_mz_for_isotope('56Fe'),
+        )
+        window.close()
+
+    def test_auto_mrp_uses_imported_profile_fwhm_when_enabled(self):
+        from interference_calculator.gdms_import import GDMSProfile
+
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+        profile = GDMSProfile(
+            'Fe{56}', 'Fe', 56, '56Fe', 1, 3, 55.928, 1000.0, 55.9279, 0.0123,
+            profile_points=((55.920, 10.0), (55.9279, 1000.0), (55.936, 12.0)),
+        )
+
+        widget._gdms_import_profiles = [profile]
+        widget._refresh_imported_target_labels()
+        widget.imported_target_input.setCurrentIndex(1)
+
+        self.assertTrue(widget.auto_mrp_toggle.isEnabled())
+        widget.auto_mrp_toggle.click()
+
+        self.assertTrue(widget.auto_mrp_toggle.isChecked())
+        self.assertEqual(widget.instrument_mrp_input.value(), round(55.9279 / 0.0123))
+
+        widget.auto_mrp_toggle.click()
+        self.assertFalse(widget.auto_mrp_toggle.isChecked())
+        window.close()
+
+    def test_auto_sweep_uses_imported_profile_mass_range_when_enabled(self):
+        from interference_calculator.gdms_import import GDMSProfile
+
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+        profile = GDMSProfile(
+            'Fe{56}', 'Fe', 56, '56Fe', 1, 3, 55.936, 1000.0, 55.936, 0.0123,
+            profile_points=((55.880, 10.0), (55.936, 1000.0), (55.992, 12.0)),
+        )
+
+        widget._gdms_import_profiles = [profile]
+        widget._refresh_imported_target_labels()
+        widget.imported_target_input.setCurrentIndex(1)
+
+        self.assertTrue(widget.auto_sweep_toggle.isEnabled())
+        widget.auto_sweep_toggle.click()
+
+        expected = round((55.992 - 55.880) / 55.936 * 1e6)
+        self.assertTrue(widget.auto_sweep_toggle.isChecked())
+        self.assertEqual(widget.sweep_input.value(), expected)
+
+        widget.auto_sweep_toggle.click()
+        self.assertFalse(widget.auto_sweep_toggle.isChecked())
+        window.close()
+
+    def test_auto_sweep_is_disabled_without_valid_profile_points(self):
+        from interference_calculator.gdms_import import GDMSProfile
+
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+        profile = GDMSProfile(
+            'Fe{56}', 'Fe', 56, '56Fe', 1, 1, 55.936, 1000.0, 55.936, 0.0123,
+            profile_points=((55.936, 1000.0),),
+        )
+
+        widget._gdms_import_profiles = [profile]
+        widget._refresh_imported_target_labels()
+        widget.imported_target_input.setCurrentIndex(1)
+
+        self.assertFalse(widget.auto_sweep_toggle.isEnabled())
+        self.assertFalse(widget.auto_sweep_toggle.isChecked())
+        window.close()
+
+    def test_auto_mrp_is_disabled_without_valid_fwhm(self):
+        from interference_calculator.gdms_import import GDMSProfile
+
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+        profile = GDMSProfile(
+            'Fe{56}', 'Fe', 56, '56Fe', 1, 3, 55.928, 1000.0, 55.9279, None,
+            profile_points=((55.920, 10.0), (55.9279, 1000.0), (55.936, 12.0)),
+        )
+
+        widget._gdms_import_profiles = [profile]
+        widget._refresh_imported_target_labels()
+        widget.imported_target_input.setCurrentIndex(1)
+
+        self.assertFalse(widget.auto_mrp_toggle.isEnabled())
+        self.assertFalse(widget.auto_mrp_toggle.isChecked())
+        window.close()
+
+    def test_spectrum_profile_toggle_checked_state_keeps_readable_text_color(self):
+        spectrum = self.ui.Spectrum(language='en')
+        style = spectrum.toolbar.styleSheet()
+
+        self.assertIn('QToolButton:checked', style)
+        self.assertIn('color: #172033', style)
+        self.assertIn('QToolButton:disabled', style)
+        spectrum.close()
+
+    def test_spectrum_maps_imported_profile_points_to_calibrated_delta_ppm(self):
+        spectrum = self.ui.Spectrum(language='en')
+        data = self.ui.pd.DataFrame({
+            'molecule': ['56Fe'],
+            'mass/charge': [55.934936],
+            'mass/charge diff': [0.0],
+            '\u0394ppm': [0.0],
+            'probability': [1.0],
+            'target': [True],
+        })
+        data.attrs['target_mz'] = 55.934936
+        data.attrs['delta_reference_mz'] = 55.934936
+        data.attrs['gdms_profile_reference_mz'] = 55.9279
+        data.attrs['gdms_profile_overlays'] = ({
+            'label': 'Fe{56}',
+            'isotope': '56Fe',
+            'points': ((55.9279, 0.0005), (55.9289, 0.00025)),
+            'is_target': True,
+        },)
+
+        spectrum.plot_spectrum(data)
+
+        self.assertFalse(spectrum._profile_toggle_btn.isChecked())
+        self.assertFalse(spectrum._profiles_visible())
+        spectrum._profile_toggle_btn.click()
+        self.assertTrue(spectrum._profiles_visible())
+        self.assertAlmostEqual(spectrum._profile_x_value(55.9279), 0.0)
+        self.assertAlmostEqual(
+            spectrum._profile_x_value(55.9289),
+            (55.9289 - 55.9279) / 55.934936 * 1e6,
+        )
+        _, ys = spectrum._profile_xy_for(spectrum._profile_overlays[0])
+        self.assertAlmostEqual(float(ys.max()), 100.0)
+        spectrum.close()
+
+    def test_spectrum_can_match_imported_profile_center_to_theoretical_mz(self):
+        spectrum = self.ui.Spectrum(language='en')
+        target_mz = 55.934936
+        data = self.ui.pd.DataFrame({
+            'molecule': ['56Fe'],
+            'mass/charge': [target_mz],
+            'mass/charge diff': [0.0],
+            '\u0394ppm': [0.0],
+            'probability': [1.0],
+            'target': [True],
+        })
+        data.attrs['target_mz'] = target_mz
+        data.attrs['delta_reference_mz'] = target_mz
+        data.attrs['gdms_profile_reference_mz'] = 55.9279
+        data.attrs['gdms_profile_overlays'] = ({
+            'label': 'Fe{57}',
+            'isotope': '57Fe',
+            'points': ((55.9818, 800.0), (55.9828, 400.0)),
+            'observed_mz': 55.9818,
+            'match_mz': 55.9800,
+            'is_target': False,
+        },)
+
+        spectrum.plot_spectrum(data)
+        overlay = spectrum._profile_overlays[0]
+
+        self.assertTrue(spectrum._profile_match_toggle_btn.isEnabled())
+        self.assertFalse(spectrum._profile_match_toggle_btn.isChecked())
+        self.assertAlmostEqual(
+            spectrum._profile_x_value(55.9818, overlay),
+            (55.9818 - 55.9279) / target_mz * 1e6,
+        )
+
+        spectrum._profile_match_toggle_btn.click()
+
+        self.assertTrue(spectrum._profile_toggle_btn.isChecked())
+        self.assertTrue(spectrum._profiles_visible())
+        self.assertAlmostEqual(
+            spectrum._profile_x_value(55.9818, overlay),
+            (55.9800 - target_mz) / target_mz * 1e6,
+        )
+        self.assertAlmostEqual(
+            spectrum._profile_x_value(55.9828, overlay),
+            (55.9800 - target_mz + 0.0010) / target_mz * 1e6,
+        )
+        spectrum.close()
+
+    def test_spectrum_match_guide_reports_visible_shift(self):
+        spectrum = self.ui.Spectrum(language='en')
+        target_mz = 55.934936
+        data = self.ui.pd.DataFrame({
+            'molecule': ['56Fe'],
+            'mass/charge': [target_mz],
+            'mass/charge diff': [0.0],
+            '\u0394ppm': [0.0],
+            'probability': [1.0],
+            'target': [True],
+        })
+        data.attrs['target_mz'] = target_mz
+        data.attrs['delta_reference_mz'] = target_mz
+        data.attrs['gdms_profile_reference_mz'] = 55.9279
+        data.attrs['gdms_profile_overlays'] = ({
+            'label': 'Fe{57}',
+            'isotope': '57Fe',
+            'points': ((55.9818, 800.0), (55.9828, 400.0)),
+            'observed_mz': 55.9818,
+            'match_mz': 55.9800,
+            'is_target': False,
+        },)
+
+        spectrum.plot_spectrum(data)
+        overlay = spectrum._profile_overlays[0]
+        raw_x = spectrum._profile_target_aligned_x_value(55.9818)
+
+        spectrum._profile_match_toggle_btn.click()
+
+        matched_x = spectrum._profile_x_value(55.9818, overlay)
+        self.assertNotAlmostEqual(raw_x, matched_x)
+        expected_shift = (55.9800 - target_mz) / target_mz * 1e6
+        expected_shift -= (55.9818 - 55.9279) / target_mz * 1e6
+        self.assertAlmostEqual(matched_x - raw_x, expected_shift)
+        spectrum.close()
 
 
 if __name__ == '__main__':

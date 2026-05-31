@@ -36,6 +36,7 @@ class GDMSProfile:
     apex_intensity: Optional[float]
     centroid_mz: Optional[float]
     fwhm: Optional[float]
+    profile_points: Tuple[Tuple[float, float], ...] = ()
 
 
 def label_to_isotope(label: str) -> Optional[Tuple[str, int, str]]:
@@ -150,6 +151,7 @@ def _parse_profile_sheet(sheet) -> List[GDMSProfile]:
 
         element, mass_number, isotope = parsed
         summary = summarize_profile(masses, intensities)
+        profile_points = tuple(zip(masses, intensities))
         profiles.append(
             GDMSProfile(
                 label='{}{{{}}}'.format(element, mass_number),
@@ -162,6 +164,7 @@ def _parse_profile_sheet(sheet) -> List[GDMSProfile]:
                 apex_intensity=summary.apex_intensity,
                 centroid_mz=summary.centroid_mz,
                 fwhm=summary.fwhm,
+                profile_points=profile_points,
             )
         )
     return profiles

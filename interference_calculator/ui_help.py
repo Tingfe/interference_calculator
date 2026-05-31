@@ -13,9 +13,10 @@ All stable isotopes for each element are included automatically.</p>
 element_set_input_tooltip = '''
 <html><head/><body>
 <p><b>Add common element sets.</b></p>
-<p>Restores common plasma, background, matrix, or imported GDMS element sets in
-the element field. The all-elements set is tuned for inorganic MS screening and
-excludes short-lived radioactive elements.</p>
+<p>Adds only the missing elements from common plasma, background, matrix, or
+imported GDMS element sets. Existing imported/sample elements are kept. The
+all-elements set is tuned for inorganic MS screening and excludes short-lived
+radioactive elements.</p>
 </body></html>
 '''
 
@@ -48,7 +49,9 @@ mzrange_input_tooltip = '''
 <html><head/><body>
 <p><b>Target mass-to-charge window width.</b></p>
 <p>Give the full instrument window width. For example, 2000 ppm is calculated
-as ±1000 ppm around the target peak.</p>
+as ±1000 ppm around the target peak. When an imported GDMS target has valid
+Mass points, the Auto switch estimates the full ppm window from the real Mass
+range.</p>
 </body></html>
 '''
 
@@ -75,7 +78,8 @@ instrument_mrp_input_tooltip = '''
 <p><b>Instrument mass-resolving power.</b></p>
 <p>Used to mark whether each candidate peak is resolvable from the target.
 It does not change which candidate peaks are calculated. Set to off to
-calculate required MRP only.</p>
+calculate required MRP only. When an imported GDMS target has valid FWHM,
+the Auto switch estimates MRP as observed m/z divided by FWHM.</p>
 </body></html>
 '''
 
@@ -107,7 +111,10 @@ spectrum_button_tooltip = '''
 <p>Show the interference spectrum ({}-D). Unresolved peaks are highlighted
 using the instrument MRP setting. With a target peak, the x-axis is centered
 on the target. Hover a peak for details, click a peak to select its table row,
-and export the current spectrum from the spectrum toolbar.</p>
+optionally enable imported GDMS Mass/Values profiles as an experimental overlay,
+optionally match observed profile centers to theoretical isotope m/z with guide
+lines and shift labels, and export the current spectrum from the spectrum
+toolbar.</p>
 </body></html>
 '''.format(_modifier)
 
@@ -117,7 +124,12 @@ gdms_import_tooltip = '''
 <p>Reads isotope profile exports, extracts target peaks such as Fe{56}, and
 fills the element list from the exported plasma/sample profiles. Profile m/z
 is calculated from the imported mass/intensity points as a centroid, or apex
-when a centroid is not available.</p>
+when a centroid is not available. The imported Mass/Values points are retained
+and can be overlaid as real peak shapes in the spectrum view by enabling the
+experimental profile toggle. In the spectrum toolbar, Match m/z can additionally
+align each observed profile centroid/apex to its theoretical isotope m/z; this
+turns on the profile overlay automatically, draws match guides, and does not
+change the calculation.</p>
 </body></html>
 '''
 
@@ -166,9 +178,10 @@ atomic ions, doubly charged atomic ions, oxides, hydrides, hydroxides, nitrides,
 carbides, sulfides, halides, plasma adducts, background molecules, and small matrix
 clusters. This makes the result set more focused for GDMS peak-interference review.</p>
 
-<p>The element set menu includes common plasma, background, matrix, and an
-all-elements inorganic MS preset. The all-elements preset focuses on commonly
-measurable inorganic MS elements, keeps Th/U, and excludes short-lived or unusual
+<p>The element set menu appends missing elements from common plasma, background,
+matrix, imported GDMS, and all-elements inorganic MS presets without clearing the
+current selection. The all-elements preset focuses on commonly measurable
+inorganic MS elements, keeps Th/U, and excludes short-lived or unusual
 radioactive elements.</p>
 
 <p>GDMS Excel profile exports can be imported directly. The software reads
@@ -176,12 +189,21 @@ exported isotope profiles such as Fe{56}, fills the element list from the file,
 and lets users select a target peak from the imported profile list before
 running the interference calculation. The displayed profile m/z is calculated
 from the imported mass/intensity data as a peak centroid, or from the apex when
-the centroid cannot be calculated.</p>
+the centroid cannot be calculated. The spectrum view can also overlay the real
+Mass/Values peak profiles from the imported file. The selected target profile
+centroid/apex is aligned to the theoretical target center before plotting, so
+real profile shapes and theoretical interference candidates share the same
+target-centered axis. This overlay is experimental and off by default. The
+spectrum toolbar also provides a display-only Match m/z switch that aligns each
+observed profile center to the corresponding theoretical isotope m/z for visual
+comparison. It turns on profile overlays automatically and draws guide lines
+with shift labels.</p>
 
 <p>The GDMS target window defaults to 2000 ppm and is entered as a full window
 width. For example, a 2000 ppm window means the software searches 1000 ppm lower
-and 1000 ppm higher than the calibrated target peak. Absolute m/z windows are
-also available.</p>
+and 1000 ppm higher than the calibrated target peak. When imported Mass points
+are available, the optional Auto switch estimates this full ppm window from the
+real profile range.</p>
 
 <p>Instrument MRP is used after candidate generation to estimate whether each
 candidate can be resolved from the target. It does not remove candidates from the
@@ -242,15 +264,22 @@ help_text_zh = '''
 碳化物、硫化物、卤化物、等离子体加合物、背景分子以及小型基体团簇。这样更
 适合 GDMS 峰干扰排查。</p>
 
-<p>元素组合菜单提供常见等离子体、背景、基体以及无机质谱全元素预设。全元素
-预设面向常见无机质谱可测元素，保留 Th/U，并排除短寿命或非常规放射性元素。</p>
+<p>元素组合菜单会在保留当前选择的基础上，追加常见等离子体、背景、基体、导入
+GDMS 元素以及无机质谱全元素预设中尚未选择的元素。全元素预设面向常见无机质谱
+可测元素，保留 Th/U，并排除短寿命或非常规放射性元素。</p>
 
 <p>软件可以直接导入 GDMS Excel 谱图导出文件，读取 Fe{56} 这类同位素谱图，
 用文件中的谱图元素填充元素列表，并在计算前优先从导入谱图列表中选择目标峰。
-界面显示的谱图 m/z 来自导入质量 / 强度点的质心计算；无法计算质心时使用峰顶位置。</p>
+界面显示的谱图 m/z 来自导入质量 / 强度点的质心计算；无法计算质心时使用峰顶位置。
+谱图窗口还可以通过默认关闭的实验开关叠加显示导入文件中的真实 Mass / Values 峰形；
+绘图前会将所选目标峰
+的谱图质心 / 峰顶对齐到理论目标峰中心，因此真实峰形和理论干扰候选峰共用同一个
+目标居中横轴。谱图工具栏还提供仅用于显示的匹配 m/z 开关，可将每条实测峰中心
+对齐到对应同位素的理论 m/z，并显示参考线和偏移量标签，便于目视比较。</p>
 
 <p>GDMS 的目标窗口默认使用 2000 ppm，并按完整窗口宽度输入。例如 2000 ppm 表示
-软件会在校准后的目标峰两侧各搜索 1000 ppm。也可以切换为绝对 m/z 窗口。</p>
+软件会在校准后的目标峰两侧各搜索 1000 ppm。有导入 Mass 点时，可选的自动开关会
+根据真实谱图范围估算完整 ppm 窗口。</p>
 
 <p>Instrument MRP 在候选峰生成后用于判断候选峰是否可与目标峰分辨。它不会改变
 候选峰的生成范围；未能分辨的峰会在表格和谱图中高亮显示。</p>
@@ -312,8 +341,9 @@ _TOOLTIPS = {
         'element_set': '''
 <html><head/><body>
 <p><b>添加常用元素组合。</b></p>
-<p>将常见等离子体、背景、基体或导入的 GDMS 元素集合恢复到元素输入框。
-全元素组合面向无机质谱筛查，已排除短寿命放射性元素。</p>
+<p>只追加常见等离子体、背景、基体或导入 GDMS 元素集合中尚未选择的元素，
+保留当前已经导入或手动选择的样品元素。全元素组合面向无机质谱筛查，已排除
+短寿命放射性元素。</p>
 </body></html>
 ''',
         'mode': '''
@@ -339,7 +369,8 @@ _TOOLTIPS = {
         'mzrange': '''
 <html><head/><body>
 <p><b>目标质荷比窗口宽度。</b></p>
-<p>输入完整的仪器窗口宽度。例如 2000 ppm 会按目标峰两侧各 1000 ppm 计算。</p>
+<p>输入完整的仪器窗口宽度。例如 2000 ppm 会按目标峰两侧各 1000 ppm 计算。导入
+GDMS 目标峰有有效 Mass 点时，自动开关会根据真实 Mass 范围估算完整 ppm 窗口。</p>
 </body></html>
 ''',
         'window_unit': '''
@@ -359,7 +390,8 @@ _TOOLTIPS = {
 <html><head/><body>
 <p><b>仪器质量分辨能力。</b></p>
 <p>用于标记候选峰是否能与目标峰分辨。它不改变候选峰生成范围。
-设为关闭时，仅计算所需 MRP。</p>
+设为关闭时，仅计算所需 MRP。导入 GDMS 目标峰有有效 FWHM 时，自动开关会按
+observed m/z / FWHM 估算 MRP。</p>
 </body></html>
 ''',
         'interference_button': '''
@@ -380,7 +412,9 @@ _TOOLTIPS = {
         'spectrum_button': '''
 <html><head/><body>
 <p>显示干扰谱图 ({}-D)。未分辨峰会根据仪器 MRP 高亮；存在目标峰时，横轴以目标峰为中心。
-悬停峰可查看详情，点击峰可定位表格行，也可以在谱图工具栏导出当前谱图。</p>
+悬停峰可查看详情，点击峰可定位表格行；如已导入 GDMS 谱图，可手动开启实验性的真实
+Mass / Values 峰形叠加，也可选择将实测峰中心匹配到理论同位素 m/z，并显示对齐
+参考线和偏移量标签；也可在谱图工具栏导出当前谱图。</p>
 </body></html>
 '''.format(_modifier),
         'gdms_import': '''
@@ -388,7 +422,10 @@ _TOOLTIPS = {
 <p><b>导入 GDMS Excel 谱图数据。</b></p>
 <p>读取导出的同位素谱图，自动提取 Fe{56} 这类目标峰，并用文件中的等离子体 /
 样品谱图填充元素列表。谱图 m/z 由导入的质量 / 强度点计算质心；无法计算质心时
-使用峰顶位置。</p>
+使用峰顶位置。导入的 Mass / Values 点会保留，并可通过谱图窗口的实验开关叠加为
+真实峰形。谱图工具栏中的匹配 m/z 开关还可以将每条实测峰的质心 / 峰顶对齐到对应
+同位素的理论 m/z；该功能会自动打开实测峰叠加并显示对齐标记，只影响显示，不改变
+计算。</p>
 </body></html>
 ''',
         'manual_target': '''

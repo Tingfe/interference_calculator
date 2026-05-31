@@ -1,5 +1,74 @@
 # Changelog / 更新日志
 
+## [Unreleased]
+
+### English
+
+- No unreleased changes yet.
+
+### 中文
+
+- 暂无未发布变更。
+
+## [2.4.0] - 2026-05-31
+
+### English
+
+#### Added
+- Retain imported GDMS Excel `Mass` / `Values` point data and overlay the real
+  isotope profile shapes in the target-centered spectrum view through an
+  experimental toolbar toggle that is off by default.
+- Align imported profile traces by the selected target profile centroid/apex
+  before plotting, so observed peak shapes and theoretical interference
+  candidates share the same calibrated target-centered axis.
+- Add an optional display-only `Match m/z` spectrum toolbar switch that aligns
+  each imported observed profile centroid/apex to its theoretical isotope m/z
+  for visual comparison without changing the interference calculation. Enabling
+  it now turns on real-profile overlays automatically and draws visible match
+  guides with shift labels.
+- Add an optional automatic instrument-MRP switch that estimates resolving
+  power from the selected imported GDMS profile as `observed m/z / FWHM`, and
+  disables itself when no valid FWHM is available.
+- Add an optional automatic sweep switch that estimates the full ppm window
+  from the selected imported GDMS profile Mass range as
+  `(max Mass - min Mass) / observed m/z * 1e6`, and disables itself when no
+  valid Mass range is available.
+
+#### Changed
+- Changed element-set presets to append only missing elements instead of
+  replacing the current element selection, so imported GDMS sample elements can
+  be kept while adding plasma, background, or matrix sources.
+
+#### Fixed
+- Keep the imported-profile legend color consistent with the actual profile
+  trace color in the spectrum view.
+- Keep checked spectrum-toolbar button text readable on platforms that use a
+  light default checked-state foreground color.
+
+### 中文
+
+#### 新增
+- 保留导入 GDMS Excel 中的 `Mass` / `Values` 原始点列，并可通过默认关闭的
+  实验性工具栏开关，在目标峰居中的谱图中叠加显示真实同位素峰形。
+- 绘制导入峰形前，会先按所选目标峰的谱图质心 / 峰顶进行对齐，使实测峰形与
+  理论干扰候选峰共用同一个校准后的目标居中横轴。
+- 增加仅影响显示的 `匹配 m/z` 谱图工具栏开关，可将每条导入实测峰的谱图质心 /
+  峰顶对齐到对应同位素的理论 m/z，便于目视比较且不改变干扰计算。启用后会自动
+  打开实测峰叠加，并显示对齐参考线和偏移量标签。
+- 增加可选的仪器 MRP 自动识别开关，根据当前导入 GDMS 目标峰按
+  `observed m/z / FWHM` 估算分辨能力；没有有效 FWHM 时自动禁用，避免异常。
+- 增加可选的扫描窗口自动识别开关，根据当前导入 GDMS 目标峰的 Mass 范围按
+  `(最大 Mass - 最小 Mass) / observed m/z * 1e6` 估算完整 ppm 窗口；没有有效
+  Mass 范围时自动禁用。
+
+#### 修复
+- 修正谱图中“导入实测峰”图例颜色与实际实测峰曲线颜色不一致的问题。
+- 修正谱图工具栏按钮选中后文字可能变浅、难以阅读的问题。
+
+#### 变更
+- 元素组合预设改为只追加当前尚未选择的元素，不再清空重写当前元素列表；导入
+  GDMS 样品元素后，可以继续补充等离子体、背景或基体来源元素。
+
 ## [2.3.0] - 2026-05-31
 
 ### English
@@ -346,6 +415,7 @@
 - 代码库现代化到 Python 3.9+。
 - 清理并重新生成周期表数据。
 
+[2.4.0]: https://github.com/Tingfe/interference_calculator/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/Tingfe/interference_calculator/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/Tingfe/interference_calculator/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Tingfe/interference_calculator/compare/v2.0.6...v2.1.0

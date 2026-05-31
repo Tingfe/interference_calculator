@@ -66,6 +66,10 @@ class GDMSImportTests(unittest.TestCase):
         self.assertEqual([profile.isotope for profile in profiles], ['56Fe', '238U'])
         self.assertEqual(extract_profile_elements(profiles), ['Fe', 'U'])
         self.assertAlmostEqual(profiles[0].centroid_mz, 55.94)
+        self.assertEqual(
+            profiles[0].profile_points,
+            ((55.90, 0.0), (55.92, 4.0), (55.94, 10.0), (55.96, 4.0), (55.98, 0.0)),
+        )
 
 
 if __name__ == '__main__':

@@ -161,9 +161,19 @@ _UI_TEXT = {
         'spectrum_target_title': 'Target-centered interference spectrum',
         'spectrum_title': 'Inorganic interference spectrum',
         'y_normalised': '{} (normalised)',
+        'y_normalised_with_profiles': '{} / profile signal (profile-normalised)',
         'candidate': 'candidate',
         'not_resolved': 'not resolved',
         'target_peak': 'target',
+        'gdms_profile_overlay': 'imported profiles',
+        'gdms_profile_overlay_matched': 'matched profiles',
+        'gdms_profile_point': 'profile point',
+        'gdms_profile_reference': 'calibrated zero',
+        'gdms_profile_observed_center': 'observed center',
+        'gdms_profile_matched_mz': 'matched m/z',
+        'gdms_profile_match_guide': 'matched m/z',
+        'gdms_profile_match_shift_ppm': 'shift {:+.1f} ppm',
+        'gdms_profile_match_shift_mz': 'shift {:+.5g} m/z',
         'ppm_from_target': '\u0394ppm from target',
         'mz_from_target': '\u0394m/z from target',
         'header_title': 'Inorganic mass interference',
@@ -174,6 +184,12 @@ _UI_TEXT = {
         'target_group': 'target peak',
         'target': 'target',
         'sweep': 'sweep',
+        'auto_sweep': 'Auto',
+        'auto_sweep_tooltip': (
+            'Estimate the full sweep width from the selected imported GDMS '
+            'profile Mass range as (max Mass - min Mass) / observed m/z × 1e6. '
+            'Disabled automatically when no valid Mass points are available.'
+        ),
         'target_hint': 'Full-width window; GDMS defaults to 2000 ppm.',
         'sample_plasma': 'sample / plasma',
         'elements': 'elements',
@@ -183,6 +199,12 @@ _UI_TEXT = {
         'ions': 'ions',
         'max_size': 'max size',
         'instrument_mrp': 'instrument MRP',
+        'auto_mrp': 'Auto',
+        'auto_mrp_tooltip': (
+            'Estimate instrument MRP from the selected imported GDMS profile '
+            'using observed m/z / FWHM. Disabled automatically when the imported '
+            'profile has no valid FWHM.'
+        ),
         'add_set_empty': 'add set...',
         'all_inorganic_elements': 'all inorganic elements',
         'imported_element_set': 'imported GDMS elements ({})',
@@ -247,6 +269,10 @@ _UI_TEXT = {
         'gdms_import_no_profiles': 'No GDMS isotope profiles were found in this file.',
         'gdms_import_loaded': 'Imported {} targets and {} elements from {}.',
         'gdms_import_target_status': 'Selected imported target {}.',
+        'gdms_auto_sweep_status': 'Auto sweep from {}: {} ppm.',
+        'gdms_auto_sweep_unavailable': 'No valid Mass range is available for automatic sweep.',
+        'gdms_auto_mrp_status': 'Auto MRP from {}: {}.',
+        'gdms_auto_mrp_unavailable': 'No valid FWHM is available for automatic MRP.',
         'gdms_delta_reference': 'Δ reference',
         'gdms_theoretical': 'theoretical',
         'gdms_centroid': 'profile centroid',
@@ -264,6 +290,21 @@ _UI_TEXT = {
         'zoom_out_y': 'Zoom out (Y axis)',
         'zoom_in_y': 'Zoom in (Y axis)',
         'reset_view': 'Reset view',
+        'show_imported_profiles': 'Profiles (test)',
+        'show_imported_profiles_tooltip': (
+            'Experimental overlay, off by default. Show imported GDMS '
+            'Mass/Values peak profiles. The selected target profile '
+            'centroid/apex is aligned to the theoretical target center before '
+            'plotting.'
+        ),
+        'match_profile_mz': 'Match m/z',
+        'match_profile_mz_tooltip': (
+            'Experimental display option. When imported profiles are shown, '
+            'align each observed profile centroid/apex to its theoretical '
+            'isotope m/z and draw match guides. This turns on the profile '
+            'overlay automatically and affects only the spectrum overlay, not '
+            'the interference calculation or result table.'
+        ),
         'export_spectrum': 'Export spectrum',
         'export_spectrum_tooltip': 'Export current spectrum as PNG',
         'spectrum_png_filter': 'PNG Image (*.png)',
@@ -301,9 +342,19 @@ _UI_TEXT = {
         'spectrum_target_title': '以目标峰为中心的干扰谱图',
         'spectrum_title': '无机干扰谱图',
         'y_normalised': '{}（归一化）',
+        'y_normalised_with_profiles': '{} / 实测信号（各峰归一化）',
         'candidate': '候选峰',
         'not_resolved': '未分辨',
         'target_peak': '目标峰',
+        'gdms_profile_overlay': '导入实测峰',
+        'gdms_profile_overlay_matched': '匹配实测峰',
+        'gdms_profile_point': '谱图点',
+        'gdms_profile_reference': '校准零点',
+        'gdms_profile_observed_center': '实测中心',
+        'gdms_profile_matched_mz': '匹配 m/z',
+        'gdms_profile_match_guide': '匹配 m/z',
+        'gdms_profile_match_shift_ppm': '偏移 {:+.1f} ppm',
+        'gdms_profile_match_shift_mz': '偏移 {:+.5g} m/z',
         'ppm_from_target': '相对目标峰 \u0394ppm',
         'mz_from_target': '相对目标峰 \u0394m/z',
         'header_title': '无机质谱峰干扰',
@@ -314,6 +365,12 @@ _UI_TEXT = {
         'target_group': '目标峰',
         'target': '目标',
         'sweep': '扫描窗口',
+        'auto_sweep': '自动',
+        'auto_sweep_tooltip': (
+            '根据当前选择的导入 GDMS 谱图 Mass 范围估算完整扫描窗口：'
+            '(最大 Mass - 最小 Mass) / observed m/z × 1e6。没有有效 Mass 点时会'
+            '自动禁用。'
+        ),
         'target_hint': '完整窗口宽度；GDMS 默认 2000 ppm。',
         'sample_plasma': '样品 / 等离子体',
         'elements': '元素',
@@ -323,6 +380,11 @@ _UI_TEXT = {
         'ions': '离子',
         'max_size': '最大原子数',
         'instrument_mrp': '仪器 MRP',
+        'auto_mrp': '自动',
+        'auto_mrp_tooltip': (
+            '根据当前选择的导入 GDMS 谱图，用 observed m/z / FWHM 估算仪器 MRP。'
+            '当导入谱图没有有效 FWHM 时会自动禁用，避免异常。'
+        ),
         'add_set_empty': '添加组合...',
         'all_inorganic_elements': '全元素（无机质谱）',
         'imported_element_set': '导入元素（{}）',
@@ -387,6 +449,10 @@ _UI_TEXT = {
         'gdms_import_no_profiles': '未在该文件中找到 GDMS 同位素谱图。',
         'gdms_import_loaded': '已导入 {} 个目标峰和 {} 个元素，来源：{}。',
         'gdms_import_target_status': '已选择导入目标峰 {}。',
+        'gdms_auto_sweep_status': '已根据 {} 自动设置扫描窗口：{} ppm。',
+        'gdms_auto_sweep_unavailable': '当前目标峰没有有效 Mass 范围，无法自动识别扫描窗口。',
+        'gdms_auto_mrp_status': '已根据 {} 自动设置 MRP：{}。',
+        'gdms_auto_mrp_unavailable': '当前目标峰没有有效 FWHM，无法自动识别 MRP。',
         'gdms_delta_reference': 'Δ参考',
         'gdms_theoretical': '理论',
         'gdms_centroid': '谱图质心',
@@ -402,6 +468,17 @@ _UI_TEXT = {
         'zoom_out_y': '缩小 Y 轴',
         'zoom_in_y': '放大 Y 轴',
         'reset_view': '重置视图',
+        'show_imported_profiles': '实测峰（测试）',
+        'show_imported_profiles_tooltip': (
+            '实验性叠加功能，默认关闭。显示导入的 GDMS Mass / Values 真实峰形。'
+            '绘图前会将所选目标峰的谱图质心 / 峰顶对齐到理论目标峰中心。'
+        ),
+        'match_profile_mz': '匹配 m/z',
+        'match_profile_mz_tooltip': (
+            '实验性显示选项。打开实测峰叠加后，将每条实测峰的谱图质心 / 峰顶'
+            '对齐到对应同位素的理论 m/z，并显示对齐标记。点击后会自动打开'
+            '实测峰叠加；该选项只影响谱图叠加显示，不改变干扰计算和结果表。'
+        ),
         'export_spectrum': '导出谱图',
         'export_spectrum_tooltip': '将当前谱图导出为 PNG',
         'spectrum_png_filter': 'PNG 图像 (*.png)',
@@ -607,6 +684,7 @@ QToolButton {
     border: 1px solid #cbd5e1;
     border-radius: 4px;
     background: #ffffff;
+    color: #172033;
 }
 QToolButton:hover {
     background: #eff6ff;
@@ -614,6 +692,16 @@ QToolButton:hover {
 }
 QToolButton:pressed {
     background: #dbeafe;
+}
+QToolButton:checked {
+    background: #dbeafe;
+    border-color: #2563eb;
+    color: #172033;
+}
+QToolButton:checked:hover {
+    background: #bfdbfe;
+    border-color: #1d4ed8;
+    color: #172033;
 }
 QSplitter::handle {
     background: #dbeafe;
@@ -1176,6 +1264,7 @@ class Spectrum(widgets.QWidget):
     _TEXT     = QtGui.QColor(0x17, 0x20, 0x33)
     _TICK_CLR = QtGui.QColor(0x33, 0x41, 0x55)
     _MRP_BAND = QtGui.QColor(0xef, 0x44, 0x44, 26)
+    _PROFILE  = QtGui.QColor(0x0e, 0x74, 0x78)
 
     MAX_LABELS = 8
     _PLOT_FLOOR = 1.0e-4
@@ -1195,7 +1284,20 @@ class Spectrum(widgets.QWidget):
         # ── toolbar ─────────────────────────────────────────────
         self.toolbar = widgets.QToolBar(self)
         self.toolbar.setStyleSheet(
-            "QToolBar { background: #ffffff; border-bottom: 1px solid #dbe4f0; spacing: 4px; padding: 2px 6px; }")
+            "QToolBar { background: #ffffff; border-bottom: 1px solid #dbe4f0; "
+            "spacing: 4px; padding: 2px 6px; }"
+            "QToolBar QToolButton { min-height: 30px; padding: 0 10px; "
+            "border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; "
+            "color: #172033; }"
+            "QToolBar QToolButton:hover { background: #eff6ff; border-color: #93c5fd; "
+            "color: #172033; }"
+            "QToolBar QToolButton:pressed { background: #dbeafe; color: #172033; }"
+            "QToolBar QToolButton:checked { background: #dbeafe; border-color: #2563eb; "
+            "color: #172033; }"
+            "QToolBar QToolButton:checked:hover { background: #bfdbfe; "
+            "border-color: #1d4ed8; color: #172033; }"
+            "QToolBar QToolButton:disabled { background: #f1f5f9; border-color: #dbe4f0; "
+            "color: #94a3b8; }")
         self.toolbar.setMovable(False)
 
         self._zoom_out_btn = widgets.QToolButton(self)
@@ -1217,6 +1319,26 @@ class Spectrum(widgets.QWidget):
         self._reset_btn.setToolTip(_text(self.language, 'reset_view'))
         self._reset_btn.clicked.connect(self._on_reset_view)
         self.toolbar.addWidget(self._reset_btn)
+
+        self.toolbar.addSeparator()
+
+        self._profile_toggle_btn = widgets.QToolButton(self)
+        self._profile_toggle_btn.setText(_text(self.language, 'show_imported_profiles'))
+        self._profile_toggle_btn.setCheckable(True)
+        self._profile_toggle_btn.setChecked(False)
+        self._profile_toggle_btn.setEnabled(False)
+        self._profile_toggle_btn.setToolTip(_text(self.language, 'show_imported_profiles_tooltip'))
+        self._profile_toggle_btn.clicked.connect(self._on_toggle_profiles)
+        self.toolbar.addWidget(self._profile_toggle_btn)
+
+        self._profile_match_toggle_btn = widgets.QToolButton(self)
+        self._profile_match_toggle_btn.setText(_text(self.language, 'match_profile_mz'))
+        self._profile_match_toggle_btn.setCheckable(True)
+        self._profile_match_toggle_btn.setChecked(False)
+        self._profile_match_toggle_btn.setEnabled(False)
+        self._profile_match_toggle_btn.setToolTip(_text(self.language, 'match_profile_mz_tooltip'))
+        self._profile_match_toggle_btn.clicked.connect(self._on_toggle_profile_match)
+        self.toolbar.addWidget(self._profile_match_toggle_btn)
 
         self.toolbar.addSeparator()
 
@@ -1251,6 +1373,10 @@ class Spectrum(widgets.QWidget):
         self._y_zoom = 1.0           # multiplier on y upper bound
         self._plot_floor = self._PLOT_FLOOR
         self._peak_points = []
+        self._profile_apex_points = []
+        self._profile_overlays = []
+        self._profile_scale = 1.0
+        self._profile_overlay_user_set = False
         self._selected_source_row = None
 
         if data is not None:
@@ -1274,6 +1400,16 @@ class Spectrum(widgets.QWidget):
         self.intensity_column = self._intensity_column_for(self._data)
         raw_y = pd.to_numeric(self._data[self.intensity_column], errors='coerce').fillna(0.0).values
         self.y = self._normalise_intensity(raw_y, self._target_mask)
+        self._profile_overlays = self._profile_overlays_for(self._plot_window)
+        self._profile_scale = self._profile_intensity_scale(self._profile_overlays)
+        self._profile_toggle_btn.setEnabled(bool(self._profile_overlays))
+        self._profile_match_toggle_btn.setEnabled(self._profile_match_available())
+        if self._profile_overlays and not self._profile_overlay_user_set:
+            self._profile_toggle_btn.setChecked(False)
+        elif not self._profile_overlays:
+            self._profile_toggle_btn.setChecked(False)
+        if not self._profile_match_toggle_btn.isEnabled():
+            self._profile_match_toggle_btn.setChecked(False)
         if self._selected_source_row is not None:
             source_rows = set(self._data['_source_row'].astype(int).tolist())
             if self._selected_source_row not in source_rows:
@@ -1299,6 +1435,10 @@ class Spectrum(widgets.QWidget):
         self._zoom_out_btn.setToolTip(_text(self.language, 'zoom_out_y'))
         self._zoom_in_btn.setToolTip(_text(self.language, 'zoom_in_y'))
         self._reset_btn.setToolTip(_text(self.language, 'reset_view'))
+        self._profile_toggle_btn.setText(_text(self.language, 'show_imported_profiles'))
+        self._profile_toggle_btn.setToolTip(_text(self.language, 'show_imported_profiles_tooltip'))
+        self._profile_match_toggle_btn.setText(_text(self.language, 'match_profile_mz'))
+        self._profile_match_toggle_btn.setToolTip(_text(self.language, 'match_profile_mz_tooltip'))
         self._export_btn.setToolTip(_text(self.language, 'export_spectrum_tooltip'))
 
     # ── toolbar slots ───────────────────────────────────────────────
@@ -1312,6 +1452,16 @@ class Spectrum(widgets.QWidget):
 
     def _on_reset_view(self):
         self._y_zoom = 1.0
+        self._canvas.update()
+
+    def _on_toggle_profiles(self):
+        self._profile_overlay_user_set = True
+        self._canvas.update()
+
+    def _on_toggle_profile_match(self):
+        if self._profile_match_toggle_btn.isChecked() and self._profile_overlays:
+            self._profile_overlay_user_set = True
+            self._profile_toggle_btn.setChecked(True)
         self._canvas.update()
 
     def export_png(self):
@@ -1384,6 +1534,131 @@ class Spectrum(widgets.QWidget):
         if target_mask.any():
             y[target_mask] = max(100.0, y[~target_mask].max() if (~target_mask).any() else 100.0)
         return np.clip(y, self._plot_floor, None)
+
+    def _profile_overlays_for(self, plot_window):
+        overlays = plot_window.get('gdms_profile_overlays') or ()
+        valid = []
+        for overlay in overlays:
+            points = overlay.get('points') if isinstance(overlay, dict) else None
+            if not points:
+                continue
+            profile_scale = self._profile_intensity_scale((overlay,))
+            prepared = dict(overlay)
+            prepared['_profile_scale'] = profile_scale
+            valid.append(prepared)
+        return valid
+
+    def _profile_intensity_scale(self, overlays):
+        max_intensity = 0.0
+        for overlay in overlays:
+            for _, intensity in overlay.get('points', ()):
+                try:
+                    intensity = float(intensity)
+                except (TypeError, ValueError):
+                    continue
+                if np.isfinite(intensity):
+                    max_intensity = max(max_intensity, intensity)
+        return max_intensity if max_intensity > 0 else 1.0
+
+    def _profile_match_available(self):
+        return any(
+            self._profile_match_mz(overlay) is not None and
+            self._profile_observed_center_mz(overlay) is not None
+            for overlay in self._profile_overlays
+        )
+
+    def _profile_match_enabled(self):
+        return (
+            self._profile_match_toggle_btn.isEnabled() and
+            self._profile_match_toggle_btn.isChecked()
+        )
+
+    def _profile_observed_center_mz(self, overlay):
+        for key in ('observed_mz', 'centroid_mz', 'apex_mz'):
+            try:
+                value = float(overlay.get(key))
+            except (TypeError, ValueError):
+                continue
+            if np.isfinite(value):
+                return value
+        return None
+
+    def _profile_match_mz(self, overlay):
+        for key in ('match_mz', 'theoretical_mz'):
+            try:
+                value = float(overlay.get(key))
+            except (TypeError, ValueError):
+                continue
+            if np.isfinite(value):
+                return value
+        return None
+
+    def _profile_target_aligned_x_value(self, mass):
+        """Map observed GDMS mass using the selected target profile calibration."""
+        target_mz = self._plot_window.get('target_mz') or self._plot_window.get('delta_reference_mz')
+        reference_mz = self._plot_window.get('gdms_profile_reference_mz')
+        try:
+            mass = float(mass)
+            target_mz = float(target_mz)
+            reference_mz = float(reference_mz)
+        except (TypeError, ValueError):
+            return None
+        if not all(np.isfinite(value) for value in (mass, target_mz, reference_mz)) or target_mz <= 0:
+            return None
+        delta_mz = mass - reference_mz
+        if self.x_centered:
+            if 'ppm' in self.x_label:
+                return delta_mz / target_mz * 1.0e6
+            return delta_mz
+        return target_mz + delta_mz
+
+    def _profile_x_value(self, mass, overlay=None):
+        """Map observed GDMS mass to the same calibrated target-centered axis."""
+        target_mz = self._plot_window.get('target_mz') or self._plot_window.get('delta_reference_mz')
+        try:
+            mass = float(mass)
+            target_mz = float(target_mz)
+        except (TypeError, ValueError):
+            return None
+        if not all(np.isfinite(value) for value in (mass, target_mz)) or target_mz <= 0:
+            return None
+
+        if overlay is not None and self._profile_match_enabled():
+            reference_mz = self._profile_observed_center_mz(overlay)
+            match_mz = self._profile_match_mz(overlay)
+            if reference_mz is not None and match_mz is not None:
+                delta_mz = (match_mz - target_mz) + (mass - reference_mz)
+                if self.x_centered:
+                    if 'ppm' in self.x_label:
+                        return delta_mz / target_mz * 1.0e6
+                    return delta_mz
+                return match_mz + (mass - reference_mz)
+        return self._profile_target_aligned_x_value(mass)
+
+    def _profile_xy_for(self, overlay):
+        xs = []
+        ys = []
+        for mass, intensity in overlay.get('points', ()):
+            x_value = self._profile_x_value(mass, overlay)
+            if x_value is None:
+                continue
+            try:
+                intensity = float(intensity)
+            except (TypeError, ValueError):
+                continue
+            if not np.isfinite(intensity):
+                continue
+            xs.append(x_value)
+            try:
+                scale = float(overlay.get('_profile_scale') or self._profile_scale)
+            except (TypeError, ValueError):
+                scale = 1.0
+            if not np.isfinite(scale) or scale <= 0:
+                scale = 1.0
+            ys.append(max((max(intensity, 0.0) / scale) * 100.0, self._plot_floor))
+        if not xs:
+            return np.array([]), np.array([])
+        return np.array(xs, dtype=float), np.array(ys, dtype=float)
 
     def _label_indices(self):
         priority = np.ones(self._data.shape[0], dtype=int)
@@ -1499,10 +1774,59 @@ class Spectrum(widgets.QWidget):
                 best_dist = dist
         return best
 
+    def _profile_at_pos(self, pos):
+        if not self._profiles_visible():
+            return None
+        if not self._profile_apex_points:
+            return None
+        px = pos.x()
+        py = pos.y()
+        radius2 = self._PICK_RADIUS * self._PICK_RADIUS
+        best = None
+        best_dist = None
+        for profile_info in self._profile_apex_points:
+            xpix = profile_info['xpix']
+            ypix = profile_info['ypix']
+            dist = (px - xpix) ** 2 + (py - ypix) ** 2
+            if dist <= radius2 and (best_dist is None or dist < best_dist):
+                best = profile_info
+                best_dist = dist
+        return best
+
+    def _profile_tooltip_html(self, profile_info):
+        overlay = profile_info['overlay']
+        lines = [f"<b>{overlay.get('label', '')}</b>"]
+        lines.append(_text(self.language, 'gdms_profile_point'))
+        if overlay.get('isotope'):
+            lines.append(f"{_column_display(self.language, 'isotope')}: {overlay.get('isotope')}")
+        lines.append(f"m/z: {self._format_peak_value(profile_info.get('mass'), 7)}")
+        observed_center = self._profile_observed_center_mz(overlay)
+        match_mz = self._profile_match_mz(overlay)
+        if self._profile_match_enabled() and observed_center is not None and match_mz is not None:
+            lines.append(
+                f"{_text(self.language, 'gdms_profile_observed_center')}: "
+                f"{self._format_peak_value(observed_center, 7)}"
+            )
+            lines.append(
+                f"{_text(self.language, 'gdms_profile_matched_mz')}: "
+                f"{self._format_peak_value(match_mz, 7)}"
+            )
+        else:
+            lines.append(f"{_text(self.language, 'gdms_profile_reference')}: {self._format_peak_value(self._plot_window.get('gdms_profile_reference_mz'), 7)}")
+        if 'ppm' in self.x_label:
+            lines.append(f"Δppm: {self._format_peak_value(profile_info.get('x'), 4)}")
+        else:
+            lines.append(f"Δm/z: {self._format_peak_value(profile_info.get('x'), 7)}")
+        lines.append(f"{_text(self.language, 'gdms_profile_overlay')}: {self._format_peak_value(profile_info.get('raw_intensity'), 6)}")
+        return '<br/>'.join(lines)
+
     def tooltip_for_pos(self, pos):
         row_number = self._peak_at_pos(pos)
         if row_number is None:
-            return ''
+            profile_info = self._profile_at_pos(pos)
+            if profile_info is None:
+                return ''
+            return self._profile_tooltip_html(profile_info)
         return self._peak_tooltip_html(row_number)
 
     def select_peak_at(self, pos):
@@ -1563,6 +1887,7 @@ class Spectrum(widgets.QWidget):
 
         if self._data is None or self._data.empty:
             self._peak_points = []
+            self._profile_apex_points = []
             painter.setPen(self._TEXT)
             painter.setFont(_ui_font(13))
             painter.drawText(cr, QtCore.Qt.AlignCenter, _text(self.language, 'empty_title'))
@@ -1667,7 +1992,10 @@ class Spectrum(widgets.QWidget):
         painter.drawText(QtCore.QPointF(cr.center().x() - xlw / 2, cr.bottom() + 38), xlab)
         # Y label
         intensity_label = _column_display(self.language, self.intensity_column)
-        ylab = _text(self.language, 'y_normalised').format(intensity_label)
+        if self._profiles_visible():
+            ylab = _text(self.language, 'y_normalised_with_profiles').format(intensity_label)
+        else:
+            ylab = _text(self.language, 'y_normalised').format(intensity_label)
         painter.save()
         painter.translate(cr.left() - 62, cr.center().y())
         painter.rotate(-90)
@@ -1689,6 +2017,9 @@ class Spectrum(widgets.QWidget):
             painter.setPen(pen)
             painter.drawLine(QtCore.QPointF(zx, cr.top()), QtCore.QPointF(zx, cr.bottom()))
 
+        # ── imported GDMS real profile traces ─────────────────────
+        self._draw_profile_overlays(painter, x_min, x_max, x2p, y2p, cr)
+
         # ── draw stems ───────────────────────────────────────────
         self._draw_stems_qp(painter, normal_mask, self._BLUE, 2.0, 0.80,
                             _text(self.language, 'candidate'), x2p, y2p, cr)
@@ -1700,6 +2031,23 @@ class Spectrum(widgets.QWidget):
 
         # ── legend ───────────────────────────────────────────────
         ly = cr.top() + 8
+        if self._profiles_visible():
+            lx = cr.right() - 180
+            legend_profile_color = QtGui.QColor(self._PROFILE)
+            legend_profile_color.setAlpha(125)
+            painter.setPen(QtGui.QPen(legend_profile_color, 2))
+            painter.drawLine(QtCore.QPointF(lx, ly + 6), QtCore.QPointF(lx + 12, ly + 6))
+            painter.setPen(self._TEXT)
+            painter.setFont(_ui_font(9))
+            profile_legend_key = (
+                'gdms_profile_overlay_matched'
+                if self._profile_match_enabled()
+                else 'gdms_profile_overlay'
+            )
+            painter.drawText(QtCore.QRectF(lx + 16, ly, 160, 14),
+                             QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
+                             _text(self.language, profile_legend_key))
+            ly += 16
         for mask, color, label in [(normal_mask, self._BLUE, _text(self.language, 'candidate')),
                                     (unresolved_mask, self._AMBER, _text(self.language, 'not_resolved')),
                                     (target_mask, self._RED, _text(self.language, 'target_peak'))]:
@@ -1716,6 +2064,201 @@ class Spectrum(widgets.QWidget):
 
         # ── peak annotations ─────────────────────────────────────
         self._draw_annotations(painter, x2p, y2p, cr)
+
+    def _profiles_visible(self):
+        return (
+            bool(self._profile_overlays) and
+            self._profile_toggle_btn.isChecked()
+        )
+
+    def _draw_profile_overlays(self, painter, x_min, x_max, x2p, y2p, cr):
+        """Draw imported GDMS Mass/Values traces on the calibrated x-axis."""
+        self._profile_apex_points = []
+        if not self._profiles_visible():
+            return
+
+        painter.save()
+        painter.setClipRect(cr)
+        try:
+            match_guide_count = 0
+            for overlay in self._profile_overlays:
+                xs, ys = self._profile_xy_for(overlay)
+                if xs.size < 2:
+                    continue
+                visible = np.isfinite(xs) & np.isfinite(ys) & (xs >= x_min) & (xs <= x_max)
+                if not visible.any():
+                    continue
+
+                if (
+                    self._profile_match_enabled() and
+                    not overlay.get('is_target') and
+                    match_guide_count < 6 and
+                    self._draw_profile_match_guide(
+                        painter, overlay, x_min, x_max, x2p, cr, match_guide_count
+                    )
+                ):
+                    match_guide_count += 1
+
+                color = QtGui.QColor(self._PROFILE)
+                if self._profile_match_enabled():
+                    color.setAlpha(160 if overlay.get('is_target') else 115)
+                    width = 2.0 if overlay.get('is_target') else 1.35
+                else:
+                    color.setAlpha(125 if overlay.get('is_target') else 74)
+                    width = 1.8 if overlay.get('is_target') else 1.1
+                pen = QtGui.QPen(color, width)
+                painter.setPen(pen)
+                painter.setBrush(QtCore.Qt.NoBrush)
+
+                path = QtGui.QPainterPath()
+                started = False
+                for x_value, y_value in zip(xs, ys):
+                    if not (np.isfinite(x_value) and np.isfinite(y_value)):
+                        started = False
+                        continue
+                    if x_value < x_min or x_value > x_max:
+                        started = False
+                        continue
+                    point = QtCore.QPointF(x2p(x_value), y2p(y_value))
+                    if not started:
+                        path.moveTo(point)
+                        started = True
+                    else:
+                        path.lineTo(point)
+                painter.drawPath(path)
+
+                visible_rows = np.where(visible)[0]
+                apex_row = visible_rows[np.argmax(ys[visible_rows])]
+                apex_x = xs[apex_row]
+                apex_y = ys[apex_row]
+                raw_mass, raw_intensity = overlay.get('points', ())[int(apex_row)]
+                apex_point = QtCore.QPointF(x2p(apex_x), y2p(apex_y))
+                marker_color = QtGui.QColor(color)
+                marker_color.setAlpha(170 if overlay.get('is_target') else 105)
+                painter.setPen(QtGui.QPen(marker_color, 1.0))
+                painter.setBrush(QtGui.QBrush(marker_color))
+                painter.drawEllipse(apex_point, 3.2 if overlay.get('is_target') else 2.4,
+                                    3.2 if overlay.get('is_target') else 2.4)
+                self._profile_apex_points.append({
+                    'overlay': overlay,
+                    'x': float(apex_x),
+                    'y': float(apex_y),
+                    'mass': float(raw_mass),
+                    'raw_intensity': float(raw_intensity),
+                    'xpix': apex_point.x(),
+                    'ypix': apex_point.y(),
+                })
+        finally:
+            painter.restore()
+
+        self._draw_profile_labels(painter, x2p, y2p, cr)
+
+    def _draw_profile_match_guide(self, painter, overlay, x_min, x_max, x2p, cr, guide_index):
+        """Draw visible match guides so per-profile m/z alignment is apparent."""
+        observed_center = self._profile_observed_center_mz(overlay)
+        if observed_center is None:
+            return False
+        matched_x = self._profile_x_value(observed_center, overlay)
+        raw_x = self._profile_target_aligned_x_value(observed_center)
+        if matched_x is None or not np.isfinite(matched_x):
+            return False
+        if matched_x < x_min or matched_x > x_max:
+            return False
+
+        px = x2p(matched_x)
+        guide_color = QtGui.QColor(self._PROFILE)
+        guide_color.setAlpha(205)
+        guide_pen = QtGui.QPen(guide_color, 1.35, QtCore.Qt.DashLine)
+        painter.setPen(guide_pen)
+        painter.drawLine(QtCore.QPointF(px, cr.top()), QtCore.QPointF(px, cr.bottom()))
+
+        label = overlay.get('label') or overlay.get('isotope') or _text(self.language, 'gdms_profile_match_guide')
+        label = '{} {}'.format(label, _text(self.language, 'gdms_profile_match_guide'))
+        painter.setFont(_ui_font(8, QtGui.QFont.Bold))
+        fm = painter.fontMetrics()
+        label_w = fm.horizontalAdvance(label) + 8
+        label_h = fm.height() + 4
+        label_x = min(max(px - label_w / 2, cr.left() + 2), cr.right() - label_w - 2)
+        label_y = cr.top() + 4 + (guide_index % 3) * (label_h + 2)
+        label_rect = QtCore.QRectF(label_x, label_y, label_w, label_h)
+        legend_reserved = QtCore.QRectF(cr.right() - 350, cr.top() + 2, 348, 82)
+        if label_rect.intersects(legend_reserved):
+            label_y = min(
+                cr.bottom() - label_h - 2,
+                cr.top() + 78 + (guide_index % 3) * (label_h + 2),
+            )
+            label_rect = QtCore.QRectF(label_x, label_y, label_w, label_h)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(QtGui.QColor(255, 255, 255, 218))
+        painter.drawRoundedRect(label_rect, 3, 3)
+        painter.setPen(guide_color)
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, label)
+
+        if raw_x is not None and np.isfinite(raw_x) and x_min <= raw_x <= x_max:
+            raw_px = x2p(raw_x)
+            if abs(raw_px - px) >= 4:
+                y = min(cr.bottom() - 12, label_rect.bottom() + 12 + (guide_index % 2) * 10)
+                raw_color = QtGui.QColor(0x64, 0x74, 0x8b, 190)
+                painter.setPen(QtGui.QPen(raw_color, 1.0, QtCore.Qt.DotLine))
+                painter.drawLine(QtCore.QPointF(raw_px, y), QtCore.QPointF(px, y))
+                painter.setBrush(QtGui.QBrush(raw_color))
+                painter.setPen(QtCore.Qt.NoPen)
+                painter.drawEllipse(QtCore.QPointF(raw_px, y), 2.2, 2.2)
+                painter.setBrush(QtGui.QBrush(guide_color))
+                painter.drawEllipse(QtCore.QPointF(px, y), 2.8, 2.8)
+
+                shift = matched_x - raw_x
+                if 'ppm' in self.x_label:
+                    shift_label = _text(self.language, 'gdms_profile_match_shift_ppm').format(shift)
+                else:
+                    shift_label = _text(self.language, 'gdms_profile_match_shift_mz').format(shift)
+                shift_w = fm.horizontalAdvance(shift_label) + 8
+                shift_x = min(max((raw_px + px) / 2 - shift_w / 2, cr.left() + 2), cr.right() - shift_w - 2)
+                shift_rect = QtCore.QRectF(shift_x, y - label_h - 2, shift_w, label_h)
+                painter.setPen(QtCore.Qt.NoPen)
+                painter.setBrush(QtGui.QColor(255, 255, 255, 226))
+                painter.drawRoundedRect(shift_rect, 3, 3)
+                painter.setPen(raw_color)
+                painter.drawText(shift_rect, QtCore.Qt.AlignCenter, shift_label)
+        return True
+
+    def _draw_profile_labels(self, painter, x2p, y2p, cr):
+        if not self._profile_apex_points:
+            return
+        ranked = sorted(
+            self._profile_apex_points,
+            key=lambda point: (bool(point['overlay'].get('is_target')), point['y']),
+            reverse=True,
+        )
+        used_rects = []
+        painter.setFont(_ui_font(8))
+        for point in ranked[:10]:
+            overlay = point['overlay']
+            if overlay.get('is_target'):
+                continue
+            label = overlay.get('label') or overlay.get('isotope') or ''
+            if not label:
+                continue
+            px = point['xpix']
+            py = point['ypix']
+            fm = painter.fontMetrics()
+            tw = fm.horizontalAdvance(label) + 8
+            th = fm.height() + 4
+            tx = min(max(px - tw / 2, cr.left() + 2), cr.right() - tw - 2)
+            ty = max(cr.top() + 2, py - th - 10)
+            rect = QtCore.QRectF(tx, ty, tw, th)
+            if any(rect.intersects(existing) for existing in used_rects):
+                continue
+            used_rects.append(rect)
+            color = QtGui.QColor(self._PROFILE)
+            color.setAlpha(185)
+            painter.setPen(QtGui.QPen(color, 0.6))
+            painter.drawLine(QtCore.QPointF(px, py), QtCore.QPointF(rect.center().x(), rect.bottom()))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.setBrush(QtGui.QColor(255, 255, 255, 212))
+            painter.drawRoundedRect(rect, 3, 3)
+            painter.setPen(color)
+            painter.drawText(rect, QtCore.Qt.AlignCenter, label)
 
     def _draw_mrp_band(self, painter, x2p, cr):
         """Draw the instrument-MRP unresolved zone around the calibrated target."""
@@ -2279,6 +2822,9 @@ class MainWidget(widgets.QWidget):
         self.instrument_mrp_input.setValue(4000)
         self.instrument_mrp_input.setSingleStep(500)
         self.instrument_mrp_input.setSpecialValueText(_text(self.language, 'off'))
+        self.auto_mrp_toggle = widgets.QCheckBox(_text(self.language, 'auto_mrp'), parent=self)
+        self.auto_mrp_toggle.setToolTip(_text(self.language, 'auto_mrp_tooltip'))
+        self.auto_mrp_toggle.setEnabled(False)
 
         # No separate mzrange/window_unit picker — sweep_input replaces both
         self.language_label = widgets.QLabel(_text(self.language, 'language'), parent=self)
@@ -2399,6 +2945,9 @@ class MainWidget(widgets.QWidget):
         target_group_layout.addWidget(mz_label)
         self.target_label = self.create_field_label(_text(self.language, 'target'))
         self.workflow_layout.addRow(self.target_label, target_group)
+        self.auto_sweep_toggle = widgets.QCheckBox(_text(self.language, 'auto_sweep'), parent=self)
+        self.auto_sweep_toggle.setToolTip(_text(self.language, 'auto_sweep_tooltip'))
+        self.auto_sweep_toggle.setEnabled(False)
         self.sweep_label = self.create_field_label(_text(self.language, 'sweep'))
         sweep_widget = widgets.QWidget()
         sweep_widget_layout = widgets.QHBoxLayout(sweep_widget)
@@ -2411,6 +2960,7 @@ class MainWidget(widgets.QWidget):
         sweep_input.setSingleStep(100)
         sweep_input.setToolTip(tooltip_text(self.language, 'mzrange'))
         sweep_widget_layout.addWidget(sweep_input, stretch=1)
+        sweep_widget_layout.addWidget(self.auto_sweep_toggle)
         self.workflow_layout.addRow(self.sweep_label, sweep_widget)
         self.sweep_input = sweep_input
         self.ion_model_label = self.create_field_label(_text(self.language, 'ion_model'))
@@ -2431,7 +2981,12 @@ class MainWidget(widgets.QWidget):
         self.mrp_field_layout.setSpacing(3)
         self.instrument_mrp_label.setObjectName('fieldLabel')
         self.mrp_field_layout.addWidget(self.instrument_mrp_label)
-        self.mrp_field_layout.addWidget(self.instrument_mrp_input)
+        self.mrp_input_row = widgets.QHBoxLayout()
+        self.mrp_input_row.setContentsMargins(0, 0, 0, 0)
+        self.mrp_input_row.setSpacing(4)
+        self.mrp_input_row.addWidget(self.instrument_mrp_input, stretch=1)
+        self.mrp_input_row.addWidget(self.auto_mrp_toggle)
+        self.mrp_field_layout.addLayout(self.mrp_input_row)
         self.parameter_row_layout.addLayout(self.charge_field_layout, stretch=2)
         self.parameter_row_layout.addLayout(self.maxsize_field_layout, stretch=1)
         self.parameter_row_layout.addLayout(self.mrp_field_layout, stretch=2)
@@ -2607,6 +3162,8 @@ class MainWidget(widgets.QWidget):
         self.language_input.currentIndexChanged.connect(self.apply_language)
         self.mode_input.currentIndexChanged.connect(self.apply_mode_preset)
         self.charge_preset_input.currentIndexChanged.connect(self._on_target_isotope_changed)
+        self.auto_sweep_toggle.toggled.connect(self._on_auto_sweep_toggled)
+        self.auto_mrp_toggle.toggled.connect(self._on_auto_mrp_toggled)
 
         self.element_set_input.activated.connect(self.add_element_set)
         self.mz_input.editingFinished.connect(self.check_mz_input)
@@ -2623,12 +3180,14 @@ class MainWidget(widgets.QWidget):
         self.setTabOrder(self._target_element_input, self._target_isotope_input)
         self.sweep_input.valueChanged.connect(self.update_result_summary)
         self.setTabOrder(self._target_isotope_input, self.sweep_input)
-        self.setTabOrder(self.sweep_input, self.atoms_input)
+        self.setTabOrder(self.sweep_input, self.auto_sweep_toggle)
+        self.setTabOrder(self.auto_sweep_toggle, self.atoms_input)
         self.setTabOrder(self.atoms_input, self.element_set_input)
         self.setTabOrder(self.element_set_input, self.charge_preset_input)
         self.setTabOrder(self.charge_preset_input, self.maxsize_input)
         self.setTabOrder(self.maxsize_input, self.instrument_mrp_input)
-        self.setTabOrder(self.instrument_mrp_input, self.interference_button)
+        self.setTabOrder(self.instrument_mrp_input, self.auto_mrp_toggle)
+        self.setTabOrder(self.auto_mrp_toggle, self.interference_button)
         self.setTabOrder(self.interference_button, self.standard_ratio_button)
         self.setTabOrder(self.standard_ratio_button, self.spectrum_button)
         self.setTabOrder(self.spectrum_button, self.help_button)
@@ -2678,6 +3237,7 @@ class MainWidget(widgets.QWidget):
         self.language_label.setText(self._tr('language'))
         self.workflow_group.setTitle(self._tr('workflow'))
         self.mode_label.setText(self._tr('mode'))
+        self.auto_sweep_toggle.setText(self._tr('auto_sweep'))
         self.sweep_label.setText(self._tr('sweep'))
         self.target_label.setText(self._tr('target'))
         self.atoms_group.setTitle(self._tr('sample_plasma'))
@@ -2688,6 +3248,7 @@ class MainWidget(widgets.QWidget):
         self.maxsize_label.setText(self._tr('max_size'))
 
         self.instrument_mrp_label.setText(self._tr('instrument_mrp'))
+        self.auto_mrp_toggle.setText(self._tr('auto_mrp'))
         self.interference_button.setText(self._tr('calculate'))
         self._update_ratio_button_label()
         self.results_title_label.setText(self._tr('results_title'))
@@ -2709,6 +3270,8 @@ class MainWidget(widgets.QWidget):
         profile = self._current_imported_profile()
         if profile is not None:
             self._set_target_mz_label_from_profile(profile)
+        self._refresh_auto_sweep_state()
+        self._refresh_auto_mrp_state()
         self.atoms_input.set_language(self.language)
         self.table_output.set_language(self.language)
         for chip in getattr(self, '_filter_chips', []):
@@ -2733,10 +3296,12 @@ class MainWidget(widgets.QWidget):
         self.import_gdms_button.setToolTip(tooltip_text(self.language, 'gdms_import'))
         self.imported_target_input.setToolTip(tooltip_text(self.language, 'gdms_import'))
         self.manual_target_toggle.setToolTip(tooltip_text(self.language, 'manual_target'))
+        self.auto_sweep_toggle.setToolTip(self._tr('auto_sweep_tooltip'))
         self.sweep_input.setToolTip(tooltip_text(self.language, 'mzrange'))
 
         self.maxsize_input.setToolTip(tooltip_text(self.language, 'maxsize'))
         self.instrument_mrp_input.setToolTip(tooltip_text(self.language, 'instrument_mrp'))
+        self.auto_mrp_toggle.setToolTip(self._tr('auto_mrp_tooltip'))
         self.interference_button.setToolTip(tooltip_text(self.language, 'interference_button'))
         self.standard_ratio_button.setToolTip(tooltip_text(self.language, 'standard_ratio_button'))
         self.spectrum_button.setToolTip(tooltip_text(self.language, 'spectrum_button'))
@@ -2884,11 +3449,11 @@ class MainWidget(widgets.QWidget):
         self.update_result_summary()
 
     def add_element_set(self, index):
-        """Replace element input with selected preset."""
+        """Append missing elements from the selected preset."""
         elements = _current_data(self.element_set_input)
         if not elements:
             return
-        self.atoms_input.set_elements(list(elements))
+        self.atoms_input.add_elements(list(elements))
         self.element_set_input.setCurrentIndex(0)
 
     def _find_imported_element_set_index(self):
@@ -3033,6 +3598,8 @@ class MainWidget(widgets.QWidget):
         self.mz = None
         self._target_mz_result_label.setText('')
         self._target_mz_result_label.setToolTip(tooltip_text(self.language, 'mz'))
+        self._refresh_auto_sweep_state()
+        self._refresh_auto_mrp_state()
 
     def _on_manual_target_toggled(self, checked):
         """Show or hide manual target controls after GDMS target import."""
@@ -3041,6 +3608,8 @@ class MainWidget(widgets.QWidget):
             self.imported_target_input.blockSignals(True)
             self.imported_target_input.setCurrentIndex(0)
             self.imported_target_input.blockSignals(False)
+            self._refresh_auto_sweep_state()
+            self._refresh_auto_mrp_state()
             return
         profile = self._current_imported_profile()
         if profile is None:
@@ -3052,6 +3621,8 @@ class MainWidget(widgets.QWidget):
         finally:
             self._applying_imported_target = False
         self._set_target_mz_label_from_profile(profile)
+        self._refresh_auto_sweep_state()
+        self._refresh_auto_mrp_state()
 
     def _format_imported_target_label(self, profile):
         observed, _ = self._profile_observed_mz(profile)
@@ -3076,6 +3647,8 @@ class MainWidget(widgets.QWidget):
         finally:
             self._applying_imported_target = False
         self._set_target_mz_label_from_profile(profile)
+        self._refresh_auto_sweep_state()
+        self._refresh_auto_mrp_state()
         self.set_status(
             self._tr('gdms_import_target_status').format(profile.label), time=3000
         )
@@ -3107,6 +3680,188 @@ class MainWidget(widgets.QWidget):
         if profile.apex_mz is not None:
             return profile.apex_mz, 'gdms_apex'
         return None, None
+
+    def _theoretical_profile_mz(self, profile):
+        """Return the theoretical isotope m/z used for optional profile matching."""
+        try:
+            value = float(self._theoretical_target_mz_for_isotope(profile.isotope))
+        except Exception:
+            return None
+        if not np.isfinite(value) or value <= 0:
+            return None
+        return value
+
+    def _profile_sweep_estimate(self, profile=None):
+        """Estimate full sweep width in ppm from imported profile Mass range."""
+        profile = profile or self._current_imported_profile()
+        if profile is None or self._manual_target_active():
+            return None
+        observed, _ = self._profile_observed_mz(profile)
+        try:
+            observed = float(observed)
+        except (TypeError, ValueError):
+            return None
+        if not np.isfinite(observed) or observed <= 0:
+            return None
+        masses = []
+        for mass, _ in getattr(profile, 'profile_points', ()) or ():
+            try:
+                mass = float(mass)
+            except (TypeError, ValueError):
+                continue
+            if np.isfinite(mass):
+                masses.append(mass)
+        if len(masses) < 2:
+            return None
+        width_mz = max(masses) - min(masses)
+        if not np.isfinite(width_mz) or width_mz <= 0:
+            return None
+        estimate = int(round(width_mz / observed * 1.0e6))
+        if estimate <= 0:
+            return None
+        return max(self.sweep_input.minimum(), min(estimate, self.sweep_input.maximum()))
+
+    def _refresh_auto_sweep_state(self):
+        """Enable automatic sweep only when selected profile has usable Mass points."""
+        available = self._profile_sweep_estimate() is not None
+        self.auto_sweep_toggle.setEnabled(available)
+        if not available:
+            if self.auto_sweep_toggle.isChecked():
+                self.auto_sweep_toggle.blockSignals(True)
+                self.auto_sweep_toggle.setChecked(False)
+                self.auto_sweep_toggle.blockSignals(False)
+            return
+        if self.auto_sweep_toggle.isChecked():
+            self._apply_auto_sweep(announce=False)
+
+    def _apply_auto_sweep(self, announce=True):
+        profile = self._current_imported_profile()
+        estimate = self._profile_sweep_estimate(profile)
+        if estimate is None:
+            if announce:
+                self.warn(self._tr('gdms_auto_sweep_unavailable'))
+            return False
+        self.sweep_input.setValue(estimate)
+        if announce:
+            self.set_status(
+                self._tr('gdms_auto_sweep_status').format(profile.label, estimate),
+                time=4000,
+            )
+        return True
+
+    def _on_auto_sweep_toggled(self, checked):
+        """Apply Mass-range-derived sweep when the automatic switch is enabled."""
+        if not checked:
+            return
+        if not self._apply_auto_sweep(announce=True):
+            self.auto_sweep_toggle.blockSignals(True)
+            self.auto_sweep_toggle.setChecked(False)
+            self.auto_sweep_toggle.blockSignals(False)
+
+    def _profile_mrp_estimate(self, profile=None):
+        """Estimate instrument resolving power from imported profile FWHM."""
+        profile = profile or self._current_imported_profile()
+        if profile is None or self._manual_target_active():
+            return None
+        observed, _ = self._profile_observed_mz(profile)
+        try:
+            observed = float(observed)
+            fwhm = float(profile.fwhm)
+        except (TypeError, ValueError):
+            return None
+        if not all(np.isfinite(value) for value in (observed, fwhm)):
+            return None
+        if observed <= 0 or fwhm <= 0:
+            return None
+        estimate = observed / fwhm
+        if not np.isfinite(estimate) or estimate <= 0:
+            return None
+        estimate = int(round(estimate))
+        return max(1, min(estimate, self.instrument_mrp_input.maximum()))
+
+    def _refresh_auto_mrp_state(self):
+        """Enable automatic MRP only when selected profile has usable FWHM."""
+        available = self._profile_mrp_estimate() is not None
+        self.auto_mrp_toggle.setEnabled(available)
+        if not available:
+            if self.auto_mrp_toggle.isChecked():
+                self.auto_mrp_toggle.blockSignals(True)
+                self.auto_mrp_toggle.setChecked(False)
+                self.auto_mrp_toggle.blockSignals(False)
+            return
+        if self.auto_mrp_toggle.isChecked():
+            self._apply_auto_mrp(announce=False)
+
+    def _apply_auto_mrp(self, announce=True):
+        profile = self._current_imported_profile()
+        estimate = self._profile_mrp_estimate(profile)
+        if estimate is None:
+            if announce:
+                self.warn(self._tr('gdms_auto_mrp_unavailable'))
+            return False
+        self.instrument_mrp_input.setValue(estimate)
+        if announce:
+            self.set_status(
+                self._tr('gdms_auto_mrp_status').format(profile.label, estimate),
+                time=4000,
+            )
+        return True
+
+    def _on_auto_mrp_toggled(self, checked):
+        """Apply FWHM-derived MRP when the automatic switch is enabled."""
+        if not checked:
+            return
+        if not self._apply_auto_mrp(announce=True):
+            self.auto_mrp_toggle.blockSignals(True)
+            self.auto_mrp_toggle.setChecked(False)
+            self.auto_mrp_toggle.blockSignals(False)
+
+    def _attach_gdms_profile_overlays(self, spectrum_data):
+        """Attach imported GDMS real Mass/Values traces to spectrum metadata."""
+        selected_profile = self._current_imported_profile()
+        if selected_profile is None or self._manual_target_active():
+            return
+        reference_mz, reference_kind = self._profile_observed_mz(selected_profile)
+        target_mz = spectrum_data.attrs.get('target_mz') or spectrum_data.attrs.get('delta_reference_mz')
+        try:
+            reference_mz = float(reference_mz)
+            target_mz = float(target_mz)
+        except (TypeError, ValueError):
+            return
+        if not all(np.isfinite(value) for value in (reference_mz, target_mz)) or target_mz <= 0:
+            return
+
+        overlays = []
+        for profile in getattr(self, '_gdms_import_profiles', []):
+            points = getattr(profile, 'profile_points', ())
+            if not points:
+                continue
+            observed_mz, observed_kind = self._profile_observed_mz(profile)
+            theoretical_mz = self._theoretical_profile_mz(profile)
+            overlays.append({
+                'label': profile.label,
+                'element': profile.element,
+                'isotope': profile.isotope,
+                'mass_number': profile.mass_number,
+                'points': tuple(points),
+                'apex_mz': profile.apex_mz,
+                'apex_intensity': profile.apex_intensity,
+                'centroid_mz': profile.centroid_mz,
+                'observed_mz': observed_mz,
+                'observed_kind': observed_kind,
+                'theoretical_mz': theoretical_mz,
+                'match_mz': theoretical_mz,
+                'match_label': profile.isotope,
+                'fwhm': profile.fwhm,
+                'is_target': profile.label == selected_profile.label,
+            })
+        if not overlays:
+            return
+
+        spectrum_data.attrs['gdms_profile_overlays'] = tuple(overlays)
+        spectrum_data.attrs['gdms_profile_reference_mz'] = reference_mz
+        spectrum_data.attrs['gdms_profile_reference_kind'] = reference_kind
+        spectrum_data.attrs['gdms_profile_reference_label'] = selected_profile.label
 
     def _theoretical_target_mz_for_isotope(self, isotope):
         """Return theoretical target m/z using the active target charge preset."""
@@ -3418,6 +4173,7 @@ class MainWidget(widgets.QWidget):
             self.spectrum_window.plot_spectrum(spectrum_data)
         else:
             filtered = spectrum_data.iloc[visible_rows].reset_index(drop=True)
+            filtered.attrs = dict(getattr(spectrum_data, 'attrs', {}))
             self.spectrum_window.plot_spectrum(filtered)
 
     def _select_result_row_from_spectrum(self, source_row):
@@ -3796,6 +4552,7 @@ class MainWidget(widgets.QWidget):
         if target_mz and np.isfinite(target_mz):
             spectrum_data.attrs['target_mz'] = float(target_mz)
             spectrum_data.attrs['window_half_ppm'] = float(self.mzrange / target_mz * 1e6)
+        self._attach_gdms_profile_overlays(spectrum_data)
         self._spectrum_data = spectrum_data
 
         display_data = data[['molecule', 'type', 'charge', 'mass/charge',
