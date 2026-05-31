@@ -65,12 +65,7 @@
 
    pip install interference_calculator
 
-如需在源码 / PyPI 安装版中使用 GDMS Excel 导入或 Excel 导出，请安装可选 Excel
-依赖：
-
-.. code-block:: bash
-
-   pip install "interference_calculator[export]"
+GDMS Excel 导入和 Excel 导出所需的 ``openpyxl`` 已包含在默认依赖中。
 
 也可从 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
 下载 wheel 包手动安装：
@@ -312,12 +307,8 @@ and run directly:
 
    pip install interference_calculator
 
-For GDMS Excel import or Excel export in source / PyPI installs, include the
-optional Excel dependency:
-
-.. code-block:: bash
-
-   pip install "interference_calculator[export]"
+The ``openpyxl`` dependency required for GDMS Excel import and Excel export is
+included by default.
 
 You can also install a downloaded wheel manually:
 

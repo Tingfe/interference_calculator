@@ -54,13 +54,14 @@ setup(
 
     install_requires = [
         'numpy',
+        'openpyxl',
         'pandas',
         'pyparsing',
         pyqtdep,
     ],
     extras_require = {
         'data': ['requests'],
-        'export': ['openpyxl'],
+        'export': [],
     },
     entry_points = {
         'gui_scripts': ['interference_calculator=interference_calculator.ui:run']

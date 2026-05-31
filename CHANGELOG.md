@@ -5,6 +5,10 @@
 ### English
 
 #### Fixed
+- Promoted `openpyxl` to a default dependency because GDMS Excel import is now
+  part of the primary workflow, not only an optional export path.
+- Updated missing-dependency guidance for direct source runs and editable
+  installs.
 - Hardened the macOS release pipeline so tagged releases require Developer ID
   signing and Apple notarization instead of publishing ad-hoc signed DMG files
   that Gatekeeper reports as damaged.
@@ -18,6 +22,9 @@
 ### 中文
 
 #### 修复
+- 将 `openpyxl` 提升为默认依赖，因为 GDMS Excel 导入已经是主工作流的一部分，
+  不再只是可选导出功能。
+- 更新直接运行源码和 editable install 场景下的缺失依赖提示。
 - 加强 macOS 发布流程：tag 发布时必须使用 Developer ID 签名并通过 Apple 公证，
   避免继续发布会被 Gatekeeper 判定为“已损坏”的 ad-hoc 签名 DMG。
 - 设置合法的 macOS bundle identifier，并在 CI 打包时同步应用 bundle 版本和
