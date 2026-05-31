@@ -192,7 +192,7 @@ Python API
 - ``main``：无机材料 / 无机质谱专用主线，包含 GDMS、ICP-MS、SIMS 工作流，是默认发布分支。
 - ``maintenance/original``：原始功能维护线，保留通用分子枚举和同位素比计算的产品边界，用于对原作者代码进行可维护重构。
 
-版本发布采用 GitHub Actions 自动化。更新 ``__version__`` 和 ``CHANGELOG.md`` 后，推送 ``vX.Y.Z`` 标签会自动运行测试、构建源码包 / wheel、Windows ``.exe`` 和 macOS ``.dmg``，并用当前版本的 changelog 生成 GitHub Release。
+版本发布采用 GitHub Actions 自动化。更新 ``__version__`` 和中英文 ``CHANGELOG.md`` 后，推送 ``vX.Y.Z`` 标签会自动运行测试、构建源码包 / wheel、Windows ``.exe`` 和 macOS ``.dmg``，并用当前版本的中英文 changelog 生成 GitHub Release。
 
 运行测试：
 
@@ -441,9 +441,9 @@ Branch model:
   the upstream-style code easier to maintain.
 
 Releases are automated with GitHub Actions. After updating ``__version__`` and
-``CHANGELOG.md``, pushing a ``vX.Y.Z`` tag runs tests, builds the source
-package / wheel, Windows ``.exe``, and macOS ``.dmg``, then creates a GitHub
-Release from the matching changelog section.
+the bilingual ``CHANGELOG.md``, pushing a ``vX.Y.Z`` tag runs tests, builds the
+source package / wheel, Windows ``.exe``, and macOS ``.dmg``, then creates a
+GitHub Release from the matching bilingual changelog section.
 
 Run the test suite:
 

@@ -47,8 +47,19 @@ jobs:
               tag_name = github_ref_name
 
           changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
-          if f"## [{version}]" not in changelog:
+          section_match = re.search(
+              rf"^## \[{re.escape(version)}\].*?(?=^## \[|\Z)",
+              changelog,
+              flags=re.MULTILINE | re.DOTALL,
+          )
+          if not section_match:
               raise SystemExit(f"CHANGELOG.md is missing a ## [{version}] section")
+          release_section = section_match.group(0)
+          for heading in ("### English", "### 中文"):
+              if heading not in release_section:
+                  raise SystemExit(
+                      f"CHANGELOG.md section ## [{version}] must include {heading}"
+                  )
 
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
               fh.write(f"version={version}\n")

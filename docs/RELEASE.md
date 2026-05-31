@@ -18,7 +18,8 @@ The release workflow validates that:
 
 - the tag is named `vX.Y.Z`;
 - `interference_calculator/__init__.py` contains the same `__version__`;
-- `CHANGELOG.md` contains a matching `## [X.Y.Z]` section.
+- `CHANGELOG.md` contains a matching `## [X.Y.Z]` section with English and
+  Chinese release notes.
 
 ## 发布触发方式
 
@@ -34,7 +35,7 @@ git push origin v2.1.0
 
 - 标签名符合 `vX.Y.Z`；
 - `interference_calculator/__init__.py` 中的 `__version__` 与标签一致；
-- `CHANGELOG.md` 中存在对应的 `## [X.Y.Z]` 版本段落。
+- `CHANGELOG.md` 中存在对应的 `## [X.Y.Z]` 版本段落，并包含英文和中文更新日志。
 
 ## What The Workflow Publishes
 
@@ -44,7 +45,7 @@ For each release tag, the workflow creates a GitHub Release with:
 - Python wheel (`.whl`);
 - Windows standalone executable (`InterferenceCalculator-Windows-vX.Y.Z.exe`);
 - macOS disk image (`InterferenceCalculator-macOS-vX.Y.Z.dmg`);
-- release notes extracted from the matching `CHANGELOG.md` section.
+- bilingual release notes extracted from the matching `CHANGELOG.md` section.
 
 ## 自动发布内容
 
@@ -54,14 +55,15 @@ For each release tag, the workflow creates a GitHub Release with:
 - Python wheel（`.whl`）；
 - Windows 免安装可执行文件（`InterferenceCalculator-Windows-vX.Y.Z.exe`）；
 - macOS 磁盘映像（`InterferenceCalculator-macOS-vX.Y.Z.dmg`）；
-- 从 `CHANGELOG.md` 当前版本段落自动提取的更新日志。
+- 从 `CHANGELOG.md` 当前版本段落自动提取的中英文更新日志。
 
 ## Release Checklist
 
 Before tagging:
 
 1. Update `interference_calculator/__init__.py`.
-2. Add a new top section to `CHANGELOG.md`.
+2. Add a new top section to `CHANGELOG.md` with both English and Chinese
+   notes.
 3. Update README / manual version references if needed.
 4. Run tests locally:
 
@@ -77,7 +79,7 @@ git diff --check
 打标签前：
 
 1. 更新 `interference_calculator/__init__.py`。
-2. 在 `CHANGELOG.md` 顶部新增版本段落。
+2. 在 `CHANGELOG.md` 顶部新增版本段落，并同时写入英文和中文更新日志。
 3. 必要时更新 README / 用户手册里的版本说明。
 4. 本地运行测试：
 
