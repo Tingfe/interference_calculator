@@ -153,6 +153,7 @@ _UI_TEXT = {
         'instrument_mrp': 'instrument MRP',
         'add_set_empty': 'add set...',
         'all_inorganic_elements': 'all inorganic elements',
+        'imported_element_set': 'imported GDMS elements ({})',
         'ar_background': 'Ar plasma background',
         'light_background': 'light background',
         'halogens_sulfur': 'halogens / sulfur',
@@ -292,6 +293,7 @@ _UI_TEXT = {
         'instrument_mrp': '仪器 MRP',
         'add_set_empty': '添加组合...',
         'all_inorganic_elements': '全元素（无机质谱）',
+        'imported_element_set': '导入元素（{}）',
         'ar_background': 'Ar 等离子体背景',
         'light_background': '轻元素背景',
         'halogens_sulfur': '卤素 / 硫',
@@ -427,6 +429,9 @@ def _resource_path(name):
 _icon = _resource_path('icon.svg')
 _display_button_icon = _resource_path('display_button_icon.svg')
 _help_button_icon = _resource_path('help_button_icon.svg')
+
+_ELEMENT_SET_KIND_ROLE = QtCore.Qt.UserRole + 64
+_IMPORTED_ELEMENT_SET_KIND = 'gdms_imported_elements'
 
 
 
@@ -2152,6 +2157,7 @@ class MainWidget(widgets.QWidget):
         self.mz = ''
         self.mzrange = 0.3
         self.maxsize = 3
+        self._gdms_import_elements = []
 
         # Inputs
         self.mode_input = widgets.QComboBox(parent=self)
@@ -2628,6 +2634,7 @@ class MainWidget(widgets.QWidget):
         self.element_set_input.setItemText(4, self._tr('halogens_sulfur'))
         self.element_set_input.setItemText(5, self._tr('transition_matrix'))
         self.element_set_input.setItemText(6, self._tr('silicate_matrix'))
+        self._refresh_imported_element_set_option()
         self.charge_preset_input.setItemText(4, self._tr('neutral'))
         self.instrument_mrp_input.setSpecialValueText(self._tr('off'))
 
@@ -2849,6 +2856,39 @@ class MainWidget(widgets.QWidget):
         self.atoms_input.set_elements(list(elements))
         self.element_set_input.setCurrentIndex(0)
 
+    def _find_imported_element_set_index(self):
+        """Return the combo index for the dynamic GDMS imported element set."""
+        for index in range(self.element_set_input.count()):
+            kind = self.element_set_input.itemData(index, _ELEMENT_SET_KIND_ROLE)
+            if kind == _IMPORTED_ELEMENT_SET_KIND:
+                return index
+        return -1
+
+    def _refresh_imported_element_set_option(self):
+        """Show an element preset that restores the elements from the GDMS import."""
+        if not hasattr(self, 'element_set_input'):
+            return
+        elements = tuple(getattr(self, '_gdms_import_elements', []))
+        index = self._find_imported_element_set_index()
+        if not elements:
+            if index >= 0:
+                self.element_set_input.removeItem(index)
+            return
+
+        label = self._tr('imported_element_set').format(len(elements))
+        if index < 0:
+            self.element_set_input.addItem(label, elements)
+            index = self.element_set_input.count() - 1
+            self.element_set_input.setItemData(
+                index, _IMPORTED_ELEMENT_SET_KIND, _ELEMENT_SET_KIND_ROLE
+            )
+        else:
+            self.element_set_input.setItemText(index, label)
+            self.element_set_input.setItemData(index, elements)
+            self.element_set_input.setItemData(
+                index, _IMPORTED_ELEMENT_SET_KIND, _ELEMENT_SET_KIND_ROLE
+            )
+
     def import_gdms_profiles(self):
         """Import GDMS Excel profile exports and use them as target choices."""
         path, _ = widgets.QFileDialog.getOpenFileName(
@@ -2876,7 +2916,9 @@ class MainWidget(widgets.QWidget):
             if (periodic_table['element'] == element).any()
         ]
         self._gdms_import_profiles = list(profiles)
+        self._gdms_import_elements = list(elements)
         self.atoms_input.set_elements(elements)
+        self._refresh_imported_element_set_option()
         self.manual_target_toggle.blockSignals(True)
         self.manual_target_toggle.setChecked(False)
         self.manual_target_toggle.blockSignals(False)

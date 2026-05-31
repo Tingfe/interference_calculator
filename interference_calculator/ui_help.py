@@ -13,9 +13,9 @@ All stable isotopes for each element are included automatically.</p>
 element_set_input_tooltip = '''
 <html><head/><body>
 <p><b>Add common element sets.</b></p>
-<p>Appends common plasma, background, and matrix elements to the element field
-without replacing existing entries. The all-elements set is tuned for inorganic
-MS screening and excludes short-lived radioactive elements.</p>
+<p>Restores common plasma, background, matrix, or imported GDMS element sets in
+the element field. The all-elements set is tuned for inorganic MS screening and
+excludes short-lived radioactive elements.</p>
 </body></html>
 '''
 
@@ -312,7 +312,7 @@ _TOOLTIPS = {
         'element_set': '''
 <html><head/><body>
 <p><b>添加常用元素组合。</b></p>
-<p>将常见等离子体、背景和基体元素追加到元素输入框，不会覆盖已有元素。
+<p>将常见等离子体、背景、基体或导入的 GDMS 元素集合恢复到元素输入框。
 全元素组合面向无机质谱筛查，已排除短寿命放射性元素。</p>
 </body></html>
 ''',

@@ -7,6 +7,8 @@
 #### Changed
 - Made imported GDMS profile targets the primary target-selection path and moved
   manual target selection behind an explicit manual override.
+- Added a dynamic imported-elements preset after GDMS Excel import so users can
+  restore all file-derived elements after accidental edits.
 - Clarified that profile centroid/apex m/z is calculated from imported
   Mass/Values points, while Δm/z, Δppm, MRP, and the spectrum center use the
   theoretical target m/z as the reference.
@@ -32,6 +34,7 @@
 
 #### 变更
 - 将导入的 GDMS 谱图目标峰作为首选目标选择路径，手动目标选择改为显式手动覆盖。
+- GDMS Excel 导入后自动增加“导入元素”动态预设，误删后可一键恢复文件中的全部元素。
 - 明确谱图质心 / 峰顶 m/z 由导入的 Mass / Values 点计算，而 Δm/z、Δppm、MRP
   和谱图中心均以理论目标 m/z 为参考点。
 

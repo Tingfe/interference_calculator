@@ -99,11 +99,12 @@ GDMS 快速工作流
 2. 如有 GDMS 导出的 Excel 谱图文件，点击 **导入GDMS**，软件会自动提取文件中的元素和可选目标峰。
 3. 导入后优先从目标峰列表选择；只有目标不在导入文件中时，勾选 **手动目标** 再选择 ``75As``、``56Fe`` 等目标。
 4. 保持默认 ``2000 ppm`` 全窗口。
-5. 如未导入文件，点击元素区的 **添加** 按钮选择样品、基质、等离子体及背景元素，例如 ``Ar Cl As O H``，或添加全元素无机预设进行广泛筛查。
-6. 根据需要设置离子模型和仪器 MRP。
-7. 点击 **计算**。
-8. 查阅候选峰、``Δppm``、所需 MRP、相对风险及每个峰是否可分辨。
-9. 打开谱图视图查看以目标峰为中心的峰分布；悬停峰可看详情，点击峰可定位表格行。
+5. 导入文件后，``添加组合`` 会出现 ``导入元素`` 预设；如果误删元素，可用它一键恢复导入文件中的全部元素。
+6. 如未导入文件，点击元素区的 **添加** 按钮选择样品、基质、等离子体及背景元素，例如 ``Ar Cl As O H``，或添加全元素无机预设进行广泛筛查。
+7. 根据需要设置离子模型和仪器 MRP。
+8. 点击 **计算**。
+9. 查阅候选峰、``Δppm``、所需 MRP、相对风险及每个峰是否可分辨。
+10. 打开谱图视图查看以目标峰为中心的峰分布；悬停峰可看详情，点击峰可定位表格行。
 
 导入目标峰时，``谱图质心`` / ``谱图峰顶`` 是软件从 Excel 的 ``Mass`` / ``Values``
 点计算得到的峰形摘要；``Δm/z``、``Δppm``、MRP 和谱图中心始终相对理论目标
@@ -266,6 +267,8 @@ from instrument-exported data:
   ``Fe{56}``, fills the element list, and makes imported profile targets the
   primary selection path. Profile m/z is calculated from the imported
   mass/intensity points as a centroid, or from the apex when needed.
+* Imported GDMS element sets stay available in the element-set menu, so users
+  can restore all file-derived elements after accidental edits.
 * Common inorganic element sets, including an all-elements set tuned for
   inorganic MS screening.
 * GDMS default target window is ``2000 ppm`` as a full window width, equivalent
@@ -352,14 +355,16 @@ Quick GDMS workflow
 3. After import, select from the imported target list first. Enable **Manual
    target** only when the desired target is not present in the imported file.
 4. Keep the default ``2000 ppm`` full window.
-5. If no file was imported, use the element **Add** button to choose sample,
+5. After import, the ``add set`` menu includes an ``imported GDMS elements``
+   preset. Use it to restore all file-derived elements after accidental edits.
+6. If no file was imported, use the element **Add** button to choose sample,
    matrix, plasma, and background elements, for example ``Ar Cl As O H``, or add
    the all-elements preset for a broad screen.
-6. Set ion model and instrument MRP if needed.
-7. Click **Calculate**.
-8. Review candidate peaks, ``Δppm``, required MRP, relative risk, and whether
+7. Set ion model and instrument MRP if needed.
+8. Click **Calculate**.
+9. Review candidate peaks, ``Δppm``, required MRP, relative risk, and whether
    each candidate is resolvable.
-9. Open the spectrum view to inspect the target-centered peak display; hover a
+10. Open the spectrum view to inspect the target-centered peak display; hover a
    peak for details and click a peak to select the corresponding result row.
 
 For imported targets, ``profile centroid`` / ``profile apex`` is a peak-shape

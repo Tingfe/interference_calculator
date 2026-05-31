@@ -1,8 +1,11 @@
+import os
 import subprocess
 import sys
 import textwrap
 import unittest
 from pathlib import Path
+
+os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 
 
 class UISourceEntrypointTests(unittest.TestCase):
@@ -79,6 +82,35 @@ class UICalculationReferenceTests(unittest.TestCase):
         expected_ppm = non_target['mass/charge diff'] / target_mz * 1e6
         for actual, expected in zip(non_target['Δppm'], expected_ppm):
             self.assertAlmostEqual(actual, expected)
+
+
+class UIImportedElementSetTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        try:
+            from interference_calculator import ui
+            cls.ui = ui
+            cls.app = ui.widgets.QApplication.instance() or ui.widgets.QApplication([])
+        except ImportError as exc:
+            raise unittest.SkipTest(f'GUI imported element set tests require UI dependencies: {exc}')
+
+    def test_imported_element_set_restores_gdms_import_elements(self):
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+        widget._gdms_import_elements = ['U', 'B', 'Mg', 'Al']
+        widget._refresh_imported_element_set_option()
+
+        index = widget._find_imported_element_set_index()
+        self.assertGreaterEqual(index, 0)
+        self.assertIn('(4)', widget.element_set_input.itemText(index))
+
+        widget.atoms_input.set_elements(['U'])
+        widget.element_set_input.setCurrentIndex(index)
+        widget.add_element_set(index)
+
+        self.assertEqual(widget.atoms_input.elements(), ['U', 'B', 'Mg', 'Al'])
+        self.assertEqual(widget.element_set_input.currentIndex(), 0)
+        window.close()
 
 
 if __name__ == '__main__':
