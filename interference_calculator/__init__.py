@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """ Calculate mass interference and standard isotopic ratios for mass spectrometry. """
 
-__version__ = '2.4.2'
+__version__ = '2.5.0'
 __name__ = 'interference_calculator'
 __author__ = 'Zan Peeters'
 __maintainer__ = 'Tingfe'

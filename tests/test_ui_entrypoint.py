@@ -194,6 +194,44 @@ class UIImportedElementSetTests(unittest.TestCase):
         self.assertEqual(labels, ['B{11}', 'Fe{56}', 'Fe{57}', 'U{238}'])
         window.close()
 
+    def test_imported_target_labels_show_abundance_not_mz(self):
+        from interference_calculator.gdms_import import GDMSProfile
+
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+        profile = GDMSProfile(
+            'Fe{56}', 'Fe', 56, '56Fe', 1, 3, 55.9444, 1000.0, 55.9444, 0.0123,
+            natural_abundance=0.91754,
+        )
+
+        widget._gdms_import_profiles = [profile]
+        widget._refresh_imported_target_labels()
+        label = widget.imported_target_input.itemText(1)
+
+        self.assertIn('Fe{56}', label)
+        self.assertIn('91.754%', label)
+        self.assertNotIn('m/z', label)
+        window.close()
+
+    def test_trr_run_choice_marks_isotope_mismatch(self):
+        from interference_calculator.gdms_import import GDMSProfile, GDMSRun
+
+        window = self.ui.MainWindow()
+        widget = window.centralWidget()
+        profiles = (
+            GDMSProfile('Fe{56}', 'Fe', 56, '56Fe', 1, 1, None, None, None, None),
+            GDMSProfile('Mn{55}', 'Mn', 55, '55Mn', 2, 1, None, None, None, None),
+        )
+        run = GDMSRun(1, 'Run2', 'S1', 'check', profiles)
+
+        self.assertEqual(widget._trr_run_signature(run), ('Fe{56}', 'Mn{55}'))
+        label = widget._format_trr_run_choice(run, mismatched=True)
+
+        self.assertIn('Run 2', label)
+        self.assertIn('S1', label)
+        self.assertIn(widget._tr('trr_run_mismatch_suffix'), label)
+        window.close()
+
     def test_imported_target_summary_wraps_across_lines(self):
         from interference_calculator.gdms_import import GDMSProfile
 

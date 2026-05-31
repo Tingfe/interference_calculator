@@ -2,24 +2,54 @@
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-06-01
+
 ### English
 
 #### Changed
-- Refresh README screenshots for the current 2.4 interface, use English
+- Refresh README screenshots for the current 2.5 interface, use English
   screenshots in the English README section, and align the UI header display
-  name with the 2.4 application name.
+  name with the current application name.
 - Keep the GDMS import button compact in the target row when no imported target
   list is visible.
 - Widen the default control panel so English labels and automatic toggles are
   not clipped in the startup layout.
+- Increase checkbox indicator contrast in the left control panel so manual and
+  automatic toggles remain visible in enabled, checked, and disabled states.
+- Keep the target Import button anchored on the left before and after GDMS
+  target import, and make spin-box increment/decrement controls use clearer
+  plus/minus indicators.
+- Show natural isotope abundance in the imported-target selector instead of
+  repeating m/z, because theoretical and observed m/z values are already shown
+  in the target details below.
+
+#### Added
+- Add experimental GD90Trace `.TRR` raw-file import using a read-only
+  BinaryFormatter parser, and support the older Elsima `.GDR` raw format
+  through the same imported-target, element-set, auto-sweep, auto-MRP, and
+  spectrum overlay workflow.
+- Add a raw-file multi-run selector and mark runs whose isotope set differs
+  from the majority run isotope set.
 
 ### 中文
 
 #### 变更
-- 刷新 README 截图为当前 2.4 界面，在英文 README 区域使用英文截图，并将
-  UI 页眉显示名同步为 2.4 应用名称。
+- 刷新 README 截图为当前 2.5 界面，在英文 README 区域使用英文截图，并将
+  UI 页眉显示名同步为当前应用名称。
 - 在尚未显示导入目标峰列表时，保持目标区域的导入按钮紧凑。
 - 加宽默认控制面板，避免英文标签和自动开关在启动布局中被截断。
+- 提高左侧控制面板复选框指示器对比度，使手动目标和自动开关在可用、选中、
+  禁用状态下都更容易识别。
+- 固定目标区域“导入”按钮的左侧位置，避免导入前后跳动；同时将数值框上下调节
+  控件改为更清晰的加号 / 减号指示。
+- 导入目标峰下拉框显示同位素天然丰度，不再重复显示 m/z；理论和实测 m/z
+  已在下方目标详情中显示。
+
+#### 新增
+- 新增实验性的 GD90Trace `.TRR` 原始文件导入，使用只读 BinaryFormatter
+  解析器；同时支持较早的 Elsima `.GDR` 原始格式，并复用现有导入目标峰、导入元素集合、
+  自动扫描窗口、自动 MRP 和谱图叠加流程。
+- 新增原始文件多 Run 选择器，并标记同位素集合不同于多数 Run 的异常 Run。
 
 ## [2.4.2] - 2026-05-31
 
@@ -457,7 +487,8 @@
 - 代码库现代化到 Python 3.9+。
 - 清理并重新生成周期表数据。
 
-[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.4.2...HEAD
+[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/Tingfe/interference_calculator/compare/v2.4.2...v2.5.0
 [2.4.2]: https://github.com/Tingfe/interference_calculator/compare/v2.4.1...v2.4.2
 [2.4.1]: https://github.com/Tingfe/interference_calculator/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/Tingfe/interference_calculator/compare/v2.3.0...v2.4.0

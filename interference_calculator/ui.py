@@ -3,6 +3,7 @@
 """ GUI for interference calculator. """
 from __future__ import division
 
+from collections import Counter
 import os
 import re
 import sys
@@ -38,8 +39,10 @@ pd = _LazyModule("pandas")
 from importlib import resources
 from pyparsing import ParseException
 from interference_calculator.gdms_import import (
+    GDMSImportDependencyError,
     extract_profile_elements,
-    parse_gdms_profile_xlsx,
+    parse_gdms_profile_file,
+    parse_gdms_raw_runs,
 )
 from interference_calculator.molecule import Molecule, periodic_table
 from interference_calculator.ui_help import *
@@ -263,12 +266,18 @@ _UI_TEXT = {
         'manual_target': 'Manual target',
         'import_gdms': 'Import',
         'imported_target_placeholder': 'Imported targets…',
-        'gdms_profile_files_filter': 'GDMS Excel Profiles (*.xlsx *.xlsm);;All Files (*)',
+        'gdms_profile_files_filter': 'GDMS Profiles (*.xlsx *.xlsm *.trr *.gdr);;Excel Profiles (*.xlsx *.xlsm);;Raw Files (*.trr *.gdr);;All Files (*)',
         'gdms_import_missing': 'GDMS Excel import requires openpyxl.\n\nInstall or update dependencies: pip install -e .',
         'gdms_import_error': 'GDMS Import Error',
         'gdms_import_no_profiles': 'No GDMS isotope profiles were found in this file.',
         'gdms_import_loaded': 'Imported {} targets and {} elements from {}.',
         'gdms_import_target_status': 'Selected imported target {}.',
+        'trr_run_selector_title': 'Select raw-data run',
+        'trr_run_selector_label': 'This raw file contains multiple runs. Select one run to import:',
+        'trr_run_mismatch_title': 'Raw-data run isotope mismatch',
+        'trr_run_mismatch_message': 'The raw file contains runs with different isotope sets. Runs that differ from the majority isotope set are marked as isotope mismatch.',
+        'trr_run_mismatch_suffix': 'isotope mismatch',
+        'trr_run_targets': '{} targets',
         'gdms_auto_sweep_status': 'Auto sweep from {}: {} ppm.',
         'gdms_auto_sweep_unavailable': 'No valid Mass range is available for automatic sweep.',
         'gdms_auto_mrp_status': 'Auto MRP from {}: {}.',
@@ -443,12 +452,18 @@ _UI_TEXT = {
         'manual_target': '手动目标',
         'import_gdms': '导入',
         'imported_target_placeholder': '导入的目标峰…',
-        'gdms_profile_files_filter': 'GDMS Excel 谱图 (*.xlsx *.xlsm);;所有文件 (*)',
+        'gdms_profile_files_filter': 'GDMS 谱图文件 (*.xlsx *.xlsm *.trr *.gdr);;Excel 谱图 (*.xlsx *.xlsm);;原始文件 (*.trr *.gdr);;所有文件 (*)',
         'gdms_import_missing': 'GDMS Excel 导入需要 openpyxl。\n\n安装或更新依赖：pip install -e .',
         'gdms_import_error': 'GDMS 导入错误',
         'gdms_import_no_profiles': '未在该文件中找到 GDMS 同位素谱图。',
         'gdms_import_loaded': '已导入 {} 个目标峰和 {} 个元素，来源：{}。',
         'gdms_import_target_status': '已选择导入目标峰 {}。',
+        'trr_run_selector_title': '选择原始数据 Run',
+        'trr_run_selector_label': '该原始文件包含多个 Run，请选择要导入的 Run：',
+        'trr_run_mismatch_title': '原始数据 Run 同位素集合不一致',
+        'trr_run_mismatch_message': '该原始文件中不同 Run 的同位素集合不完全一致。与多数 Run 同位素集合不同的项目已标记为同位素不一致。',
+        'trr_run_mismatch_suffix': '同位素不一致',
+        'trr_run_targets': '{} 个目标峰',
         'gdms_auto_sweep_status': '已根据 {} 自动设置扫描窗口：{} ppm。',
         'gdms_auto_sweep_unavailable': '当前目标峰没有有效 Mass 范围，无法自动识别扫描窗口。',
         'gdms_auto_mrp_status': '已根据 {} 自动设置 MRP：{}。',
@@ -538,6 +553,9 @@ def _resource_path(name):
 _icon = _resource_path('icon.svg')
 _display_button_icon = _resource_path('display_button_icon.svg')
 _help_button_icon = _resource_path('help_button_icon.svg')
+_checkbox_checked_icon = _resource_path('checkbox_checked.svg')
+_spinbox_plus_icon = _resource_path('spinbox_plus.svg')
+_spinbox_minus_icon = _resource_path('spinbox_minus.svg')
 
 _ELEMENT_SET_KIND_ROLE = QtCore.Qt.UserRole + 64
 _IMPORTED_ELEMENT_SET_KIND = 'gdms_imported_elements'
@@ -614,6 +632,63 @@ QLineEdit:disabled, QPlainTextEdit:disabled, QSpinBox:disabled, QDoubleSpinBox:d
     background: #f1f5f9;
     color: #64748b;
     border-color: #dbe4f0;
+}
+QSpinBox::up-button, QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 18px;
+    border-left: 1px solid #cbd5e1;
+    border-bottom: 1px solid #e2e8f0;
+    border-top-right-radius: 4px;
+    background: #f8fafc;
+}
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 18px;
+    border-left: 1px solid #cbd5e1;
+    border-bottom-right-radius: 4px;
+    background: #f8fafc;
+}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+    background: #e0f2fe;
+}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+    image: url("__SPINBOX_PLUS_ICON__");
+    width: 9px;
+    height: 9px;
+}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+    image: url("__SPINBOX_MINUS_ICON__");
+    width: 9px;
+    height: 9px;
+}
+QCheckBox {
+    spacing: 6px;
+}
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #64748b;
+    border-radius: 3px;
+    background: #ffffff;
+}
+QCheckBox::indicator:hover {
+    border-color: #1e40af;
+}
+QCheckBox::indicator:checked {
+    background: #1e40af;
+    border-color: #1e40af;
+    image: url("__CHECKBOX_CHECKED_ICON__");
+}
+QCheckBox::indicator:disabled {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+QCheckBox::indicator:checked:disabled {
+    background: #94a3b8;
+    border-color: #64748b;
 }
 QWidget#elementsInput {
     background: #ffffff;
@@ -772,6 +847,18 @@ QToolTip {
     padding: 6px;
 }
 """
+_APP_STYLESHEET = _APP_STYLESHEET.replace(
+    '__CHECKBOX_CHECKED_ICON__',
+    _checkbox_checked_icon.replace('\\', '/'),
+)
+_APP_STYLESHEET = _APP_STYLESHEET.replace(
+    '__SPINBOX_PLUS_ICON__',
+    _spinbox_plus_icon.replace('\\', '/'),
+)
+_APP_STYLESHEET = _APP_STYLESHEET.replace(
+    '__SPINBOX_MINUS_ICON__',
+    _spinbox_minus_icon.replace('\\', '/'),
+)
 
 class TableModel(QtCore.QAbstractTableModel):
     """ Take a pandas DataFrame and set data in a QTableModel (read-only). """
@@ -2805,8 +2892,10 @@ class MainWidget(widgets.QWidget):
         self._applying_imported_target = False
         self.import_gdms_button = widgets.QPushButton(_text(self.language, 'import_gdms'), parent=self)
         self.import_gdms_button.setToolTip(tooltip_text(self.language, 'gdms_import'))
-        self.import_gdms_button.setMinimumWidth(72)
-        self.import_gdms_button.setMaximumWidth(110)
+        self.import_gdms_button.setFixedWidth(78)
+        self.import_gdms_button.setSizePolicy(
+            widgets.QSizePolicy.Fixed, widgets.QSizePolicy.Fixed
+        )
         self.imported_target_input = widgets.QComboBox(parent=self)
         self.imported_target_input.addItem(_text(self.language, 'imported_target_placeholder'), None)
         self.imported_target_input.setEnabled(False)
@@ -2923,7 +3012,7 @@ class MainWidget(widgets.QWidget):
         target_group_layout.setSpacing(2)
         import_row = widgets.QHBoxLayout()
         import_row.setSpacing(4)
-        import_row.addWidget(self.import_gdms_button)
+        import_row.addWidget(self.import_gdms_button, 0, QtCore.Qt.AlignLeft)
         import_row.addWidget(self.imported_target_input, stretch=1)
         target_group_layout.addLayout(import_row)
         target_group_layout.addWidget(self.manual_target_toggle)
@@ -3491,15 +3580,15 @@ class MainWidget(widgets.QWidget):
             )
 
     def import_gdms_profiles(self):
-        """Import GDMS Excel profile exports and use them as target choices."""
+        """Import GDMS profile exports and use them as target choices."""
         path, _ = widgets.QFileDialog.getOpenFileName(
             self, self._tr('import_gdms'), '', self._tr('gdms_profile_files_filter')
         )
         if not path:
             return
         try:
-            profiles = parse_gdms_profile_xlsx(path)
-        except RuntimeError:
+            profiles = self._load_gdms_profiles(path)
+        except GDMSImportDependencyError:
             widgets.QMessageBox.critical(
                 self, self._tr('missing_dependency'), self._tr('gdms_import_missing')
             )
@@ -3508,6 +3597,8 @@ class MainWidget(widgets.QWidget):
             widgets.QMessageBox.critical(self, self._tr('gdms_import_error'), str(e))
             return
 
+        if profiles is None:
+            return
         if not profiles:
             self.warn(self._tr('gdms_import_no_profiles'))
             return
@@ -3533,6 +3624,66 @@ class MainWidget(widgets.QWidget):
             ),
             time=7000,
         )
+
+    def _load_gdms_profiles(self, path):
+        """Load GDMS profiles, asking for a raw-file run when needed."""
+        suffix = str(path).lower().rsplit('.', 1)[-1] if '.' in str(path) else ''
+        if suffix in ('trr', 'gdr'):
+            return self._load_gdms_raw_profiles(path)
+        return parse_gdms_profile_file(path)
+
+    def _load_gdms_raw_profiles(self, path):
+        """Load one run from a raw file, with consistency checks for multi-run files."""
+        runs = parse_gdms_raw_runs(path)
+        if not runs:
+            return []
+        if len(runs) == 1:
+            return list(runs[0].profiles)
+
+        signatures = [self._trr_run_signature(run) for run in runs]
+        signature_counts = Counter(signatures)
+        majority_signature = max(
+            signature_counts,
+            key=lambda signature: (signature_counts[signature], len(signature)),
+        )
+        mismatched = [signature != majority_signature for signature in signatures]
+        if any(mismatched):
+            widgets.QMessageBox.warning(
+                self,
+                self._tr('trr_run_mismatch_title'),
+                self._tr('trr_run_mismatch_message'),
+            )
+
+        choices = [
+            self._format_trr_run_choice(run, mismatch)
+            for run, mismatch in zip(runs, mismatched)
+        ]
+        choice, ok = widgets.QInputDialog.getItem(
+            self,
+            self._tr('trr_run_selector_title'),
+            self._tr('trr_run_selector_label'),
+            choices,
+            0,
+            False,
+        )
+        if not ok:
+            return None
+        return list(runs[choices.index(choice)].profiles)
+
+    def _trr_run_signature(self, run):
+        """Return a set-like signature used to find unusual TRR runs."""
+        return tuple(sorted(profile.label for profile in run.profiles))
+
+    def _format_trr_run_choice(self, run, mismatched=False):
+        parts = ['Run {}'.format(run.index + 1)]
+        if run.name:
+            parts.append(run.name)
+        if run.sample_id:
+            parts.append(run.sample_id)
+        parts.append(self._tr('trr_run_targets').format(len(run.profiles)))
+        if mismatched:
+            parts.append(self._tr('trr_run_mismatch_suffix'))
+        return '  ·  '.join(parts)
 
     def _refresh_imported_target_labels(self):
         """Refresh imported target selector text after import or language switch."""
@@ -3626,10 +3777,42 @@ class MainWidget(widgets.QWidget):
         self._refresh_auto_mrp_state()
 
     def _format_imported_target_label(self, profile):
-        observed, _ = self._profile_observed_mz(profile)
-        if observed is not None:
-            return '{}  m/z {:.4f}'.format(profile.label, observed)
-        return '{}  {}'.format(profile.label, profile.isotope)
+        abundance = self._profile_natural_abundance(profile)
+        if abundance is not None:
+            return '{}  ({})'.format(
+                profile.label, self._format_abundance_percent(abundance)
+            )
+        return str(profile.label)
+
+    def _profile_natural_abundance(self, profile):
+        """Return a fractional natural abundance for one imported isotope."""
+        value = getattr(profile, 'natural_abundance', None)
+        value = self._valid_fractional_abundance(value)
+        if value is not None:
+            return value
+        rows = periodic_table[periodic_table['isotope'] == profile.isotope]
+        if rows.empty:
+            return None
+        return self._valid_fractional_abundance(rows.iloc[0].get('abundance'))
+
+    def _valid_fractional_abundance(self, value):
+        try:
+            value = float(value)
+        except (TypeError, ValueError):
+            return None
+        if not np.isfinite(value) or value < 0:
+            return None
+        if value > 1.0:
+            value = value / 100.0
+        return value
+
+    def _format_abundance_percent(self, value):
+        percent = value * 100.0 if value <= 1.0 else value
+        if percent >= 99.995:
+            return '100%'
+        decimals = 4 if percent < 1.0 else 3
+        text = ('{:.%df}' % decimals).format(percent).rstrip('0').rstrip('.')
+        return '{}%'.format(text)
 
     def _on_imported_target_changed(self, index):
         """Apply a target selected from imported GDMS profiles."""

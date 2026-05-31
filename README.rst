@@ -7,7 +7,7 @@
 .. _chinese-section:
 
 ============================================================
-无机质谱峰干扰计算器 / Inorganic MS Interference Calculator 2.4
+无机质谱峰干扰计算器 / Inorganic MS Interference Calculator 2.5
 ============================================================
 
 `English <english-section_>`_ | **中文**
@@ -20,15 +20,15 @@
    :align: center
    :alt: 中文界面截图
 
-2.4 版更新内容
+2.5 版更新内容
 --------------
 
-2.x 是一次重大迭代，2.4 版在 2.1 的无机质谱主线基础上完成了 GDMS Excel
-谱图导入、目标峰选择、发布打包和启动体验的里程碑升级：
+2.x 是一次重大迭代，2.5 版在 2.1 的无机质谱主线基础上完成了 GDMS
+谱图 / TRR / GDR 原始文件导入、目标峰选择、发布打包和启动体验的里程碑升级：
 
 * 现代化科学工具 GUI：更清晰的控制面板、结果概览标签、空状态提示、更紧凑的表格布局，并支持中英文界面切换。
 * GDMS、ICP-MS 和 SIMS 预设：提供电荷态、目标窗口、风险模型和仪器质量分辨力（MRP）的实用默认值；导入目标峰存在有效 ``FWHM`` 时，可按 ``observed m/z / FWHM`` 自动估算 MRP。
-* GDMS Excel 谱图导入：自动读取导出文件中的 ``Fe{56}`` 这类同位素谱图，填充元素列表，并提供实测目标峰选择；导入的 ``Mass`` / ``Values`` 点可通过默认关闭的实验开关在谱图中叠加为真实峰形，也可按理论同位素 ``m/z`` 进行可选显示对齐。
+* GDMS 谱图导入：支持 Excel 谱图导出、实验性的 GD90Trace ``.TRR`` 原始文件和 Elsima ``.GDR`` 原始文件导入，自动读取 ``Fe{56}`` 这类同位素谱图，填充元素列表，并提供实测目标峰选择；导入目标峰列表显示同位素天然丰度，m/z 详情显示在下方。多 Run 原始文件会先选择 Run，并标记同位素集合异常的 Run。导入的 ``Mass`` / ``Values`` 或原始文件 ``Mass`` / ``Current`` 点可通过默认关闭的实验开关在谱图中叠加为真实峰形，也可按理论同位素 ``m/z`` 进行可选显示对齐。
 * 常用无机元素集：包含适用于无机质谱筛查的全元素集。
 * GDMS 默认目标窗口为 ``2000 ppm``（全窗口宽度），等同于目标峰校准后 ``±1000 ppm`` 的范围；导入目标峰有有效 ``Mass`` 点列时，可按真实数据范围自动估算完整 ppm 窗口。
 * 新的无机质谱算法：基于干扰模板生成原子离子、双电荷离子、氧化物、氢化物、氢氧化物、氮化物、碳化物、硫化物、卤化物、等离子体加合物、背景分子及小型基质团簇的干扰。
@@ -40,7 +40,7 @@
 项目信息
 --------
 
-当前版本：``2.4.2``
+当前版本：``2.5.0``
 
 原作者：Zan Peeters
 
@@ -67,7 +67,8 @@
 
    pip install interference_calculator
 
-GDMS Excel 导入和 Excel 导出所需的 ``openpyxl`` 已包含在默认依赖中。
+GDMS Excel 导入和 Excel 导出所需的 ``openpyxl`` 已包含在默认依赖中；
+实验性 TRR / GDR 原始文件导入不需要额外运行时依赖。
 
 也可从 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
 下载 wheel 包手动安装：
@@ -99,18 +100,18 @@ GDMS 快速工作流
 ---------------
 
 1. 选择 ``GDMS`` 模式。
-2. 如有 GDMS 导出的 Excel 谱图文件，点击 **导入**，软件会自动提取文件中的元素和可选目标峰。
-3. 导入后优先从目标峰列表选择；只有目标不在导入文件中时，勾选 **手动目标** 再选择 ``75As``、``56Fe`` 等目标。
+2. 如有 GDMS 导出的 Excel 谱图文件、GD90Trace ``.TRR`` 原始文件或 Elsima ``.GDR`` 原始文件，点击 **导入**，软件会自动提取文件中的元素和可选目标峰；多 Run 原始文件会先让用户选择 Run。
+3. 导入后优先从目标峰列表选择；列表会显示同位素天然丰度，理论和实测 m/z 会在下方详情中显示。只有目标不在导入文件中时，勾选 **手动目标** 再选择 ``75As``、``56Fe`` 等目标。
 4. 保持默认 ``2000 ppm`` 全窗口；导入目标峰有有效 ``Mass`` 点列时，可勾选扫描窗口旁边的 ``自动``。
 5. 导入文件后，``添加组合`` 会出现 ``导入元素`` 预设；组合选择只会追加当前缺失的元素，因此可在保留导入样品元素的同时补充 Ar 背景、轻元素背景、卤素 / 硫或基体元素。
 6. 如未导入文件，点击元素区的 **添加** 按钮选择样品、基质、等离子体及背景元素，例如 ``Ar Cl As O H``，或添加全元素无机预设进行广泛筛查。
 7. 根据需要设置离子模型和仪器 MRP；导入目标峰有有效 ``FWHM`` 时，可勾选 MRP 旁边的 ``自动``。
 8. 点击 **计算**。
 9. 查阅候选峰、``Δppm``、所需 MRP、相对风险及每个峰是否可分辨。
-10. 打开谱图视图查看以目标峰为中心的峰分布；已导入 GDMS Excel 时，可在谱图工具栏手动打开 ``实测峰（测试）`` 叠加真实 ``Mass`` / ``Values`` 峰形，必要时再打开 ``匹配 m/z`` 将每条实测峰中心对齐到理论同位素 ``m/z``。``匹配 m/z`` 会自动打开实测峰叠加，并显示对齐参考线和偏移量标签；悬停峰可看详情，点击峰可定位表格行。
+10. 打开谱图视图查看以目标峰为中心的峰分布；已导入 GDMS 谱图或 TRR 文件时，可在谱图工具栏手动打开 ``实测峰（测试）`` 叠加真实峰形，必要时再打开 ``匹配 m/z`` 将每条实测峰中心对齐到理论同位素 ``m/z``。``匹配 m/z`` 会自动打开实测峰叠加，并显示对齐参考线和偏移量标签；悬停峰可看详情，点击峰可定位表格行。
 
-导入目标峰时，``谱图质心`` / ``谱图峰顶`` 是软件从 Excel 的 ``Mass`` / ``Values``
-点计算得到的峰形摘要；``Δm/z``、``Δppm``、MRP 和谱图中心始终相对理论目标
+导入目标峰时，``谱图质心`` / ``谱图峰顶`` 是实测峰形摘要：Excel 导入会从 ``Mass`` / ``Values``
+点计算得到，TRR / GDR 导入会优先使用原始文件保存的 ``m_CentroidMassValue`` 作为 observed 位置；``Δm/z``、``Δppm``、MRP 和谱图中心始终相对理论目标
 ``m/z`` 计算。真实谱图曲线默认会先用所选目标峰的谱图质心 / 峰顶做零点对齐，再绘制到同一个目标居中横轴上，避免把理论候选峰和原始 observed 目标位置混用。谱图工具栏中的 ``匹配 m/z`` 是显示选项，会把每条实测峰的质心 / 峰顶分别对齐到对应同位素的理论 ``m/z``，并用参考线和偏移标签显示对齐量，不改变干扰计算结果。
 
 .. image:: docs/images/spectrum_zh.png
@@ -236,7 +237,7 @@ BSD 3-Clause Clear。详见 ``LICENSE.rst``。
 .. _english-section:
 
 =========================================
-Inorganic MS Interference Calculator 2.4
+Inorganic MS Interference Calculator 2.5
 =========================================
 
 **English** | `中文 <chinese-section_>`_
@@ -257,12 +258,12 @@ spectrum, and a compact data-dense results table.
    :align: center
    :alt: English UI screenshot
 
-What Changed In 2.4
+What Changed In 2.5
 -------------------
 
-Version 2.x is a major project iteration. Version 2.4 builds on the 2.1
-inorganic-MS workflow with milestone upgrades for GDMS Excel profile import,
-target selection, release packaging, and startup experience:
+Version 2.x is a major project iteration. Version 2.5 builds on the 2.1
+inorganic-MS workflow with milestone upgrades for GDMS profile / TRR / GDR raw-file
+import, target selection, release packaging, and startup experience:
 
 * Modern scientific-tool GUI with a clearer control panel, result summary chips,
   empty state, improved table density, and bilingual language switching.
@@ -270,11 +271,15 @@ target selection, release packaging, and startup experience:
   target window, risk model, and instrument mass resolving power. When an
   imported target has valid ``FWHM``, MRP can be estimated automatically as
   ``observed m/z / FWHM``.
-* GDMS Excel profile import that reads exported isotope profiles such as
-  ``Fe{56}``, fills the element list, and makes imported profile targets the
-  primary selection path. Profile m/z is calculated from the imported
-  mass/intensity points as a centroid, or from the apex when needed. Imported
-  ``Mass`` / ``Values`` points can be overlaid as real peak shapes in the
+* GDMS profile import that supports Excel profile exports, experimental
+  GD90Trace ``.TRR`` raw files, and older Elsima ``.GDR`` raw files. It reads isotope profiles such as ``Fe{56}``,
+  fills the element list, and makes imported profile targets the primary
+  selection path. Imported target labels show natural isotope abundance while
+  m/z details stay in the target detail area. Multi-run raw files open a run
+  selector and mark runs whose isotope set differs from the majority run set.
+  Excel profile m/z is calculated from imported mass/intensity points, while
+  TRR / GDR import prefers the raw-file stored centroid mass as the observed
+  position. Imported profile points can be overlaid as real peak shapes in the
   spectrum view through an experimental toggle that is off by default, with an
   optional display-only match to theoretical isotope ``m/z``.
 * Imported GDMS element sets stay available in the element-set menu. Element
@@ -305,7 +310,7 @@ target selection, release packaging, and startup experience:
 Project Metadata
 ----------------
 
-Current version: ``2.4.2``
+Current version: ``2.5.0``
 
 Original author: Zan Peeters
 
@@ -337,7 +342,8 @@ and run directly:
    pip install interference_calculator
 
 The ``openpyxl`` dependency required for GDMS Excel import and Excel export is
-included by default.
+included by default. Experimental TRR / GDR raw-file import has no additional runtime
+dependency.
 
 You can also install a downloaded wheel manually:
 
@@ -369,10 +375,14 @@ Quick GDMS workflow
 -------------------
 
 1. Select ``GDMS`` mode.
-2. If you have a GDMS Excel profile export, click **Import** so the
-   software can extract elements and selectable target peaks from the file.
+2. If you have a GDMS Excel profile export, GD90Trace ``.TRR`` raw file, or
+   Elsima ``.GDR`` raw file,
+   click **Import** so the software can extract elements and selectable target
+   peaks from the file. Multi-run raw files ask you to choose a run first.
 3. After import, select from the imported target list first. Enable **Manual
    target** only when the desired target is not present in the imported file.
+   Imported target labels show natural abundance; theoretical and observed m/z
+   details are shown below the selector.
 4. Keep the default ``2000 ppm`` full window.
 5. After import, the ``add set`` menu includes an ``imported GDMS elements``
    preset. Presets append only missing elements, so you can keep imported
@@ -389,15 +399,16 @@ Quick GDMS workflow
    each candidate is resolvable.
 10. Open the spectrum view to inspect the target-centered peak display; hover a
    peak for details and click a peak to select the corresponding result row. If
-   a GDMS Excel file was imported, manually enable ``Profiles (test)`` in the
-   spectrum toolbar to overlay real ``Mass`` / ``Values`` peak profiles; enable
+   a GDMS profile or TRR file was imported, manually enable ``Profiles (test)``
+   in the spectrum toolbar to overlay real peak profiles; enable
    ``Match m/z`` when you want each observed profile center aligned to its
    theoretical isotope ``m/z``. ``Match m/z`` turns on the profile overlay
    automatically and draws match guide lines with shift labels.
 
 For imported targets, ``profile centroid`` / ``profile apex`` is a peak-shape
-summary calculated from the Excel ``Mass`` / ``Values`` points. ``Δm/z``,
-``Δppm``, MRP, and the spectrum center always use the theoretical target
+summary. Excel imports calculate it from ``Mass`` / ``Values`` points; TRR /
+GDR imports prefer the stored ``m_CentroidMassValue`` as the observed
+position. ``Δm/z``, ``Δppm``, MRP, and the spectrum center always use the theoretical target
 ``m/z`` as the reference, so theoretical candidates are not mixed with a raw
 observed target position. Real profile traces are zero-aligned by the selected
 target profile centroid/apex before plotting on the same target-centered axis.

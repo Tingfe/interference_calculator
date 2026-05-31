@@ -86,7 +86,10 @@ setup(
         'icon.ico',
         'icon.icns',
         'display_button_icon.svg',
-        'help_button_icon.svg']
+        'help_button_icon.svg',
+        'checkbox_checked.svg',
+        'spinbox_plus.svg',
+        'spinbox_minus.svg']
     },
     zip_safe = False
 )

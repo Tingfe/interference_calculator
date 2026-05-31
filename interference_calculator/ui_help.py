@@ -121,11 +121,16 @@ toolbar.</p>
 
 gdms_import_tooltip = '''
 <html><head/><body>
-<p><b>Import GDMS Excel profile data.</b></p>
-<p>Reads isotope profile exports, extracts target peaks such as Fe{56}, and
-fills the element list from the exported plasma/sample profiles. Profile m/z
-is calculated from the imported mass/intensity points as a centroid, or apex
-when a centroid is not available. The imported Mass/Values points are retained
+<p><b>Import GDMS profile data.</b></p>
+<p>Reads Excel profile exports, experimental GD90Trace TRR raw files, or
+older Elsima GDR raw files,
+extracts target peaks such as Fe{56}, and fills the element list from the
+exported plasma/sample profiles. Excel profile m/z is calculated from the
+imported mass/intensity points; raw-file import prefers the stored centroid
+mass as the observed position. Imported target labels show natural isotope
+abundance, with m/z details shown below the selector. Multi-run raw files open
+a run selector and mark runs whose isotope set differs from the majority run
+set. Imported profile points are retained
 and can be overlaid as real peak shapes in the spectrum view by enabling the
 experimental profile toggle. In the spectrum toolbar, Match m/z can additionally
 align each observed profile centroid/apex to its theoretical isotope m/z; this
@@ -185,13 +190,16 @@ current selection. The all-elements preset focuses on commonly measurable
 inorganic MS elements, keeps Th/U, and excludes short-lived or unusual
 radioactive elements.</p>
 
-<p>GDMS Excel profile exports can be imported directly. The software reads
-exported isotope profiles such as Fe{56}, fills the element list from the file,
-and lets users select a target peak from the imported profile list before
-running the interference calculation. The displayed profile m/z is calculated
-from the imported mass/intensity data as a peak centroid, or from the apex when
-the centroid cannot be calculated. The spectrum view can also overlay the real
-Mass/Values peak profiles from the imported file. The selected target profile
+<p>GDMS Excel profile exports, experimental GD90Trace TRR raw files, and older
+Elsima GDR raw files can be imported directly. The software reads exported
+isotope profiles such as Fe{56}, fills the element list from the file, and lets
+users select a target peak from the imported profile list before running the
+interference calculation. Excel profile m/z is calculated from imported
+mass/intensity data; raw-file import prefers the stored centroid mass as the
+observed position. Imported target labels show natural isotope abundance.
+Multi-run raw files ask for a run selection and mark isotope-set mismatches.
+The spectrum view can also overlay the real peak profiles from the imported
+file. The selected target profile
 centroid/apex is aligned to the theoretical target center before plotting, so
 real profile shapes and theoretical interference candidates share the same
 target-centered axis. This overlay is experimental and off by default. The
@@ -269,10 +277,13 @@ help_text_zh = '''
 GDMS 元素以及无机质谱全元素预设中尚未选择的元素。全元素预设面向常见无机质谱
 可测元素，保留 Th/U，并排除短寿命或非常规放射性元素。</p>
 
-<p>软件可以直接导入 GDMS Excel 谱图导出文件，读取 Fe{56} 这类同位素谱图，
-用文件中的谱图元素填充元素列表，并在计算前优先从导入谱图列表中选择目标峰。
-界面显示的谱图 m/z 来自导入质量 / 强度点的质心计算；无法计算质心时使用峰顶位置。
-谱图窗口还可以通过默认关闭的实验开关叠加显示导入文件中的真实 Mass / Values 峰形；
+<p>软件可以直接导入 GDMS Excel 谱图导出文件，也可以实验性导入 GD90Trace
+TRR 或 Elsima GDR 原始文件，读取 Fe{56} 这类同位素谱图，用文件中的谱图元素填充元素列表，
+并在计算前优先从导入谱图列表中选择目标峰。Excel 导入会从质量 / 强度点计算
+谱图 m/z；原始文件导入会优先使用保存的质心质量作为 observed 位置。
+导入目标峰列表会显示同位素天然丰度，m/z 详情显示在下方。多 Run 原始文件会先选择
+Run，并标记同位素集合不同于多数 Run 的项目。
+谱图窗口还可以通过默认关闭的实验开关叠加显示导入文件中的真实峰形；
 绘图前会将所选目标峰
 的谱图质心 / 峰顶对齐到理论目标峰中心，因此真实峰形和理论干扰候选峰共用同一个
 目标居中横轴。谱图工具栏还提供仅用于显示的匹配 m/z 开关，可将每条实测峰中心
@@ -420,10 +431,12 @@ Mass / Values 峰形叠加，也可选择将实测峰中心匹配到理论同位
 '''.format(_modifier),
         'gdms_import': '''
 <html><head/><body>
-<p><b>导入 GDMS Excel 谱图数据。</b></p>
-<p>读取导出的同位素谱图，自动提取 Fe{56} 这类目标峰，并用文件中的等离子体 /
-样品谱图填充元素列表。谱图 m/z 由导入的质量 / 强度点计算质心；无法计算质心时
-使用峰顶位置。导入的 Mass / Values 点会保留，并可通过谱图窗口的实验开关叠加为
+<p><b>导入 GDMS 谱图数据。</b></p>
+<p>读取 Excel 谱图导出文件或实验性的 GD90Trace TRR / Elsima GDR 原始文件，自动提取
+Fe{56} 这类目标峰，并用文件中的等离子体 / 样品谱图填充元素列表。Excel 导入会
+从质量 / 强度点计算谱图 m/z；原始文件导入会优先使用保存的质心质量作为
+observed 位置。导入目标峰列表会显示同位素天然丰度，多 Run 原始文件会先选择
+Run，并标记同位素集合异常的 Run。导入的谱图点会保留，并可通过谱图窗口的实验开关叠加为
 真实峰形。谱图工具栏中的匹配 m/z 开关还可以将每条实测峰的质心 / 峰顶对齐到对应
 同位素的理论 m/z；该功能会自动打开实测峰叠加并显示对齐标记，只影响显示，不改变
 计算。</p>
