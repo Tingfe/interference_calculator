@@ -16,18 +16,19 @@ GitHub remains the canonical release repository. GitHub Actions builds the
 Windows package, macOS DMG, source distribution, wheel, and GitHub Release notes
 from version tags.
 
-Gitee mirrors source code and release tags for easier access in China, but its
-documentation may intentionally use Gitee repository links and Gitee-specific
-notes. Do not force-push GitHub `main` directly over Gitee `main`.
+Gitee mirrors source code, release tags, release notes, and release assets for
+easier access in China, but its documentation may intentionally use Gitee
+repository links and Gitee-specific notes. Do not force-push GitHub `main`
+directly over Gitee `main`.
 
 ## 规则
 
 GitHub 仍是正式发布仓库。GitHub Actions 会根据版本标签构建 Windows 程序、
 macOS DMG、源码包、wheel 和 GitHub Release 更新日志。
 
-Gitee 用于同步源码和版本标签，方便国内访问；但 Gitee 文档可以有意使用 Gitee
-仓库链接和 Gitee 专属说明。不要把 GitHub 的 `main` 强制覆盖到 Gitee 的
-`main`。
+Gitee 用于同步源码、版本标签、发布说明和发布附件，方便国内访问；但 Gitee
+文档可以有意使用 Gitee 仓库链接和 Gitee 专属说明。不要把 GitHub 的 `main`
+强制覆盖到 Gitee 的 `main`。
 
 ## Normal Sync Flow
 
@@ -51,12 +52,17 @@ git push gitee codex/gitee-docs:main
 git switch main
 ```
 
-If a release tag is created, push the same tag to both repositories:
+If a release tag is created, push the tag to GitHub to trigger the release
+workflow:
 
 ```bash
 git push origin vX.Y.Z
-git push gitee vX.Y.Z
 ```
+
+When `GITEE_ACCESS_TOKEN` is configured in GitHub Secrets, the GitHub release
+workflow pushes the same tag to Gitee and uploads the already-built GitHub
+Release assets to the Gitee release page. This keeps Windows, macOS, wheel, and
+source-package downloads identical across both repositories.
 
 ## 常规同步流程
 
@@ -79,12 +85,15 @@ git push gitee codex/gitee-docs:main
 git switch main
 ```
 
-如果创建了发布标签，需要把同一个标签推送到两个仓库：
+如果创建了发布标签，推送 GitHub 标签即可触发发布 workflow：
 
 ```bash
 git push origin vX.Y.Z
-git push gitee vX.Y.Z
 ```
+
+当 GitHub Secrets 中已配置 `GITEE_ACCESS_TOKEN` 时，GitHub 发布 workflow 会把同一
+个标签推送到 Gitee，并把 GitHub Release 已经构建完成的附件上传到 Gitee 发行版
+页面。这样两个仓库中的 Windows、macOS、wheel 和源码包下载文件保持完全一致。
 
 ## Conflict Rule
 

@@ -446,3 +446,88 @@ jobs:
           files: dist/*
           draft: false
           prerelease: false
+
+  sync-gitee-release:
+    name: Sync Gitee Release
+    needs: [prepare, release]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    env:
+      GITEE_ACCESS_TOKEN: ${{ secrets.GITEE_ACCESS_TOKEN }}
+      GITEE_OWNER: tyongs
+      GITEE_REPO: interference_calculator
+      GITEE_USERNAME: ${{ vars.GITEE_USERNAME }}
+      TAG_NAME: ${{ needs.prepare.outputs.tag_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check Gitee sync configuration
+        id: gitee-sync
+        shell: bash
+        run: |
+          if [ -z "$GITEE_ACCESS_TOKEN" ]; then
+            echo "::warning::GITEE_ACCESS_TOKEN is not configured; skipping Gitee Release sync."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push release tag to Gitee
+        if: steps.gitee-sync.outputs.enabled == 'true'
+        shell: bash
+        run: |
+          cleanup() {
+            rm -f "$HOME/.netrc"
+          }
+          trap cleanup EXIT
+
+          cat > "$HOME/.netrc" <<EOF
+          machine gitee.com
+          login ${GITEE_USERNAME:-$GITEE_OWNER}
+          password $GITEE_ACCESS_TOKEN
+          EOF
+          chmod 600 "$HOME/.netrc"
+
+          git push \
+            "https://gitee.com/${GITEE_OWNER}/${GITEE_REPO}.git" \
+            "refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}"
+
+      - uses: actions/download-artifact@v4
+        if: steps.gitee-sync.outputs.enabled == 'true'
+        with:
+          name: release-notes
+          path: release/
+
+      - uses: actions/download-artifact@v4
+        if: steps.gitee-sync.outputs.enabled == 'true'
+        with:
+          name: python-packages
+          path: dist/
+
+      - uses: actions/download-artifact@v4
+        if: steps.gitee-sync.outputs.enabled == 'true'
+        with:
+          name: macos-app
+          path: dist/
+
+      - uses: actions/download-artifact@v4
+        if: steps.gitee-sync.outputs.enabled == 'true'
+        with:
+          name: windows-app
+          path: dist/
+
+      - name: Upload assets to Gitee Release
+        if: steps.gitee-sync.outputs.enabled == 'true'
+        shell: bash
+        run: |
+          python .github/scripts/sync_gitee_release.py \
+            --owner "$GITEE_OWNER" \
+            --repo "$GITEE_REPO" \
+            --tag "$TAG_NAME" \
+            --name "Interference Calculator $TAG_NAME" \
+            --body-file release/release_body.md \
+            --target-commitish main \
+            --assets dist/*
