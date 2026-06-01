@@ -1,0 +1,31 @@
+version: '1.0'
+name: gitee-release-pipeline
+displayName: Gitee Release
+
+stages:
+  - stage:
+    name: release
+    displayName: Build and Publish Release
+    steps:
+      - step: build@python
+        name: publish_gitee_release
+        displayName: Build wheel/source and publish Gitee Release
+        pythonVersion: '3.9'
+        artifacts:
+          - name: BUILD_ARTIFACT
+            path:
+              - dist/*
+              - release/release_body.md
+        commands:
+          - python3 -m pip install --upgrade pip
+          - pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+          - pip3 install ".[export]" build
+          - python3 -m unittest discover -s tests -v
+          - python3 -m build
+          - sh .gitee/scripts/publish_release.sh
+
+triggers:
+  push:
+    tags:
+      include:
+        - v.*

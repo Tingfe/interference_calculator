@@ -1,0 +1,33 @@
+version: '1.0'
+name: gitee-ci-pipeline
+displayName: Gitee CI
+
+stages:
+  - stage:
+    name: test_build
+    displayName: Test and Build
+    steps:
+      - step: build@python
+        name: build_python_package
+        displayName: Python package test/build
+        pythonVersion: '3.9'
+        artifacts:
+          - name: BUILD_ARTIFACT
+            path:
+              - dist/*
+        commands:
+          - python3 -m pip install --upgrade pip
+          - pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+          - pip3 install ".[export]" build
+          - python3 -m unittest discover -s tests -v
+          - python3 -m build
+
+triggers:
+  push:
+    branches:
+      include:
+        - main
+  pr:
+    branches:
+      include:
+        - main
