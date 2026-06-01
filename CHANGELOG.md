@@ -11,6 +11,9 @@
   `GITEE_ACCESS_TOKEN` is configured.
 - Add a manual `Sync Gitee Release` workflow for mirroring an existing GitHub
   Release to Gitee without rebuilding packages.
+- Document the Gitee-native release path so Gitee can publish domestic
+  wheel/source-package releases independently while keeping desktop installers
+  linked to the canonical GitHub build output.
 - Add a standard-library Gitee release sync helper with tests for idempotent
   release creation, update, and same-name asset replacement.
 - Stream Gitee Release asset uploads through `curl` when available, upload small
@@ -25,6 +28,8 @@
   和源码包，并把大型桌面安装包链接回 GitHub Releases。
 - 新增可手动运行的 `Sync Gitee Release` workflow，用于在不重新构建安装包的
   情况下，将已有 GitHub Release 镜像到 Gitee。
+- 补充 Gitee 自行发布路径说明，使 Gitee 可以独立发布面向国内访问的 wheel 和
+  源码包，同时将桌面安装包继续链接到正式 GitHub 构建产物。
 - 新增仅依赖标准库的 Gitee 发行版同步脚本，并补充单元测试覆盖发行版创建、更新
   和同名附件替换的幂等逻辑。
 - Gitee 发行版附件上传在可用时改用 `curl` 流式上传，先上传小型 Python 包再上传
