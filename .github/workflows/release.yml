@@ -458,6 +458,7 @@ jobs:
       GITEE_REPO: interference_calculator
       GITEE_USERNAME: ${{ vars.GITEE_USERNAME }}
       TAG_NAME: ${{ needs.prepare.outputs.tag_name }}
+      GITEE_MAX_ASSET_BYTES: 10485760
     steps:
       - uses: actions/checkout@v4
         with:
@@ -523,6 +524,16 @@ jobs:
         if: steps.gitee-sync.outputs.enabled == 'true'
         shell: bash
         run: |
+          cat >> release/release_body.md <<EOF
+
+          ## Binary Downloads / 安装包下载
+
+          Windows and macOS standalone apps are built by GitHub Actions and hosted on GitHub Releases:
+          https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG_NAME}
+
+          Gitee mirrors the source distribution and Python wheel. Large desktop installers are linked to GitHub to avoid unstable large-file uploads through the Gitee API.
+          EOF
+
           python .github/scripts/sync_gitee_release.py \
             --owner "$GITEE_OWNER" \
             --repo "$GITEE_REPO" \
@@ -530,4 +541,5 @@ jobs:
             --name "Interference Calculator $TAG_NAME" \
             --body-file release/release_body.md \
             --target-commitish main \
+            --max-asset-bytes "$GITEE_MAX_ASSET_BYTES" \
             --assets dist/*

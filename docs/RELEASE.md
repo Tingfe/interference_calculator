@@ -50,9 +50,10 @@ For each release tag, the workflow creates a GitHub Release with:
 - bilingual release notes extracted from the matching `CHANGELOG.md` section.
 
 When `GITEE_ACCESS_TOKEN` is configured, the same workflow also syncs the
-release tag, release notes, and all built assets to the Gitee repository
-release page. This sync happens after the GitHub Release succeeds, so Gitee
-receives the exact same build outputs instead of rebuilding them separately.
+release tag, release notes, source distribution, and wheel to the Gitee
+repository release page. Windows and macOS standalone installers remain hosted
+on GitHub Releases and are linked from the Gitee release notes, avoiding
+unstable large-file uploads through the Gitee API.
 
 ## 自动发布内容
 
@@ -66,9 +67,10 @@ receives the exact same build outputs instead of rebuilding them separately.
   `InterferenceCalculator-macOS-unsigned-vX.Y.Z.dmg`）；
 - 从 `CHANGELOG.md` 当前版本段落自动提取的中英文更新日志。
 
-配置 `GITEE_ACCESS_TOKEN` 后，同一个 workflow 还会把发布标签、发布说明和所有
-构建产物同步到 Gitee 仓库的发行版页面。该同步步骤发生在 GitHub Release 成功
-之后，因此 Gitee 得到的是同一套构建产物，而不是重新构建出的另一套文件。
+配置 `GITEE_ACCESS_TOKEN` 后，同一个 workflow 还会把发布标签、发布说明、源码包
+和 wheel 同步到 Gitee 仓库的发行版页面。Windows 与 macOS 免安装程序仍托管在
+GitHub Releases，并在 Gitee 发行版说明中提供链接，以避免 Gitee API 大文件上传
+不稳定。
 
 ## Gitee Release Sync
 
@@ -84,11 +86,12 @@ repository variable named `GITEE_USERNAME`.
 If `GITEE_ACCESS_TOKEN` is missing, the workflow publishes the GitHub Release
 normally and logs a warning that Gitee sync was skipped.
 
-Existing GitHub Releases can be mirrored manually with the
-`Sync Gitee Release` workflow. Run it from GitHub Actions and provide the
-existing tag name, such as `v2.5.0`. The workflow downloads the current GitHub
-Release notes and assets, pushes the same tag to Gitee, and uploads the assets
-to the matching Gitee Release.
+Existing GitHub Releases can be mirrored manually with the `Sync Gitee Release`
+workflow. Run it from GitHub Actions and provide the existing tag name, such as
+`v2.5.0`. By default, the workflow uploads only the source distribution and
+wheel, then links Windows/macOS installers to GitHub Releases. Enable the
+`include_large_installers` option only when deliberately testing large Gitee
+attachment uploads.
 
 ## Gitee 发行版同步
 
@@ -105,9 +108,10 @@ workflow 默认使用 `tyongs` 作为 Gitee HTTPS 用户名。如果该令牌属
 一条 Gitee 同步已跳过的 warning。
 
 已有的 GitHub Release 可以通过 `Sync Gitee Release` workflow 手动镜像。进入
-GitHub Actions 后运行该 workflow，并填写已有标签名，例如 `v2.5.0`。workflow
-会下载当前 GitHub Release 的发布说明和附件，把同一标签推送到 Gitee，并上传到
-对应的 Gitee 发行版。
+GitHub Actions 后运行该 workflow，并填写已有标签名，例如 `v2.5.0`。默认情况下，
+workflow 只上传源码包和 wheel，并在 Gitee 发行版中链接 Windows/macOS 安装包的
+GitHub Releases 地址。只有在明确测试 Gitee 大附件上传时，才启用
+`include_large_installers` 选项。
 
 ## Release Checklist
 

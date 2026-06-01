@@ -65,6 +65,19 @@ class GiteeReleaseSyncTests(unittest.TestCase):
 
         self.assertEqual([asset.name for asset in assets], ["b.zip", "a.whl"])
 
+    def test_filter_asset_paths_by_size_skips_large_assets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            small = root / "small.whl"
+            large = root / "large.zip"
+            small.write_bytes(b"123")
+            large.write_bytes(b"123456")
+
+            with redirect_stdout(io.StringIO()):
+                assets = sync_gitee_release.filter_asset_paths_by_size([small, large], max_asset_bytes=3)
+
+        self.assertEqual([asset.name for asset in assets], ["small.whl"])
+
     def test_sync_release_creates_missing_release_and_uploads_assets(self):
         with tempfile.TemporaryDirectory() as tmp:
             asset = Path(tmp) / "app.zip"
