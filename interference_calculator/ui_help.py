@@ -165,7 +165,7 @@ help_text = '''
         <p><strong>version __VERSION__</strong></p>
         <p><strong>&copy; 2017, Zan Peeters</strong></p>
         <p><strong>Latest contributor: Tingfe</strong></p>
-        <p><a href="https://github.com/Tingfe/interference_calculator">https://github.com/Tingfe/interference_calculator</a>
+        <p><a href="https://gitee.com/tyongs/interference_calculator">https://gitee.com/tyongs/interference_calculator</a>
 </div>
 
 <br/>
@@ -256,7 +256,7 @@ help_text_zh = '''
         <p><strong>版本 __VERSION__</strong></p>
         <p><strong>&copy; 2017, Zan Peeters</strong></p>
         <p><strong>最新贡献者：Tingfe</strong></p>
-        <p><a href="https://github.com/Tingfe/interference_calculator">https://github.com/Tingfe/interference_calculator</a>
+        <p><a href="https://gitee.com/tyongs/interference_calculator">https://gitee.com/tyongs/interference_calculator</a>
 </div>
 
 <br/>

@@ -12,6 +12,13 @@
 
 `English <english-section_>`_ | **中文**
 
+**Gitee 同步版说明**：当前页面面向
+`Gitee 仓库 <https://gitee.com/tyongs/interference_calculator>`_。Gitee
+用于国内代码访问、源码安装和分支同步；Windows / macOS 免安装包仍由
+GitHub Actions 自动构建，并发布在
+`GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_。
+因此本 README 会区分“当前 Gitee 仓库”和“GitHub 自动发布入口”，避免两个仓库的发布职责混淆。
+
 **无机质谱峰干扰计算器** 是一款用于质谱峰干扰筛查的科学桌面工具。当前 ``main`` 分支是面向 GDMS、ICP-MS 和 SIMS 的无机材料专用工具；``maintenance/original`` 是已经现代化维护过的通用扫描分支，保留原作者通用元素 / 同位素组合扫描和同位素比功能，同时继续使用更新后的数据、依赖和打包流程。
 
 该应用整合了双语 PyQt 界面、以 GDMS 优先的默认设置、基于模板的无机干扰生成、CIAAW 2024 / AME2020 同位素数据、以 ``ppm`` 表示的完整窗口宽度、以目标峰为中心的交互式谱图，以及紧凑高效的干扰结果表格。
@@ -46,15 +53,18 @@
 
 当前维护者及最新贡献者：Tingfe
 
-仓库地址：https://github.com/Tingfe/interference_calculator
+当前仓库（Gitee）：https://gitee.com/tyongs/interference_calculator
+
+自动发布仓库（GitHub）：https://github.com/Tingfe/interference_calculator
 
 安装
 ----
 
 **方式一：免安装版（推荐，无需 Python）**
 
-从 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
-下载对应平台的免安装版本，直接运行：
+免安装版本由 GitHub Actions 构建，请从
+`GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
+下载对应平台的安装包后直接运行：
 
 - **Windows**：下载 ``InterferenceCalculator-Windows-*.zip``，解压后双击
   ``InterferenceCalculator.exe``。Windows 采用目录版打包，避免单文件 ``.exe``
@@ -81,7 +91,7 @@ GDMS Excel 导入和 Excel 导出所需的 ``openpyxl`` 已包含在默认依赖
 
 .. code-block:: bash
 
-   git clone https://github.com/Tingfe/interference_calculator.git
+   git clone https://gitee.com/tyongs/interference_calculator.git
    cd interference_calculator
    python3 -m venv .venv
    . .venv/bin/activate
@@ -208,7 +218,11 @@ Python API
 - ``main``：无机材料 / 无机质谱专用主线，包含 GDMS、ICP-MS、SIMS 工作流，是默认发布分支。
 - ``maintenance/original``：现代化通用扫描维护线，保留通用分子枚举和同位素比计算，继续使用新同位素数据库、现代依赖和打包流程，但不包含无机专项预设、模板或风险模型。
 
-版本发布采用 GitHub Actions 自动化。更新 ``__version__`` 和中英文 ``CHANGELOG.md`` 后，推送 ``vX.Y.Z`` 标签会自动运行测试、构建源码包 / wheel、Windows ``.zip`` 目录版应用和 macOS ``.dmg``，并用当前版本的中英文 changelog 生成 GitHub Release。
+Gitee 仓库用于代码同步和国内访问；正式二进制发布仍采用 GitHub Actions 自动化。
+更新 ``__version__`` 和中英文 ``CHANGELOG.md`` 后，先推送 GitHub ``main`` 与
+``vX.Y.Z`` 标签以自动运行测试、构建源码包 / wheel、Windows ``.zip`` 目录版应用和
+macOS ``.dmg``，并用当前版本的中英文 changelog 生成 GitHub Release；随后同步
+Gitee ``main`` 与对应标签。Gitee 的 ``.workflow`` 文件保留为平台模板，不是当前正式发布源。
 
 未配置 Apple 签名 secrets 时，发布流程会生成未签名、未公证的 macOS DMG
 （文件名包含 ``macOS-unsigned``）；配置完整 secrets 后会自动生成 Developer ID
@@ -241,6 +255,15 @@ Inorganic MS Interference Calculator 2.5
 =========================================
 
 **English** | `中文 <chinese-section_>`_
+
+**Gitee mirror note**: this page is written for the
+`Gitee repository <https://gitee.com/tyongs/interference_calculator>`_. Gitee
+is used for China-friendly source access, source installs, and branch syncing.
+Windows / macOS standalone packages are still built by GitHub Actions and
+published on
+`GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_.
+This README separates the current Gitee repository from the GitHub automated
+release entry point to avoid mixing the two repository roles.
 
 Inorganic MS Interference Calculator is a scientific desktop tool for
 mass-spectrometry peak interference screening. The current ``main`` branch is
@@ -316,14 +339,17 @@ Original author: Zan Peeters
 
 Current maintainer and latest contributor: Tingfe
 
-Repository: https://github.com/Tingfe/interference_calculator
+Current repository (Gitee): https://gitee.com/tyongs/interference_calculator
+
+Automated release repository (GitHub): https://github.com/Tingfe/interference_calculator
 
 Installation
 ------------
 
 **Option A — Standalone app (recommended, no Python required)**
 
-Download the platform-specific package from
+Standalone packages are built by GitHub Actions. Download the platform-specific
+package from
 `GitHub Releases <https://github.com/Tingfe/interference_calculator/releases>`_
 and run directly:
 
@@ -355,7 +381,7 @@ You can also install a downloaded wheel manually:
 
 .. code-block:: bash
 
-   git clone https://github.com/Tingfe/interference_calculator.git
+   git clone https://gitee.com/tyongs/interference_calculator.git
    cd interference_calculator
    python3 -m venv .venv
    . .venv/bin/activate
@@ -532,10 +558,14 @@ Branch model:
   isotope database, modern dependencies, and packaging, but without
   inorganic-specific presets, templates, or risk models.
 
-Releases are automated with GitHub Actions. After updating ``__version__`` and
-the bilingual ``CHANGELOG.md``, pushing a ``vX.Y.Z`` tag runs tests, builds the
-source package / wheel, Windows ``.zip`` app directory, and macOS ``.dmg``,
-then creates a GitHub Release from the matching bilingual changelog section.
+The Gitee repository is used for source syncing and China-friendly access.
+Official binary releases are still automated with GitHub Actions. After updating
+``__version__`` and the bilingual ``CHANGELOG.md``, push GitHub ``main`` and the
+``vX.Y.Z`` tag to run tests, build the source package / wheel, Windows ``.zip``
+app directory, and macOS ``.dmg``, then create a GitHub Release from the
+matching bilingual changelog section. Sync Gitee ``main`` and the matching tag
+after the GitHub release succeeds. Gitee ``.workflow`` files are kept as platform
+templates and are not the current official release source.
 
 When Apple signing secrets are not configured, the workflow publishes an
 unsigned, non-notarized macOS DMG with ``macOS-unsigned`` in the filename. With

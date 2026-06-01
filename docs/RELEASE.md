@@ -1,5 +1,12 @@
 # Release Guide / 发布指南
 
+> Gitee sync note: this document is written for the Gitee mirror branch.
+> Gitee hosts synchronized source code and tags. The official Windows/macOS
+> binaries are still built by GitHub Actions and published on GitHub Releases.
+>
+> Gitee 同步说明：本文面向 Gitee 镜像分支。Gitee 保存同步后的源码和标签；
+> Windows/macOS 正式安装包仍由 GitHub Actions 构建，并发布到 GitHub Releases。
+
 GitHub Actions builds and publishes releases from version tags.
 
 发布由 GitHub Actions 根据版本标签自动完成。
@@ -12,6 +19,8 @@ Create and push a tag that matches the package version:
 git tag -a v2.1.0 -m "v2.1.0"
 git push origin main
 git push origin v2.1.0
+git push gitee main
+git push gitee v2.1.0
 ```
 
 The release workflow validates that:
@@ -29,6 +38,8 @@ The release workflow validates that:
 git tag -a v2.1.0 -m "v2.1.0"
 git push origin main
 git push origin v2.1.0
+git push gitee main
+git push gitee v2.1.0
 ```
 
 发布流程会检查：
@@ -49,6 +60,11 @@ For each release tag, the workflow creates a GitHub Release with:
   secrets);
 - bilingual release notes extracted from the matching `CHANGELOG.md` section.
 
+Gitee should receive the same source commit and tag after the GitHub Release is
+created. Do not treat the Gitee pipeline templates as the source of the official
+binary artifacts unless a separate Gitee build-and-release process is explicitly
+configured.
+
 ## 自动发布内容
 
 每个版本标签会生成一个 GitHub Release，包含：
@@ -60,6 +76,9 @@ For each release tag, the workflow creates a GitHub Release with:
   未配置 Apple 签名 secrets 时为
   `InterferenceCalculator-macOS-unsigned-vX.Y.Z.dmg`）；
 - 从 `CHANGELOG.md` 当前版本段落自动提取的中英文更新日志。
+
+GitHub Release 创建完成后，再把同一个源码提交和标签同步到 Gitee。除非单独配置
+Gitee 构建和发布流程，否则不要把 Gitee pipeline 模板视为正式二进制安装包来源。
 
 ## Release Checklist
 
