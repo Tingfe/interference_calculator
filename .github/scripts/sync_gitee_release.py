@@ -7,6 +7,7 @@ import argparse
 import json
 import mimetypes
 import os
+import time
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -65,11 +66,19 @@ def _multipart_body(fields: dict[str, str], file_path: Path) -> tuple[bytes, str
 
 
 class GiteeClient:
-    def __init__(self, owner: str, repo: str, token: str, api_base: str = API_BASE) -> None:
+    def __init__(
+        self,
+        owner: str,
+        repo: str,
+        token: str,
+        api_base: str = API_BASE,
+        timeout_seconds: int = 900,
+    ) -> None:
         self.owner = owner
         self.repo = repo
         self.token = token
         self.api_base = api_base.rstrip("/")
+        self.timeout_seconds = timeout_seconds
 
     def request(
         self,
@@ -94,7 +103,7 @@ class GiteeClient:
 
         request = Request(url, data=data, headers=headers, method=method)
         try:
-            with urlopen(request, timeout=120) as response:
+            with urlopen(request, timeout=self.timeout_seconds) as response:
                 return _json_or_text(response.read())
         except HTTPError as exc:
             payload = exc.read()
@@ -218,6 +227,7 @@ def sync_release(
     target_commitish: str,
     prerelease: bool,
     asset_paths: list[Path],
+    max_upload_attempts: int = 3,
 ) -> None:
     release = client.find_release_by_tag(tag_name)
     if release is None:
@@ -234,20 +244,36 @@ def sync_release(
     if release_id is None:
         raise GiteeApiError(f"Gitee release {tag_name} does not include an id")
 
-    existing_assets = client.list_assets(release_id)
-    existing_by_name = {asset_name(asset): asset for asset in existing_assets if asset_name(asset)}
+    def find_existing_asset(name: str) -> dict[str, Any] | None:
+        for asset in client.list_assets(release_id):
+            if asset_name(asset) == name:
+                return asset
+        return None
 
     for asset_path in asset_paths:
-        existing = existing_by_name.get(asset_path.name)
-        if existing is not None:
-            asset_id = existing.get("id")
-            if asset_id is None:
-                raise GiteeApiError(f"Existing Gitee asset {asset_path.name} does not include an id")
-            print(f"Replacing Gitee release asset {asset_path.name}")
-            client.delete_asset(release_id, asset_id)
-        else:
-            print(f"Uploading Gitee release asset {asset_path.name}")
-        client.upload_asset(release_id, asset_path)
+        for attempt in range(1, max_upload_attempts + 1):
+            existing = find_existing_asset(asset_path.name)
+            if existing is not None:
+                asset_id = existing.get("id")
+                if asset_id is None:
+                    raise GiteeApiError(f"Existing Gitee asset {asset_path.name} does not include an id")
+                print(f"Replacing Gitee release asset {asset_path.name}")
+                client.delete_asset(release_id, asset_id)
+            else:
+                print(f"Uploading Gitee release asset {asset_path.name}")
+
+            try:
+                client.upload_asset(release_id, asset_path)
+                break
+            except GiteeApiError:
+                if attempt >= max_upload_attempts:
+                    raise
+                delay_seconds = attempt * 15
+                print(
+                    f"Upload attempt {attempt} failed for {asset_path.name}; "
+                    f"retrying in {delay_seconds} seconds"
+                )
+                time.sleep(delay_seconds)
 
 
 def parse_args() -> argparse.Namespace:
@@ -259,6 +285,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--body-file", required=True, help="Markdown release notes file")
     parser.add_argument("--target-commitish", default="main", help="Target branch or commit for a new release")
     parser.add_argument("--prerelease", action="store_true", help="Mark the Gitee release as prerelease")
+    parser.add_argument(
+        "--timeout-seconds",
+        type=int,
+        default=900,
+        help="Per-request timeout for the Gitee API",
+    )
     parser.add_argument("--assets", nargs="+", required=True, help="Release asset files to upload")
     return parser.parse_args()
 
@@ -275,7 +307,7 @@ def main() -> int:
     body = body_path.read_text(encoding="utf-8")
     asset_paths = collect_asset_paths(args.assets)
 
-    client = GiteeClient(args.owner, args.repo, token)
+    client = GiteeClient(args.owner, args.repo, token, timeout_seconds=args.timeout_seconds)
     sync_release(
         client=client,
         tag_name=args.tag,
