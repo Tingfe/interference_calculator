@@ -32,10 +32,15 @@ cat >> "$BODY_FILE" <<EOF
 
 ## Desktop Installers / 桌面安装包
 
-Windows and macOS standalone installers are built by the canonical GitHub workflow:
+Python packages are attached to this Gitee release. The Windows zip may also be
+attached if the experimental Gitee Windows pipeline runs on a Windows-capable
+executor. macOS installers, and Windows fallback downloads, remain available
+from the canonical GitHub release:
 https://github.com/Tingfe/interference_calculator/releases/tag/$TAG_NAME
 
-Windows 和 macOS 独立安装包由正式 GitHub workflow 构建发布：
+Python 安装包会附加到本 Gitee 发行版。如果实验性的 Gitee Windows 流水线运行在
+可执行 Windows 构建的环境中，Windows zip 也可能直接附加在这里。macOS 安装包以及
+Windows 备用下载仍以正式 GitHub Release 为准：
 https://github.com/Tingfe/interference_calculator/releases/tag/$TAG_NAME
 EOF
 
