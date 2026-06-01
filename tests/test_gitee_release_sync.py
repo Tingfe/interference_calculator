@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / ".github" / "scripts" / "sync_gitee_release.py"
@@ -16,9 +17,10 @@ SPEC.loader.exec_module(sync_gitee_release)
 
 
 class FakeGiteeClient:
-    def __init__(self, release=None, assets=None):
+    def __init__(self, release=None, assets=None, upload_failures=0):
         self.release = release
         self.assets = assets or []
+        self.upload_failures = upload_failures
         self.created = []
         self.updated = []
         self.deleted = []
@@ -43,6 +45,9 @@ class FakeGiteeClient:
         self.deleted.append((release_id, asset_id))
 
     def upload_asset(self, release_id, asset_path):
+        if self.upload_failures:
+            self.upload_failures -= 1
+            raise sync_gitee_release.GiteeApiError("temporary upload failure")
         self.uploaded.append((release_id, asset_path.name))
         return {"id": len(self.uploaded), "name": asset_path.name}
 
@@ -102,6 +107,28 @@ class GiteeReleaseSyncTests(unittest.TestCase):
 
         self.assertEqual(client.updated, [(7, "v2.6.0", "Interference Calculator v2.6.0", "notes")])
         self.assertEqual(client.deleted, [(7, 42)])
+        self.assertEqual(client.uploaded, [(7, "app.zip")])
+
+    def test_sync_release_retries_upload_failures(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            asset = Path(tmp) / "app.zip"
+            asset.write_text("payload", encoding="utf-8")
+            client = FakeGiteeClient(
+                release={"id": 7, "tag_name": "v2.6.0"},
+                upload_failures=1,
+            )
+
+            with redirect_stdout(io.StringIO()), mock.patch.object(sync_gitee_release.time, "sleep"):
+                sync_gitee_release.sync_release(
+                    client=client,
+                    tag_name="v2.6.0",
+                    name="Interference Calculator v2.6.0",
+                    body="notes",
+                    target_commitish="main",
+                    prerelease=False,
+                    asset_paths=[asset],
+                )
+
         self.assertEqual(client.uploaded, [(7, "app.zip")])
 
 
