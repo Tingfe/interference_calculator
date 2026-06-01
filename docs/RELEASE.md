@@ -1,11 +1,13 @@
 # Release Guide / 发布指南
 
 > Gitee sync note: this document is written for the Gitee mirror branch.
-> Gitee hosts synchronized source code and tags. The official Windows/macOS
-> binaries are still built by GitHub Actions and published on GitHub Releases.
+> Gitee hosts synchronized source code, tags, and mirrored release assets when
+> `GITEE_ACCESS_TOKEN` is configured. Official Windows/macOS binaries are still
+> built by GitHub Actions first, then copied to Gitee Releases.
 >
 > Gitee 同步说明：本文面向 Gitee 镜像分支。Gitee 保存同步后的源码和标签；
-> Windows/macOS 正式安装包仍由 GitHub Actions 构建，并发布到 GitHub Releases。
+> 配置 `GITEE_ACCESS_TOKEN` 后也会保存镜像后的发行版附件。Windows/macOS 正式
+> 安装包仍先由 GitHub Actions 构建，再复制到 Gitee Releases。
 
 GitHub Actions builds and publishes releases from version tags.
 
@@ -19,8 +21,6 @@ Create and push a tag that matches the package version:
 git tag -a v2.1.0 -m "v2.1.0"
 git push origin main
 git push origin v2.1.0
-git push gitee main
-git push gitee v2.1.0
 ```
 
 The release workflow validates that:
@@ -38,8 +38,6 @@ The release workflow validates that:
 git tag -a v2.1.0 -m "v2.1.0"
 git push origin main
 git push origin v2.1.0
-git push gitee main
-git push gitee v2.1.0
 ```
 
 发布流程会检查：
@@ -60,10 +58,10 @@ For each release tag, the workflow creates a GitHub Release with:
   secrets);
 - bilingual release notes extracted from the matching `CHANGELOG.md` section.
 
-Gitee should receive the same source commit and tag after the GitHub Release is
-created. Do not treat the Gitee pipeline templates as the source of the official
-binary artifacts unless a separate Gitee build-and-release process is explicitly
-configured.
+When `GITEE_ACCESS_TOKEN` is configured, the same workflow also syncs the
+release tag, release notes, and all built assets to the Gitee repository
+release page. This sync happens after the GitHub Release succeeds, so Gitee
+receives the exact same build outputs instead of rebuilding them separately.
 
 ## 自动发布内容
 
@@ -77,8 +75,37 @@ configured.
   `InterferenceCalculator-macOS-unsigned-vX.Y.Z.dmg`）；
 - 从 `CHANGELOG.md` 当前版本段落自动提取的中英文更新日志。
 
-GitHub Release 创建完成后，再把同一个源码提交和标签同步到 Gitee。除非单独配置
-Gitee 构建和发布流程，否则不要把 Gitee pipeline 模板视为正式二进制安装包来源。
+配置 `GITEE_ACCESS_TOKEN` 后，同一个 workflow 还会把发布标签、发布说明和所有
+构建产物同步到 Gitee 仓库的发行版页面。该同步步骤发生在 GitHub Release 成功
+之后，因此 Gitee 得到的是同一套构建产物，而不是重新构建出的另一套文件。
+
+## Gitee Release Sync
+
+To enable Gitee release sync, configure this GitHub repository secret:
+
+- `GITEE_ACCESS_TOKEN`: a Gitee personal access token that can push tags and
+  create/update releases for `tyongs/interference_calculator`.
+
+The workflow uses `tyongs` as the default Gitee HTTPS username. If the token
+belongs to another Gitee account with write access, configure a GitHub
+repository variable named `GITEE_USERNAME`.
+
+If `GITEE_ACCESS_TOKEN` is missing, the workflow publishes the GitHub Release
+normally and logs a warning that Gitee sync was skipped.
+
+## Gitee 发行版同步
+
+如需启用 Gitee 发行版同步，需要在 GitHub 仓库中配置以下 secret：
+
+- `GITEE_ACCESS_TOKEN`：可向 `tyongs/interference_calculator` 推送标签并
+  创建 / 更新发行版的 Gitee 私人令牌。
+
+workflow 默认使用 `tyongs` 作为 Gitee HTTPS 用户名。如果该令牌属于另一个具有
+写权限的 Gitee 账号，请额外配置 GitHub repository variable：
+`GITEE_USERNAME`。
+
+如果没有配置 `GITEE_ACCESS_TOKEN`，workflow 会正常发布 GitHub Release，并输出
+一条 Gitee 同步已跳过的 warning。
 
 ## Release Checklist
 
@@ -95,7 +122,8 @@ Before tagging:
 git diff --check
 ```
 
-5. Push `main`, then push the version tag.
+5. Push `main`, then push the version tag. The tag-triggered workflow publishes
+   GitHub Release first, then syncs the same artifacts to Gitee when configured.
 
 ## 发布前检查清单
 
@@ -111,7 +139,8 @@ git diff --check
 git diff --check
 ```
 
-5. 推送 `main`，然后推送版本标签。
+5. 推送 `main`，然后推送版本标签。标签触发的 workflow 会先发布 GitHub Release；
+   如果已配置 Gitee 同步，则继续把同一套产物同步到 Gitee。
 
 ## Notes About Unsigned Apps
 
