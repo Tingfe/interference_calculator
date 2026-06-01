@@ -1,26 +1,26 @@
 version: '1.0'
 name: gitee-windows-release-pipeline
-displayName: Gitee Windows Release Experiment
-
+displayName: GiteeWindowsRelease
+triggers:
+  trigger: auto
+  push:
+    tags:
+      include:
+        - v.*
 stages:
-  - stage:
-    name: windows_release
+  - name: windows_release
     displayName: Build Windows Zip
+    strategy: naturally
+    trigger: auto
     steps:
       - step: build@python
         name: build_windows_zip
         displayName: Experimental Windows zip build
         pythonVersion: '3.9'
+        commands:
+          - python3 .gitee/scripts/publish_windows_release.py
         artifacts:
           - name: WINDOWS_ARTIFACT
             path:
               - dist/InterferenceCalculator-Windows-*.zip
               - release/windows_release_body.md
-        commands:
-          - python3 .gitee/scripts/publish_windows_release.py
-
-triggers:
-  push:
-    tags:
-      include:
-        - v.*
