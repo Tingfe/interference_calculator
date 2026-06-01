@@ -1,0 +1,92 @@
+name: Sync Gitee Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Existing GitHub release tag to mirror to Gitee, for example v2.5.0"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Sync existing release assets
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITEE_ACCESS_TOKEN: ${{ secrets.GITEE_ACCESS_TOKEN }}
+      GITEE_OWNER: tyongs
+      GITEE_REPO: interference_calculator
+      GITEE_USERNAME: ${{ vars.GITEE_USERNAME }}
+      TAG_NAME: ${{ inputs.tag_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate sync configuration
+        shell: bash
+        run: |
+          if [[ ! "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::tag_name must look like vX.Y.Z, got: $TAG_NAME"
+            exit 1
+          fi
+          if [ -z "$GITEE_ACCESS_TOKEN" ]; then
+            echo "::error::GITEE_ACCESS_TOKEN is not configured."
+            exit 1
+          fi
+          gh release view "$TAG_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null
+
+      - name: Download GitHub release notes and assets
+        shell: bash
+        run: |
+          mkdir -p release dist
+          gh release view "$TAG_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json body \
+            --jq '.body // ""' > release/release_body.md
+          gh release download "$TAG_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir dist \
+            --clobber
+          find dist -type f -maxdepth 1 -print | sort
+          if ! find dist -type f -maxdepth 1 | grep -q .; then
+            echo "::error::No GitHub Release assets were downloaded for $TAG_NAME."
+            exit 1
+          fi
+
+      - name: Push release tag to Gitee
+        shell: bash
+        run: |
+          cleanup() {
+            rm -f "$HOME/.netrc"
+          }
+          trap cleanup EXIT
+
+          cat > "$HOME/.netrc" <<EOF
+          machine gitee.com
+          login ${GITEE_USERNAME:-$GITEE_OWNER}
+          password $GITEE_ACCESS_TOKEN
+          EOF
+          chmod 600 "$HOME/.netrc"
+
+          git fetch --force origin "refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}"
+          git push \
+            "https://gitee.com/${GITEE_OWNER}/${GITEE_REPO}.git" \
+            "refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}"
+
+      - name: Upload assets to Gitee Release
+        shell: bash
+        run: |
+          python .github/scripts/sync_gitee_release.py \
+            --owner "$GITEE_OWNER" \
+            --repo "$GITEE_REPO" \
+            --tag "$TAG_NAME" \
+            --name "Interference Calculator $TAG_NAME" \
+            --body-file release/release_body.md \
+            --target-commitish main \
+            --assets dist/*
