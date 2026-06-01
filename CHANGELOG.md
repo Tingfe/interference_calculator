@@ -12,6 +12,9 @@
   Release to Gitee without rebuilding packages.
 - Add a standard-library Gitee release sync helper with tests for idempotent
   release creation, update, and same-name asset replacement.
+- Stream Gitee Release asset uploads through `curl` when available, upload small
+  packages before large installers, and flush upload progress logs for easier
+  CI diagnosis.
 
 ### 中文
 
@@ -23,6 +26,8 @@
   情况下，将已有 GitHub Release 镜像到 Gitee。
 - 新增仅依赖标准库的 Gitee 发行版同步脚本，并补充单元测试覆盖发行版创建、更新
   和同名附件替换的幂等逻辑。
+- Gitee 发行版附件上传在可用时改用 `curl` 流式上传，先上传小型 Python 包再上传
+  大型安装包，并实时输出上传进度日志，便于 CI 诊断。
 
 ## [2.5.0] - 2026-06-01
 
