@@ -124,6 +124,51 @@ workflow 只上传源码包和 wheel，并在 Gitee 发行版中链接 Windows/m
 GitHub Releases 地址。只有在明确测试 Gitee 大附件上传时，才启用
 `include_large_installers` 选项。
 
+## Gitee-Native Release Path
+
+Gitee can also publish its own domestic release from the Gitee repository
+pipeline. This path is intentionally limited to source distribution and wheel
+assets unless dedicated Windows/macOS Gitee runners are configured.
+
+Use this mode when GitHub access is slow or unreliable for domestic users:
+
+1. Push the same version tag to the Gitee repository, for example `v2.5.0`.
+2. Let the Gitee pipeline build and test the package from that tag.
+3. The pipeline creates or updates the Gitee Release, uploads `.tar.gz` and
+   `.whl` assets, and appends a link to the matching GitHub Release for
+   Windows/macOS installers.
+
+This does not conflict with GitHub Releases because both repositories use the
+same tag name, package version, and `CHANGELOG.md` section. GitHub remains the
+canonical desktop-app build source; Gitee provides a domestic mirror and
+Python-package release surface.
+
+To enable the Gitee-native release pipeline, configure `GITEE_ACCESS_TOKEN` as
+a protected variable/secret in Gitee Go for this repository. The token must be
+allowed to create/update releases and upload release attachments for
+`tyongs/interference_calculator`.
+
+## Gitee 自行发布路径
+
+Gitee 也可以通过 Gitee 仓库自己的流水线发布国内发行版。这个路径默认只发布源码包
+和 wheel；除非后续配置专用的 Windows/macOS Gitee runner，否则不在 Gitee 侧重新
+构建桌面安装包。
+
+当国内用户访问 GitHub 较慢或不稳定时，可以使用这个模式：
+
+1. 将同一个版本标签推送到 Gitee 仓库，例如 `v2.5.0`。
+2. Gitee 流水线基于该标签构建并测试 Python 包。
+3. 流水线创建或更新 Gitee Release，上传 `.tar.gz` 和 `.whl` 附件，并在发布说明
+   中附加对应 GitHub Release 的 Windows/macOS 安装包链接。
+
+这不会与 GitHub Release 冲突，因为两个仓库使用相同的标签名、包版本号和
+`CHANGELOG.md` 版本段落。GitHub 仍是正式桌面应用构建来源；Gitee 提供国内镜像
+和 Python 包发行入口。
+
+启用 Gitee 自行发布流水线时，需要在该 Gitee 仓库的 Gitee Go 变量 / secret 中配置
+`GITEE_ACCESS_TOKEN`。该令牌需要具备为 `tyongs/interference_calculator` 创建 / 更新
+发行版并上传附件的权限。
+
 ## Release Checklist
 
 Before tagging:
