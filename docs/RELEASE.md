@@ -35,7 +35,7 @@ git push origin v2.1.0
 
 - 标签名符合 `vX.Y.Z`；
 - `interference_calculator/__init__.py` 中的 `__version__` 与标签一致；
-- `CHANGELOG.md` 中存在对应的 `## [X.Y.Z]` 版本段落，并包含英文和中文更新日志。
+- `CHANGELOG.md` 中存在对应的 `## [X.Y.Z]` 版本段落，并包含中文和英文更新日志。
 
 ## What The Workflow Publishes
 
@@ -163,8 +163,8 @@ Gitee 也可以通过 Gitee 仓库自己的流水线发布国内发行版。这�
 Before tagging:
 
 1. Update `interference_calculator/__init__.py`.
-2. Add a new top section to `CHANGELOG.md` with both English and Chinese
-   notes.
+2. Add a new top section to `CHANGELOG.md` with Chinese notes first and English
+   notes second.
 3. Update README / manual version references if needed.
 4. Run tests locally:
 
@@ -181,7 +181,7 @@ git diff --check
 打标签前：
 
 1. 更新 `interference_calculator/__init__.py`。
-2. 在 `CHANGELOG.md` 顶部新增版本段落，并同时写入英文和中文更新日志。
+2. 在 `CHANGELOG.md` 顶部新增版本段落，并按中文在前、英文在后的顺序写入更新日志。
 3. 必要时更新 README / 用户手册里的版本说明。
 4. 本地运行测试：
 
