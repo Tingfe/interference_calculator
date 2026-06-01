@@ -53,7 +53,7 @@ class FakeGiteeClient:
 
 
 class GiteeReleaseSyncTests(unittest.TestCase):
-    def test_collect_asset_paths_sorts_by_file_name(self):
+    def test_collect_asset_paths_sorts_by_size_then_file_name(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             beta = root / "b.zip"
@@ -63,7 +63,7 @@ class GiteeReleaseSyncTests(unittest.TestCase):
 
             assets = sync_gitee_release.collect_asset_paths([str(beta), str(alpha)])
 
-        self.assertEqual([asset.name for asset in assets], ["a.whl", "b.zip"])
+        self.assertEqual([asset.name for asset in assets], ["b.zip", "a.whl"])
 
     def test_sync_release_creates_missing_release_and_uploads_assets(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -7,6 +7,8 @@ import argparse
 import json
 import mimetypes
 import os
+import shutil
+import subprocess
 import time
 from pathlib import Path
 from typing import Any
@@ -95,6 +97,9 @@ class GiteeClient:
         if method in {"GET", "DELETE"}:
             url = f"{url}?{urlencode(fields)}"
         elif file_path is not None:
+            curl = shutil.which("curl")
+            if curl:
+                return self._curl_multipart_request(curl, method, path, fields, file_path)
             data, content_type = _multipart_body(fields, file_path)
             headers["Content-Type"] = content_type
         else:
@@ -110,6 +115,44 @@ class GiteeClient:
             raise GiteeApiError(_format_api_error(method, path, exc.code, payload)) from exc
         except URLError as exc:
             raise GiteeApiError(f"Gitee API {method} {path} failed: {exc.reason}") from exc
+
+    def _curl_multipart_request(
+        self,
+        curl: str,
+        method: str,
+        path: str,
+        fields: dict[str, str],
+        file_path: Path,
+    ) -> Any:
+        url = f"{self.api_base}{path}"
+        command = [
+            curl,
+            "--fail-with-body",
+            "--silent",
+            "--show-error",
+            "--location",
+            "--connect-timeout",
+            "30",
+            "--max-time",
+            str(self.timeout_seconds),
+            "--retry",
+            "2",
+            "--retry-delay",
+            "10",
+            "--request",
+            method,
+        ]
+        for name, value in fields.items():
+            command.extend(["--form", f"{name}={value}"])
+        command.extend(["--form", f"file=@{file_path}", url])
+
+        completed = subprocess.run(command, capture_output=True, check=False)
+        if completed.returncode != 0:
+            payload = completed.stdout or completed.stderr
+            body = _json_or_text(payload)
+            message = body if isinstance(body, str) else json.dumps(body, ensure_ascii=False)
+            raise GiteeApiError(f"Gitee API {method} {path} failed with curl exit {completed.returncode}: {message}")
+        return _json_or_text(completed.stdout)
 
     def list_releases(self) -> list[dict[str, Any]]:
         releases: list[dict[str, Any]] = []
@@ -216,7 +259,7 @@ def collect_asset_paths(paths: list[str]) -> list[Path]:
     missing = [str(path) for path in assets if not path.is_file()]
     if missing:
         raise SystemExit(f"Asset path does not exist or is not a file: {', '.join(missing)}")
-    return sorted(assets, key=lambda path: path.name)
+    return sorted(assets, key=lambda path: (path.stat().st_size, path.name))
 
 
 def sync_release(
@@ -231,10 +274,10 @@ def sync_release(
 ) -> None:
     release = client.find_release_by_tag(tag_name)
     if release is None:
-        print(f"Creating Gitee release {tag_name}")
+        print(f"Creating Gitee release {tag_name}", flush=True)
         release = client.create_release(tag_name, name, body, target_commitish, prerelease)
     else:
-        print(f"Updating Gitee release {tag_name}")
+        print(f"Updating Gitee release {tag_name}", flush=True)
         release_id = release.get("id")
         if release_id is None:
             raise GiteeApiError(f"Gitee release {tag_name} does not include an id")
@@ -257,13 +300,22 @@ def sync_release(
                 asset_id = existing.get("id")
                 if asset_id is None:
                     raise GiteeApiError(f"Existing Gitee asset {asset_path.name} does not include an id")
-                print(f"Replacing Gitee release asset {asset_path.name}")
+                print(
+                    f"Replacing Gitee release asset {asset_path.name} "
+                    f"({asset_path.stat().st_size} bytes)",
+                    flush=True,
+                )
                 client.delete_asset(release_id, asset_id)
             else:
-                print(f"Uploading Gitee release asset {asset_path.name}")
+                print(
+                    f"Uploading Gitee release asset {asset_path.name} "
+                    f"({asset_path.stat().st_size} bytes)",
+                    flush=True,
+                )
 
             try:
                 client.upload_asset(release_id, asset_path)
+                print(f"Uploaded Gitee release asset {asset_path.name}", flush=True)
                 break
             except GiteeApiError:
                 if attempt >= max_upload_attempts:
@@ -271,7 +323,8 @@ def sync_release(
                 delay_seconds = attempt * 15
                 print(
                     f"Upload attempt {attempt} failed for {asset_path.name}; "
-                    f"retrying in {delay_seconds} seconds"
+                    f"retrying in {delay_seconds} seconds",
+                    flush=True,
                 )
                 time.sleep(delay_seconds)
 
