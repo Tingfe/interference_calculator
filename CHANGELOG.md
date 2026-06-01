@@ -16,6 +16,9 @@ history and release documentation.
   安装包继续链接到正式 GitHub 构建产物。
 - 已发布的 GitHub 版本可以更可靠地镜像到 Gitee，国内用户在 GitHub 访问不稳定时
   更容易获得对应版本下载。
+- 新增实验性的 Gitee 侧 Windows `.zip` 打包路径；当 Gitee 流水线运行在 Windows
+  执行环境时，可直接生成 Windows 免安装包，否则会明确跳过并继续使用 GitHub
+  安装包链接。
 
 #### 文档
 - 发布指南和双仓库同步说明已更新，明确 GitHub 与 Gitee 两个发布渠道如何配合：
@@ -30,6 +33,9 @@ history and release documentation.
 - Existing GitHub releases can be mirrored to Gitee more reliably, making it
   easier for users in China to access versioned downloads when GitHub network
   access is unstable.
+- Add an experimental Gitee-side Windows `.zip` packaging path. It can publish a
+  Windows standalone package when the Gitee pipeline runs on Windows, and skips
+  clearly when only a non-Windows runner is available.
 
 #### Documentation
 - Release and repository-sync guides now explain how the GitHub and Gitee

@@ -18,8 +18,8 @@ The release workflow validates that:
 
 - the tag is named `vX.Y.Z`;
 - `interference_calculator/__init__.py` contains the same `__version__`;
-- `CHANGELOG.md` contains a matching `## [X.Y.Z]` section with English and
-  Chinese release notes.
+- `CHANGELOG.md` contains a matching `## [X.Y.Z]` section with Chinese and
+  English release notes.
 
 ## 发布触发方式
 
@@ -132,6 +132,13 @@ same tag name, package version, and `CHANGELOG.md` section. GitHub remains the
 canonical desktop-app build source; Gitee provides a domestic mirror and
 Python-package release surface.
 
+An experimental Gitee-side Windows zip build is available through the shared
+`packaging/windows/build_windows_zip.py` helper. It can only produce a real
+Windows package when the Gitee pipeline runs on a Windows-capable executor. If
+the pipeline runs on Gitee's default Linux/Python build environment, the
+Windows build path must skip and the Gitee release should continue to link to
+the GitHub Windows installer.
+
 To enable the Gitee-native release pipeline, configure `GITEE_ACCESS_TOKEN` as
 a protected variable/secret in Gitee Go for this repository. The token must be
 allowed to create/update releases and upload release attachments for
@@ -153,6 +160,12 @@ Gitee 也可以通过 Gitee 仓库自己的流水线发布国内发行版。这�
 这不会与 GitHub Release 冲突，因为两个仓库使用相同的标签名、包版本号和
 `CHANGELOG.md` 版本段落。GitHub 仍是正式桌面应用构建来源；Gitee 提供国内镜像
 和 Python 包发行入口。
+
+项目同时提供实验性的 Gitee 侧 Windows `.zip` 打包辅助脚本：
+`packaging/windows/build_windows_zip.py`。只有当 Gitee 流水线运行在可执行 Windows
+构建的环境中时，它才能生成真正的 Windows 安装包；如果流水线运行在 Gitee 默认的
+Linux/Python 构建环境中，则该路径应明确跳过，Gitee Release 继续链接到 GitHub 的
+Windows 安装包。
 
 启用 Gitee 自行发布流水线时，需要在该 Gitee 仓库的 Gitee Go 变量 / secret 中配置
 `GITEE_ACCESS_TOKEN`。该令牌需要具备为 `tyongs/interference_calculator` 创建 / 更新
