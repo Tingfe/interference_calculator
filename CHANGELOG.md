@@ -8,6 +8,8 @@
 - Add a GitHub Actions Gitee release-sync job that reuses the validated GitHub
   Release artifacts, pushes the release tag to Gitee, and creates or updates
   the matching Gitee Release when `GITEE_ACCESS_TOKEN` is configured.
+- Add a manual `Sync Gitee Release` workflow for mirroring an existing GitHub
+  Release to Gitee without rebuilding packages.
 - Add a standard-library Gitee release sync helper with tests for idempotent
   release creation, update, and same-name asset replacement.
 
@@ -17,6 +19,8 @@
 - 新增 GitHub Actions 的 Gitee 发行版同步任务：在配置 `GITEE_ACCESS_TOKEN`
   后，复用已验证的 GitHub Release 构建产物，将发布标签推送到 Gitee，并创建或
   更新对应的 Gitee 发行版。
+- 新增可手动运行的 `Sync Gitee Release` workflow，用于在不重新构建安装包的
+  情况下，将已有 GitHub Release 镜像到 Gitee。
 - 新增仅依赖标准库的 Gitee 发行版同步脚本，并补充单元测试覆盖发行版创建、更新
   和同名附件替换的幂等逻辑。
 

@@ -64,6 +64,10 @@ workflow pushes the same tag to Gitee and uploads the already-built GitHub
 Release assets to the Gitee release page. This keeps Windows, macOS, wheel, and
 source-package downloads identical across both repositories.
 
+To mirror an existing GitHub Release after the fact, manually run the
+`Sync Gitee Release` workflow from GitHub Actions and provide the existing tag
+name.
+
 ## 常规同步流程
 
 当新的代码或文档变更进入 GitHub `main` 后：
@@ -94,6 +98,9 @@ git push origin vX.Y.Z
 当 GitHub Secrets 中已配置 `GITEE_ACCESS_TOKEN` 时，GitHub 发布 workflow 会把同一
 个标签推送到 Gitee，并把 GitHub Release 已经构建完成的附件上传到 Gitee 发行版
 页面。这样两个仓库中的 Windows、macOS、wheel 和源码包下载文件保持完全一致。
+
+如果需要事后镜像已有 GitHub Release，可以在 GitHub Actions 中手动运行
+`Sync Gitee Release` workflow，并填写已有版本标签。
 
 ## Conflict Rule
 

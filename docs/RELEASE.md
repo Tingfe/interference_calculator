@@ -93,6 +93,12 @@ repository variable named `GITEE_USERNAME`.
 If `GITEE_ACCESS_TOKEN` is missing, the workflow publishes the GitHub Release
 normally and logs a warning that Gitee sync was skipped.
 
+Existing GitHub Releases can be mirrored manually with the
+`Sync Gitee Release` workflow. Run it from GitHub Actions and provide the
+existing tag name, such as `v2.5.0`. The workflow downloads the current GitHub
+Release notes and assets, pushes the same tag to Gitee, and uploads the assets
+to the matching Gitee Release.
+
 ## Gitee 发行版同步
 
 如需启用 Gitee 发行版同步，需要在 GitHub 仓库中配置以下 secret：
@@ -106,6 +112,11 @@ workflow 默认使用 `tyongs` 作为 Gitee HTTPS 用户名。如果该令牌属
 
 如果没有配置 `GITEE_ACCESS_TOKEN`，workflow 会正常发布 GitHub Release，并输出
 一条 Gitee 同步已跳过的 warning。
+
+已有的 GitHub Release 可以通过 `Sync Gitee Release` workflow 手动镜像。进入
+GitHub Actions 后运行该 workflow，并填写已有标签名，例如 `v2.5.0`。workflow
+会下载当前 GitHub Release 的发布说明和附件，把同一标签推送到 Gitee，并上传到
+对应的 Gitee 发行版。
 
 ## Release Checklist
 
