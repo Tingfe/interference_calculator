@@ -262,6 +262,23 @@ def collect_asset_paths(paths: list[str]) -> list[Path]:
     return sorted(assets, key=lambda path: (path.stat().st_size, path.name))
 
 
+def filter_asset_paths_by_size(asset_paths: list[Path], max_asset_bytes: int) -> list[Path]:
+    if max_asset_bytes <= 0:
+        return asset_paths
+    kept: list[Path] = []
+    for asset_path in asset_paths:
+        size = asset_path.stat().st_size
+        if size > max_asset_bytes:
+            print(
+                f"Skipping Gitee release asset {asset_path.name} ({size} bytes); "
+                f"larger than max asset size {max_asset_bytes} bytes",
+                flush=True,
+            )
+        else:
+            kept.append(asset_path)
+    return kept
+
+
 def sync_release(
     client: GiteeClient,
     tag_name: str,
@@ -344,6 +361,12 @@ def parse_args() -> argparse.Namespace:
         default=900,
         help="Per-request timeout for the Gitee API",
     )
+    parser.add_argument(
+        "--max-asset-bytes",
+        type=int,
+        default=0,
+        help="Skip assets larger than this size; 0 uploads all assets",
+    )
     parser.add_argument("--assets", nargs="+", required=True, help="Release asset files to upload")
     return parser.parse_args()
 
@@ -358,7 +381,12 @@ def main() -> int:
     if not body_path.is_file():
         raise SystemExit(f"Release notes file does not exist: {body_path}")
     body = body_path.read_text(encoding="utf-8")
-    asset_paths = collect_asset_paths(args.assets)
+    asset_paths = filter_asset_paths_by_size(
+        collect_asset_paths(args.assets),
+        args.max_asset_bytes,
+    )
+    if not asset_paths:
+        raise SystemExit("No release assets remain after applying the max asset size filter")
 
     client = GiteeClient(args.owner, args.repo, token, timeout_seconds=args.timeout_seconds)
     sync_release(
