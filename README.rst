@@ -48,6 +48,42 @@
 
 仓库地址：https://github.com/Tingfe/interference_calculator
 
+开发状态
+--------
+
+.. image:: https://img.shields.io/badge/Project_Board-Optimization_Roadmap-blue
+   :target: https://github.com/Tingfe/interference_calculator/projects/1
+   :alt: Project Board
+
+.. image:: https://img.shields.io/github/issues-pr/Tingfe/interference_calculator
+   :target: https://github.com/Tingfe/interference_calculator/pulls
+   :alt: Pull Requests
+
+.. image:: https://img.shields.io/github/contributors/Tingfe/interference_calculator
+   :target: https://github.com/Tingfe/interference_calculator/graphs/contributors
+   :alt: Contributors
+
+当前开发重点：**Optimization Roadmap 2026** (v2.6.0)
+
+查看项目进展: `Project Board <https://github.com/Tingfe/interference_calculator/projects/1>`_
+
+贡献指南
+~~~~~~~~
+
+欢迎贡献！请参考：
+
+- `优化路线图 <docs/OPTIMIZATION_ROADMAP.md>`_: 了解未来开发计划
+- `Project Board <https://github.com/Tingfe/interference_calculator/projects/1>`_: 查看正在进行的任务
+- `分支模型 <docs/BRANCHING.md>`_: 了解如何提交代码
+- `发布指南 <docs/RELEASE.md>`_: 了解版本发布流程
+
+**如何开始贡献**:
+
+1. 浏览 `Project Board <https://github.com/Tingfe/interference_calculator/projects/1>`_ 寻找 ``good first issue`` 标签的任务
+2. Fork 仓库并创建特性分支
+3. 提交PR并关联相关Issue
+4. 等待代码审查和合并
+
 安装
 ----
 
@@ -317,6 +353,42 @@ Original author: Zan Peeters
 Current maintainer and latest contributor: Tingfe
 
 Repository: https://github.com/Tingfe/interference_calculator
+
+Development Status
+------------------
+
+.. image:: https://img.shields.io/badge/Project_Board-Optimization_Roadmap-blue
+   :target: https://github.com/Tingfe/interference_calculator/projects/1
+   :alt: Project Board
+
+.. image:: https://img.shields.io/github/issues-pr/Tingfe/interference_calculator
+   :target: https://github.com/Tingfe/interference_calculator/pulls
+   :alt: Pull Requests
+
+.. image:: https://img.shields.io/github/contributors/Tingfe/interference_calculator
+   :target: https://github.com/Tingfe/interference_calculator/graphs/contributors
+   :alt: Contributors
+
+Current focus: **Optimization Roadmap 2026** (v2.6.0)
+
+View progress: `Project Board <https://github.com/Tingfe/interference_calculator/projects/1>`_
+
+Contributing
+~~~~~~~~~~~~
+
+Contributions are welcome! Please refer to:
+
+- `Optimization Roadmap <docs/OPTIMIZATION_ROADMAP.md>`_: Learn about future development plans
+- `Project Board <https://github.com/Tingfe/interference_calculator/projects/1>`_: View ongoing tasks
+- `Branching model <docs/BRANCHING.md>`_: Understand how to submit code
+- `Release guide <docs/RELEASE.md>`_: Learn about release process
+
+**How to get started**:
+
+1. Browse `Project Board <https://github.com/Tingfe/interference_calculator/projects/1>`_ for tasks with ``good first issue`` label
+2. Fork the repository and create a feature branch
+3. Submit a PR and link related Issues
+4. Wait for code review and merge
 
 Installation
 ------------

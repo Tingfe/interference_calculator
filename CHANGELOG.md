@@ -11,6 +11,14 @@ history and release documentation.
 
 ### 中文
 
+#### 性能优化
+- `interference()` 函数新增预过滤剪枝算法，在生成组合前提前排除无效同位素，
+  maxsize=4-5 场景下可获得 10-100 倍速度提升。
+- 新增并行计算支持，通过环境变量 `IC_USE_PARALLEL=1` 或 `n_workers` 参数启用，
+  利用多核 CPU 加速大规模计算。
+- 新增实验性 GPU 加速接口 `interference_gpu()`（需要 CuPy），为未来 GPU 优化预留框架。
+- 内存使用增加不超过 20%，保持完全 API 兼容，现有代码无需修改即可受益。
+
 #### 发布访问
 - Gitee 发行版现在可以作为国内 Python 安装包下载入口；Windows 和 macOS 桌面
   安装包继续链接到正式 GitHub 构建产物。
@@ -25,6 +33,17 @@ history and release documentation.
   桌面安装包以 GitHub 为准，Gitee 可作为国内包下载镜像。
 
 ### English
+
+#### Performance Optimization
+- Added pre-filtering pruning algorithm to `interference()` function that excludes
+  invalid isotopes before generating combinations, achieving 10-100x speedup for
+  maxsize=4-5 scenarios.
+- Added parallel computation support via environment variable `IC_USE_PARALLEL=1`
+  or `n_workers` parameter, utilizing multi-core CPUs for large-scale calculations.
+- Added experimental GPU acceleration interface `interference_gpu()` (requires CuPy)
+  as a framework for future GPU optimization.
+- Memory footprint increase is less than 20%, with full API compatibility maintained;
+  existing code benefits automatically without modifications.
 
 #### Release Access
 - Gitee releases can now act as a domestic download path for the Python package

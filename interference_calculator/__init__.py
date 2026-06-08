@@ -18,6 +18,7 @@ _LAZY_ATTRS = {
     'mass_electron': ('interference_calculator.molecule', 'mass_electron'),
     'templates': ('interference_calculator.molecule', 'templates'),
     'interference': ('interference_calculator.main', 'interference'),
+    'interference_gpu': ('interference_calculator.main', 'interference_gpu'),
     'standard_ratio': ('interference_calculator.main', 'standard_ratio'),
     'inorganic_interference': ('interference_calculator.inorganic', 'inorganic_interference'),
 }
@@ -29,6 +30,7 @@ __all__ = [
     'mass_electron',
     'templates',
     'interference',
+    'interference_gpu',
     'standard_ratio',
     'inorganic_interference',
 ]
