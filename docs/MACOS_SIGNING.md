@@ -1,5 +1,9 @@
 # macOS 签名与公证说明
 
+> Gitee 同步说明：本文描述的是 GitHub Actions 发布流程中的 macOS 签名配置。
+> Gitee 仓库仅同步源码和标签；未单独配置 Gitee 发布流程前，macOS DMG 仍以
+> GitHub Releases 中的构建产物为准。
+
 macOS 的正式发布包应使用 Apple Developer ID 证书签名，并通过 Apple notarization。
 如果尚未配置签名 secrets，workflow 会先发布未签名、未公证的 DMG（文件名包含
 `macOS-unsigned`）。未公证的 `.dmg` 通过浏览器下载后，Gatekeeper 可能提示
@@ -51,6 +55,11 @@ xattr -dr com.apple.quarantine "/Applications/Interference Calculator.app"
 之后再打开应用。这个命令只是移除本机隔离属性，不能替代正式签名和公证。
 
 # macOS Signing And Notarization
+
+> Gitee sync note: this document describes macOS signing for the GitHub Actions
+> release workflow. The Gitee repository mirrors source code and tags; unless a
+> separate Gitee release process is configured, the macOS DMG from GitHub
+> Releases remains the official packaged artifact.
 
 Official macOS releases must be signed with an Apple Developer ID Application
 certificate and notarized by Apple. If the signing secrets are not configured

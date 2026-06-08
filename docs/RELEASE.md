@@ -1,5 +1,16 @@
 # Release Guide / 发布指南
 
+> Gitee sync note: this document is written for the Gitee mirror branch.
+> Gitee hosts synchronized source code, tags, release notes, source
+> distributions, and wheels when `GITEE_ACCESS_TOKEN` is configured. Official
+> Windows/macOS binaries are still built and hosted by GitHub Actions /
+> GitHub Releases, then linked from Gitee Releases.
+>
+> Gitee 同步说明：本文面向 Gitee 镜像分支。Gitee 保存同步后的源码和标签；
+> 配置 `GITEE_ACCESS_TOKEN` 后也会保存发行版说明、源码包和 wheel。Windows/macOS
+> 正式安装包仍由 GitHub Actions / GitHub Releases 构建和托管，并在 Gitee
+> Releases 中提供链接。
+
 GitHub Actions builds and publishes releases from version tags.
 
 发布由 GitHub Actions 根据版本标签自动完成。
