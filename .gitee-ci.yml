@@ -1,0 +1,66 @@
+# ── Gitee Go CI: Build Windows standalone app ──────────────────
+# Triggered on tag push v* or manual dispatch.
+# ────────────────────────────────────────────────────────────────
+
+version: '1.0'
+name: Build Windows
+kind: pipeline
+
+stages:
+- stage: compile
+  display_name: "Build Windows executable"
+  host_type: windows
+  script:
+    - pip install --upgrade pip
+    - pip install ".[export]" pyinstaller
+    - |
+      pyinstaller `
+        --name "InterferenceCalculator" `
+        --onefile `
+        --windowed `
+        --icon interference_calculator/icon.ico `
+        --add-data "interference_calculator/periodic_table.csv;interference_calculator" `
+        --add-data "interference_calculator/icon.svg;interference_calculator" `
+        --add-data "interference_calculator/icon.ico;interference_calculator" `
+        --add-data "interference_calculator/icon.icns;interference_calculator" `
+        --add-data "interference_calculator/display_button_icon.svg;interference_calculator" `
+        --add-data "interference_calculator/help_button_icon.svg;interference_calculator" `
+        --hidden-import PyQt5.QtSvg `
+        --hidden-import openpyxl `
+        --exclude-module PyQt5.QtNetwork `
+        --exclude-module PyQt5.QtMultimedia `
+        --exclude-module PyQt5.QtMultimediaWidgets `
+        --exclude-module PyQt5.QtQml `
+        --exclude-module PyQt5.QtQuick `
+        --exclude-module PyQt5.QtQuickWidgets `
+        --exclude-module PyQt5.QtWebEngine `
+        --exclude-module PyQt5.QtWebEngineWidgets `
+        --exclude-module PyQt5.QtWebChannel `
+        --exclude-module PyQt5.QtXml `
+        --exclude-module PyQt5.QtXmlPatterns `
+        --exclude-module PyQt5.QtSql `
+        --exclude-module PyQt5.QtTest `
+        --exclude-module PyQt5.QtPrintSupport `
+        --exclude-module PyQt5.QtHelp `
+        --exclude-module PyQt5.QtBluetooth `
+        --exclude-module PyQt5.QtNfc `
+        --exclude-module PyQt5.QtPositioning `
+        --exclude-module PyQt5.QtSensors `
+        --exclude-module PyQt5.QtSerialPort `
+        --exclude-module PyQt5.QtWebSockets `
+        --exclude-module PyQt5.QtDBus `
+        --exclude-module PyQt5.QtDesigner `
+        --exclude-module PyQt5.QtOpenGL `
+        --exclude-module PyQt5.QtOpenGLWidgets `
+        --exclude-module PyQt5.QtLocation `
+        --exclude-module PyQt5.QtPdf `
+        --exclude-module PyQt5.QtPdfWidgets `
+        --exclude-module PyQt5.QtScxml `
+        --exclude-module PyQt5.QtStateMachine `
+        --exclude-module PyQt5.QtTextToSpeech `
+        --exclude-module PyQt5.QtUiTools `
+        interference_calculator/ui.py
+    - copy dist\InterferenceCalculator.exe InterferenceCalculator-Windows.exe
+  artifacts:
+    paths:
+      - InterferenceCalculator-Windows.exe
