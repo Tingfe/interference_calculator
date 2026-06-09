@@ -8,10 +8,13 @@ This module contains:
 
 import re
 
+import numpy as np
+import pandas as pd
 from PyQt5 import QtCore, QtGui
 from PyQt5 import QtWidgets as widgets
 
 from interference_calculator.molecule import Molecule
+from interference_calculator.ui import _red
 from interference_calculator.ui_components.utils import _text, _type_display, _column_display
 
 

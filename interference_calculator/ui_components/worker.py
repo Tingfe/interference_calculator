@@ -4,6 +4,7 @@ This module provides CalculationWorker, a QObject designed to run in a
 QThread for non-blocking interference calculations with progress reporting.
 """
 
+import numpy as np
 from PyQt5 import QtCore
 
 

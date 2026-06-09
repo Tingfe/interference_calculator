@@ -15,6 +15,7 @@ Query syntax (space-separated tokens, AND logic; | for OR within a token):
 
 import re
 
+import numpy as np
 from PyQt5 import QtCore
 
 
