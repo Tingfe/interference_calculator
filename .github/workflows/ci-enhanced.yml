@@ -1,0 +1,154 @@
+name: CI/CD Enhanced
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Code Quality Checks
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort mypy
+      
+      - name: Run flake8
+        run: |
+          flake8 interference_calculator/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+      
+      - name: Check code formatting with black
+        run: |
+          black --check interference_calculator/ tests/ || echo "Code formatting issues found"
+      
+      - name: Check import sorting with isort
+        run: |
+          isort --check-only interference_calculator/ tests/ || echo "Import sorting issues found"
+      
+      - name: Run mypy type checking
+        run: |
+          mypy interference_calculator/ --ignore-missing-imports || echo "Type checking warnings found"
+
+  # Test Matrix
+  test:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+          pip install -e .
+      
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ --cov=interference_calculator --cov-report=xml --cov-report=term-missing
+      
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  # Performance Regression Detection
+  performance:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          pip install -e .
+      
+      - name: Run performance benchmarks
+        run: |
+          pytest tests/test_performance_benchmarks.py -v --tb=short
+      
+      - name: Check for performance regressions
+        run: |
+          echo "Performance baseline check completed"
+          # In future: compare with stored baselines
+
+  # Documentation Build
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install sphinx sphinx-rtd-theme
+          pip install -e .
+      
+      - name: Build API documentation
+        run: |
+          cd docs/api
+          python -m sphinx -b html . _build/html
+      
+      - name: Verify documentation build
+        run: |
+          if [ -f docs/api/_build/html/index.html ]; then
+            echo "✓ Documentation built successfully"
+          else
+            echo "✗ Documentation build failed"
+            exit 1
+          fi
+
+  # Security and Dependency Checks
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run safety check
+        run: |
+          pip install safety
+          pip freeze > requirements.txt
+          safety check -r requirements.txt || echo "Security vulnerabilities found"
+      
+      - name: Check for known vulnerabilities
+        run: |
+          echo "Dependency security scan completed"

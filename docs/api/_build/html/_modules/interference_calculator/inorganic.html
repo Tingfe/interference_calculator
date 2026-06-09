@@ -1,0 +1,537 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>interference_calculator.inorganic &mdash; Interference Calculator 2.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ae39cb24"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Interference Calculator
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Interference Calculator</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">interference_calculator.inorganic</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for interference_calculator.inorganic</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot; Template-based inorganic mass-spectrometry interference screening. &quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">interference_calculator.molecule</span><span class="w"> </span><span class="kn">import</span> <span class="n">Molecule</span><span class="p">,</span> <span class="n">mass_electron</span><span class="p">,</span> <span class="n">periodic_table</span>
+
+
+<span class="n">PLASMA_ELEMENTS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Ar&#39;</span><span class="p">,</span> <span class="s1">&#39;Ne&#39;</span><span class="p">,</span> <span class="s1">&#39;Kr&#39;</span><span class="p">,</span> <span class="s1">&#39;Xe&#39;</span><span class="p">,</span> <span class="s1">&#39;He&#39;</span><span class="p">)</span>
+<span class="n">COMMON_LIGANDS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;F&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;Cl&#39;</span><span class="p">,</span> <span class="s1">&#39;Br&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">)</span>
+<span class="n">BACKGROUND_MOLECULE_BASES</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;Cl&#39;</span><span class="p">)</span>
+
+<span class="n">GDMS_FORMATION_FACTORS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;atomic&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="s1">&#39;doubly charged&#39;</span><span class="p">:</span> <span class="mf">1.0e-2</span><span class="p">,</span>
+    <span class="s1">&#39;oxide&#39;</span><span class="p">:</span> <span class="mf">1.0e-3</span><span class="p">,</span>
+    <span class="s1">&#39;dioxide&#39;</span><span class="p">:</span> <span class="mf">1.0e-5</span><span class="p">,</span>
+    <span class="s1">&#39;hydride&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;hydroxide&#39;</span><span class="p">:</span> <span class="mf">1.0e-5</span><span class="p">,</span>
+    <span class="s1">&#39;nitride&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;carbide&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;sulfide&#39;</span><span class="p">:</span> <span class="mf">1.0e-5</span><span class="p">,</span>
+    <span class="s1">&#39;halide&#39;</span><span class="p">:</span> <span class="mf">1.0e-5</span><span class="p">,</span>
+    <span class="s1">&#39;plasma adduct&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;background molecule&#39;</span><span class="p">:</span> <span class="mf">1.0e-5</span><span class="p">,</span>
+    <span class="s1">&#39;cluster&#39;</span><span class="p">:</span> <span class="mf">1.0e-5</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">ICP_MS_FORMATION_FACTORS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;atomic&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="s1">&#39;doubly charged&#39;</span><span class="p">:</span> <span class="mf">1.0e-2</span><span class="p">,</span>
+    <span class="s1">&#39;oxide&#39;</span><span class="p">:</span> <span class="mf">1.0e-2</span><span class="p">,</span>
+    <span class="s1">&#39;dioxide&#39;</span><span class="p">:</span> <span class="mf">1.0e-5</span><span class="p">,</span>
+    <span class="s1">&#39;hydride&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;hydroxide&#39;</span><span class="p">:</span> <span class="mf">1.0e-3</span><span class="p">,</span>
+    <span class="s1">&#39;nitride&#39;</span><span class="p">:</span> <span class="mf">1.0e-5</span><span class="p">,</span>
+    <span class="s1">&#39;carbide&#39;</span><span class="p">:</span> <span class="mf">1.0e-5</span><span class="p">,</span>
+    <span class="s1">&#39;sulfide&#39;</span><span class="p">:</span> <span class="mf">1.0e-5</span><span class="p">,</span>
+    <span class="s1">&#39;halide&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;plasma adduct&#39;</span><span class="p">:</span> <span class="mf">1.0e-3</span><span class="p">,</span>
+    <span class="s1">&#39;background molecule&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;cluster&#39;</span><span class="p">:</span> <span class="mf">1.0e-6</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">SIMS_FORMATION_FACTORS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;atomic&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="s1">&#39;doubly charged&#39;</span><span class="p">:</span> <span class="mf">1.0e-3</span><span class="p">,</span>
+    <span class="s1">&#39;oxide&#39;</span><span class="p">:</span> <span class="mf">1.0e-2</span><span class="p">,</span>
+    <span class="s1">&#39;dioxide&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;hydride&#39;</span><span class="p">:</span> <span class="mf">1.0e-3</span><span class="p">,</span>
+    <span class="s1">&#39;hydroxide&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;nitride&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;carbide&#39;</span><span class="p">:</span> <span class="mf">1.0e-3</span><span class="p">,</span>
+    <span class="s1">&#39;sulfide&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;halide&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;plasma adduct&#39;</span><span class="p">:</span> <span class="mf">1.0e-6</span><span class="p">,</span>
+    <span class="s1">&#39;background molecule&#39;</span><span class="p">:</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+    <span class="s1">&#39;cluster&#39;</span><span class="p">:</span> <span class="mf">1.0e-3</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">FORMATION_FACTOR_PRESETS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;gdms&#39;</span><span class="p">:</span> <span class="n">GDMS_FORMATION_FACTORS</span><span class="p">,</span>
+    <span class="s1">&#39;icp-ms&#39;</span><span class="p">:</span> <span class="n">ICP_MS_FORMATION_FACTORS</span><span class="p">,</span>
+    <span class="s1">&#39;sims&#39;</span><span class="p">:</span> <span class="n">SIMS_FORMATION_FACTORS</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Backwards-compatible name for callers that imported the original constant.</span>
+<span class="n">FORMATION_FACTORS</span> <span class="o">=</span> <span class="n">GDMS_FORMATION_FACTORS</span>
+
+<span class="n">ISOTOPE_MASSES</span> <span class="o">=</span> <span class="n">periodic_table</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;isotope&#39;</span><span class="p">)[</span><span class="s1">&#39;mass&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+<span class="n">ISOTOPE_MASS_UNCERTAINTIES</span> <span class="o">=</span> <span class="n">periodic_table</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;isotope&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+    <span class="s1">&#39;mass uncertainty&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+<span class="n">LIGAND_TYPES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;hydride&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;carbide&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;nitride&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;oxide&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;sulfide&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;halide&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s1">&#39;Cl&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;halide&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s1">&#39;Br&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;halide&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;halide&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="inorganic_interference">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.inorganic.inorganic_interference">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">inorganic_interference</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">targetrange</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                           <span class="n">chargesign</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;plain&#39;</span><span class="p">,</span>
+                           <span class="n">risk_preset</span><span class="o">=</span><span class="s1">&#39;gdms&#39;</span><span class="p">,</span> <span class="n">formation_factors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">matrix_atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plasma_atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">background_atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_background</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Screen common inorganic mass-spectrometry interference candidates.</span>
+
+<span class="sd">    This function is intentionally template-based. It prioritizes species that</span>
+<span class="sd">    are common in GDMS and other inorganic mass-spectrometry workflows:</span>
+<span class="sd">    atomic ions, doubly charged atomic ions, oxides, hydrides, simple</span>
+<span class="sd">    non-metal adducts, plasma adducts, and small matrix clusters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">_normalize_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+    <span class="n">charges</span> <span class="o">=</span> <span class="n">_normalize_charges</span><span class="p">(</span><span class="n">charge</span><span class="p">)</span>
+    <span class="n">risk_factors</span> <span class="o">=</span> <span class="n">_formation_factors</span><span class="p">(</span><span class="n">risk_preset</span><span class="p">,</span> <span class="n">formation_factors</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">chargesign</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;chargesign must be either &quot;+&quot;, &quot;-&quot;, &quot;o&quot;, or &quot;0&quot;.&#39;</span><span class="p">)</span>
+
+    <span class="n">target_info</span> <span class="o">=</span> <span class="n">_target_info</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">chargesign</span><span class="p">)</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="n">_candidate_formulas</span><span class="p">(</span>
+        <span class="n">atoms</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">chargesign</span><span class="p">,</span> <span class="n">maxsize</span><span class="p">,</span>
+        <span class="n">matrix_atoms</span><span class="o">=</span><span class="n">matrix_atoms</span><span class="p">,</span> <span class="n">plasma_atoms</span><span class="o">=</span><span class="n">plasma_atoms</span><span class="p">,</span>
+        <span class="n">background_atoms</span><span class="o">=</span><span class="n">background_atoms</span><span class="p">,</span> <span class="n">include_background</span><span class="o">=</span><span class="n">include_background</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">parts</span><span class="p">,</span> <span class="n">species_type</span><span class="p">,</span> <span class="n">species_charge</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+        <span class="n">formula</span> <span class="o">=</span> <span class="n">_charged_formula</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">species_charge</span><span class="p">,</span> <span class="n">chargesign</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">formula</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+        <span class="n">mz</span> <span class="o">=</span> <span class="n">_parts_mass_to_charge</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">species_charge</span><span class="p">,</span> <span class="n">chargesign</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;has_target&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;mz&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">targetrange</span> <span class="o">&lt;=</span> <span class="n">mz</span> <span class="o">&lt;=</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;mz&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">targetrange</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">mz_diff</span> <span class="o">=</span> <span class="n">mz</span> <span class="o">-</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;mz&#39;</span><span class="p">]</span>
+            <span class="n">mrp</span> <span class="o">=</span> <span class="n">_required_mrp</span><span class="p">(</span><span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;mz&#39;</span><span class="p">],</span> <span class="n">mz_diff</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mz_diff</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">mrp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="n">mass_uncertainty</span> <span class="o">=</span> <span class="n">_parts_mass_uncertainty</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">species_charge</span><span class="p">:</span>
+            <span class="n">mz_uncertainty</span> <span class="o">=</span> <span class="n">mass_uncertainty</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">species_charge</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mz_uncertainty</span> <span class="o">=</span> <span class="n">mass_uncertainty</span>
+        <span class="n">molecule</span> <span class="o">=</span> <span class="n">Molecule</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">molecule</span><span class="o">.</span><span class="n">formula</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;has_target&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">label</span> <span class="o">==</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]:</span>
+            <span class="k">continue</span>
+
+        <span class="n">formation_factor</span> <span class="o">=</span> <span class="n">risk_factors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">species_type</span><span class="p">,</span> <span class="mf">1.0e-6</span><span class="p">)</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s1">&#39;molecule&#39;</span><span class="p">:</span> <span class="n">label</span><span class="p">,</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">species_type</span><span class="p">,</span>
+            <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="n">species_charge</span><span class="p">,</span>
+            <span class="s1">&#39;mass/charge&#39;</span><span class="p">:</span> <span class="n">mz</span><span class="p">,</span>
+            <span class="s1">&#39;mass/charge diff&#39;</span><span class="p">:</span> <span class="n">mz_diff</span><span class="p">,</span>
+            <span class="s1">&#39;mass uncertainty&#39;</span><span class="p">:</span> <span class="n">mass_uncertainty</span><span class="p">,</span>
+            <span class="s1">&#39;m/z uncertainty&#39;</span><span class="p">:</span> <span class="n">mz_uncertainty</span><span class="p">,</span>
+            <span class="s1">&#39;MRP&#39;</span><span class="p">:</span> <span class="n">mrp</span><span class="p">,</span>
+            <span class="s1">&#39;probability&#39;</span><span class="p">:</span> <span class="n">molecule</span><span class="o">.</span><span class="n">abundance</span><span class="p">,</span>
+            <span class="s1">&#39;formation factor&#39;</span><span class="p">:</span> <span class="n">formation_factor</span><span class="p">,</span>
+            <span class="s1">&#39;relative risk&#39;</span><span class="p">:</span> <span class="n">molecule</span><span class="o">.</span><span class="n">abundance</span> <span class="o">*</span> <span class="n">formation_factor</span><span class="p">,</span>
+            <span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="p">})</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span>
+        <span class="s1">&#39;molecule&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;charge&#39;</span><span class="p">,</span> <span class="s1">&#39;mass/charge&#39;</span><span class="p">,</span> <span class="s1">&#39;mass/charge diff&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;mass uncertainty&#39;</span><span class="p">,</span> <span class="s1">&#39;m/z uncertainty&#39;</span><span class="p">,</span> <span class="s1">&#39;MRP&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;formation factor&#39;</span><span class="p">,</span> <span class="s1">&#39;relative risk&#39;</span><span class="p">,</span> <span class="s1">&#39;target&#39;</span><span class="p">,</span>
+    <span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">empty</span> <span class="ow">and</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;has_target&#39;</span><span class="p">]:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">_abs_diff</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;mass/charge diff&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">abs</span><span class="p">())</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;_abs_diff&#39;</span><span class="p">,</span> <span class="s1">&#39;relative risk&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">&#39;_abs_diff&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;has_target&#39;</span><span class="p">]:</span>
+        <span class="n">target_row</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span>
+            <span class="s1">&#39;molecule&#39;</span><span class="p">:</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;target&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;charge&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;mass/charge&#39;</span><span class="p">:</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;mz&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;mass/charge diff&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s1">&#39;mass uncertainty&#39;</span><span class="p">:</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;mass_uncertainty&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;m/z uncertainty&#39;</span><span class="p">:</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;mz_uncertainty&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;MRP&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+            <span class="s1">&#39;probability&#39;</span><span class="p">:</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;abundance&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;formation factor&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s1">&#39;relative risk&#39;</span><span class="p">:</span> <span class="n">target_info</span><span class="p">[</span><span class="s1">&#39;abundance&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="p">}])</span>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">target_row</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">data</span><span class="p">,</span> <span class="n">target_row</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
+    <span class="n">unique_atoms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">atom</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_atoms</span><span class="p">:</span>
+            <span class="n">unique_atoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">unique_atoms</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_charges</span><span class="p">(</span><span class="n">charge</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">charge</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+        <span class="n">charges</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">charge</span><span class="p">),)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">charges</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charge</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">charges</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;charge must contain at least one value.&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">charges</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_formation_factors</span><span class="p">(</span><span class="n">risk_preset</span><span class="p">,</span> <span class="n">formation_factors</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">factors</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">FORMATION_FACTOR_PRESETS</span><span class="p">[</span><span class="n">risk_preset</span><span class="p">])</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;risk_preset must be one of </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">FORMATION_FACTOR_PRESETS</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">formation_factors</span><span class="p">:</span>
+        <span class="n">factors</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">formation_factors</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">factors</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_target_info</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">chargesign</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">target</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;has_target&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">target</span><span class="p">),</span>
+                <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s1">&#39;mz&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">target</span><span class="p">),</span>
+                <span class="s1">&#39;mass_uncertainty&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s1">&#39;mz_uncertainty&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s1">&#39;abundance&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">molecule</span> <span class="o">=</span> <span class="n">Molecule</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+            <span class="n">target_formula</span> <span class="o">=</span> <span class="n">target</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">molecule</span><span class="o">.</span><span class="n">charge</span> <span class="ow">and</span> <span class="n">chargesign</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">):</span>
+                <span class="n">target_formula</span> <span class="o">=</span> <span class="n">_charged_formula</span><span class="p">([</span><span class="n">target</span><span class="p">],</span> <span class="n">charges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">chargesign</span><span class="p">)</span>
+                <span class="n">molecule</span> <span class="o">=</span> <span class="n">Molecule</span><span class="p">(</span><span class="n">target_formula</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">molecule</span><span class="o">.</span><span class="n">charge</span><span class="p">:</span>
+                <span class="n">mz_uncertainty</span> <span class="o">=</span> <span class="n">molecule</span><span class="o">.</span><span class="n">mass_uncertainty</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">molecule</span><span class="o">.</span><span class="n">charge</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mz_uncertainty</span> <span class="o">=</span> <span class="n">molecule</span><span class="o">.</span><span class="n">mass_uncertainty</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;has_target&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">molecule</span><span class="o">.</span><span class="n">formula</span><span class="p">(),</span>
+                <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="n">molecule</span><span class="o">.</span><span class="n">charge</span><span class="p">,</span>
+                <span class="s1">&#39;mz&#39;</span><span class="p">:</span> <span class="n">_mass_to_charge</span><span class="p">(</span><span class="n">molecule</span><span class="p">),</span>
+                <span class="s1">&#39;mass_uncertainty&#39;</span><span class="p">:</span> <span class="n">molecule</span><span class="o">.</span><span class="n">mass_uncertainty</span><span class="p">,</span>
+                <span class="s1">&#39;mz_uncertainty&#39;</span><span class="p">:</span> <span class="n">mz_uncertainty</span><span class="p">,</span>
+                <span class="s1">&#39;abundance&#39;</span><span class="p">:</span> <span class="n">molecule</span><span class="o">.</span><span class="n">abundance</span><span class="p">,</span>
+            <span class="p">}</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;has_target&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s1">&#39;mz&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s1">&#39;mass_uncertainty&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s1">&#39;mz_uncertainty&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s1">&#39;abundance&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_candidate_formulas</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">chargesign</span><span class="p">,</span> <span class="n">maxsize</span><span class="p">,</span>
+                        <span class="n">matrix_atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plasma_atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">background_atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_background</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">maxsize</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">selected</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+    <span class="n">plasma</span> <span class="o">=</span> <span class="n">_role_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">plasma_atoms</span><span class="p">,</span> <span class="n">PLASMA_ELEMENTS</span><span class="p">)</span>
+    <span class="n">background</span> <span class="o">=</span> <span class="n">_role_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">background_atoms</span><span class="p">,</span> <span class="n">COMMON_LIGANDS</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">matrix_atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">matrix</span> <span class="o">=</span> <span class="n">_normalize_atoms</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">matrix_atoms</span> <span class="k">if</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">selected</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">matrix</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">atoms</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">background</span><span class="p">)</span> <span class="ow">and</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">plasma</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">matrix</span><span class="p">:</span>
+        <span class="n">matrix</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">atoms</span> <span class="k">if</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">plasma</span><span class="p">)]</span>
+
+    <span class="c1"># Atomic ions, including doubly charged ions if requested.</span>
+    <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">isotope</span> <span class="ow">in</span> <span class="n">_isotopes</span><span class="p">(</span><span class="n">element</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">charges</span><span class="p">:</span>
+                <span class="n">species_type</span> <span class="o">=</span> <span class="s1">&#39;doubly charged&#39;</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="s1">&#39;atomic&#39;</span>
+                <span class="k">yield</span> <span class="p">[</span><span class="n">isotope</span><span class="p">],</span> <span class="n">species_type</span><span class="p">,</span> <span class="n">ch</span>
+
+    <span class="k">if</span> <span class="n">maxsize</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">chargesign</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="n">molecular_charge</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">molecular_charge</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">charges</span><span class="p">:</span>
+        <span class="n">molecular_charge</span> <span class="o">=</span> <span class="n">charges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Matrix/background adducts such as MO+, MH+, MC+, MN+, and MCl+.</span>
+    <span class="k">for</span> <span class="n">ligand</span><span class="p">,</span> <span class="p">(</span><span class="n">species_type</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span> <span class="ow">in</span> <span class="n">LIGAND_TYPES</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">ligand</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">selected</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">base</span> <span class="o">==</span> <span class="n">ligand</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="n">_adduct_formulas</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">ligand</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">parts</span><span class="p">,</span> <span class="n">species_type</span><span class="p">,</span> <span class="n">molecular_charge</span>
+
+    <span class="c1"># Dioxides are common enough to keep separate from generic clusters.</span>
+    <span class="k">if</span> <span class="s1">&#39;O&#39;</span> <span class="ow">in</span> <span class="n">selected</span> <span class="ow">and</span> <span class="n">maxsize</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">base</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="n">_adduct_formulas</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">parts</span><span class="p">,</span> <span class="s1">&#39;dioxide&#39;</span><span class="p">,</span> <span class="n">molecular_charge</span>
+
+    <span class="c1"># Hydroxides such as MOH+ are common in wet ICP-MS backgrounds and can</span>
+    <span class="c1"># also be useful screening candidates for residual gas chemistry.</span>
+    <span class="k">if</span> <span class="p">{</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">}</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span> <span class="ow">and</span> <span class="n">maxsize</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">base</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="n">_multi_adduct_formulas</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">)):</span>
+                <span class="k">yield</span> <span class="n">parts</span><span class="p">,</span> <span class="s1">&#39;hydroxide&#39;</span><span class="p">,</span> <span class="n">molecular_charge</span>
+
+    <span class="c1"># Plasma adducts such as ArO+, ArN+, ArCl+, and ArM+.</span>
+    <span class="k">for</span> <span class="n">plasma_element</span> <span class="ow">in</span> <span class="n">plasma</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">partner</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">partner</span> <span class="o">==</span> <span class="n">plasma_element</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="n">_binary_formulas</span><span class="p">(</span><span class="n">plasma_element</span><span class="p">,</span> <span class="n">partner</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">parts</span><span class="p">,</span> <span class="s1">&#39;plasma adduct&#39;</span><span class="p">,</span> <span class="n">molecular_charge</span>
+
+    <span class="c1"># Common background ions such as CO+, CN+, NO+, O2+, H2O+, SO+, and</span>
+    <span class="c1"># CO2+. These are intentionally limited to light/background elements so</span>
+    <span class="c1"># the template remains much narrower than unrestricted enumeration.</span>
+    <span class="k">if</span> <span class="n">include_background</span> <span class="ow">and</span> <span class="n">maxsize</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">background_pool</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">background</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">BACKGROUND_MOLECULE_BASES</span> <span class="ow">and</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">selected</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">first</span><span class="p">,</span> <span class="n">second</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations_with_replacement</span><span class="p">(</span><span class="n">background_pool</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="n">_binary_formulas</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">parts</span><span class="p">,</span> <span class="s1">&#39;background molecule&#39;</span><span class="p">,</span> <span class="n">molecular_charge</span>
+        <span class="k">if</span> <span class="s1">&#39;O&#39;</span> <span class="ow">in</span> <span class="n">background_pool</span> <span class="ow">and</span> <span class="n">maxsize</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">background_pool</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">base</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="n">_adduct_formulas</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">parts</span><span class="p">,</span> <span class="s1">&#39;background molecule&#39;</span><span class="p">,</span> <span class="n">molecular_charge</span>
+
+    <span class="c1"># Small matrix clusters. This captures common M2+ and MM&#39;+ species without</span>
+    <span class="c1"># falling back to full unrestricted enumeration.</span>
+    <span class="k">if</span> <span class="n">maxsize</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">first</span><span class="p">,</span> <span class="n">second</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations_with_replacement</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="n">_binary_formulas</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">parts</span><span class="p">,</span> <span class="s1">&#39;cluster&#39;</span><span class="p">,</span> <span class="n">molecular_charge</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_isotopes</span><span class="p">(</span><span class="n">element</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">periodic_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">periodic_table</span><span class="p">[</span><span class="s1">&#39;element&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">element</span><span class="p">,</span> <span class="s1">&#39;isotope&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_role_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">explicit_atoms</span><span class="p">,</span> <span class="n">defaults</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">explicit_atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">selected</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_normalize_atoms</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">explicit_atoms</span> <span class="k">if</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">selected</span><span class="p">])</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">atoms</span> <span class="k">if</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_adduct_formulas</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">ligand</span><span class="p">,</span> <span class="n">ligand_count</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">base_isotope</span> <span class="ow">in</span> <span class="n">_isotopes</span><span class="p">(</span><span class="n">base</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ligand_isotopes</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations_with_replacement</span><span class="p">(</span><span class="n">_isotopes</span><span class="p">(</span><span class="n">ligand</span><span class="p">),</span> <span class="n">ligand_count</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="p">[</span><span class="n">base_isotope</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">ligand_isotopes</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_multi_adduct_formulas</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">ligands</span><span class="p">):</span>
+    <span class="n">ligand_isotopes</span> <span class="o">=</span> <span class="p">[</span><span class="n">_isotopes</span><span class="p">(</span><span class="n">ligand</span><span class="p">)</span> <span class="k">for</span> <span class="n">ligand</span> <span class="ow">in</span> <span class="n">ligands</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">base_isotope</span> <span class="ow">in</span> <span class="n">_isotopes</span><span class="p">(</span><span class="n">base</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">isotopes</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">ligand_isotopes</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="p">[</span><span class="n">base_isotope</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">isotopes</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_binary_formulas</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">first</span> <span class="o">==</span> <span class="n">second</span><span class="p">:</span>
+        <span class="n">isotope_pairs</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations_with_replacement</span><span class="p">(</span><span class="n">_isotopes</span><span class="p">(</span><span class="n">first</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">isotope_pairs</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">_isotopes</span><span class="p">(</span><span class="n">first</span><span class="p">),</span> <span class="n">_isotopes</span><span class="p">(</span><span class="n">second</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">isotopes</span> <span class="ow">in</span> <span class="n">isotope_pairs</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="nb">list</span><span class="p">(</span><span class="n">isotopes</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_charged_formula</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">chargesign</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">charge</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">chargesign</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">charge</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">),</span> <span class="n">chargesign</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">),</span> <span class="n">charge</span><span class="p">,</span> <span class="n">chargesign</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mass_to_charge</span><span class="p">(</span><span class="n">molecule</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">molecule</span><span class="o">.</span><span class="n">charge</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">molecule</span><span class="o">.</span><span class="n">mass</span> <span class="o">/</span> <span class="n">molecule</span><span class="o">.</span><span class="n">charge</span>
+    <span class="k">return</span> <span class="n">molecule</span><span class="o">.</span><span class="n">mass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parts_mass_to_charge</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">chargesign</span><span class="p">):</span>
+    <span class="n">mass</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ISOTOPE_MASSES</span><span class="p">[</span><span class="n">part</span><span class="p">]</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">charge</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">chargesign</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">mass</span>
+    <span class="k">if</span> <span class="n">chargesign</span> <span class="o">==</span> <span class="s1">&#39;+&#39;</span><span class="p">:</span>
+        <span class="n">mass</span> <span class="o">-=</span> <span class="n">mass_electron</span> <span class="o">*</span> <span class="n">charge</span>
+    <span class="k">elif</span> <span class="n">chargesign</span> <span class="o">==</span> <span class="s1">&#39;-&#39;</span><span class="p">:</span>
+        <span class="n">mass</span> <span class="o">+=</span> <span class="n">mass_electron</span> <span class="o">*</span> <span class="n">charge</span>
+    <span class="k">return</span> <span class="n">mass</span> <span class="o">/</span> <span class="n">charge</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parts_mass_uncertainty</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
+        <span class="n">counts</span><span class="p">[</span><span class="n">part</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">part</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">ISOTOPE_MASS_UNCERTAINTIES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notna</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">):</span>
+            <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">uncertainty</span> <span class="o">*</span> <span class="n">count</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">terms</span><span class="p">)))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_required_mrp</span><span class="p">(</span><span class="n">target_mz</span><span class="p">,</span> <span class="n">mz_diff</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">mz_diff</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">return</span> <span class="n">target_mz</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">mz_diff</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Interference Calculator Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

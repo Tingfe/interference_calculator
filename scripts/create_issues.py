@@ -37,13 +37,23 @@ def run_gh_command(args: List[str]) -> str:
     except subprocess.CalledProcessError as e:
         print(f"❌ 命令失败: {' '.join(e.cmd)}")
         print(f"错误信息: {e.stderr}")
-        sys.exit(1)
+        # 不退出，返回None让调用者处理
+        return None
 
 
 def get_milestone_number(title: str) -> Optional[int]:
     """根据标题获取里程碑编号"""
     output = run_gh_command(['api', 'repos/Tingfe/interference_calculator/milestones'])
-    milestones = json.loads(output)
+    
+    if output is None:
+        print(f"⚠️  警告: 无法获取里程碑列表")
+        return None
+    
+    try:
+        milestones = json.loads(output)
+    except json.JSONDecodeError as e:
+        print(f"⚠️  警告: 解析里程碑JSON失败: {e}")
+        return None
     
     for milestone in milestones:
         if milestone['title'] == title:
@@ -54,6 +64,7 @@ def get_milestone_number(title: str) -> Optional[int]:
 
 def create_issue(title: str, body: str, labels: List[str], milestone_title: str) -> str:
     """创建单个Issue并返回URL"""
+    # 验证里程碑是否存在
     milestone_num = get_milestone_number(milestone_title)
     
     if milestone_num is None:
@@ -65,19 +76,30 @@ def create_issue(title: str, body: str, labels: List[str], milestone_title: str)
     for label in labels:
         label_args.extend(['--label', label])
     
-    # 创建Issue
+    # 创建Issue - 使用里程碑标题而不是编号
     cmd = [
         'issue', 'create',
         '--title', title,
         '--body', body,
-        '--milestone', str(milestone_num)
+        '--milestone', milestone_title  # 使用标题而非编号
     ] + label_args
     
     output = run_gh_command(cmd)
     
+    if output is None:
+        return None
+    
     # 提取URL (通常在输出的最后一行)
     lines = output.strip().split('\n')
     url = lines[-1] if lines else None
+    
+    # 验证URL格式
+    if url and not url.startswith('http'):
+        # 尝试从输出中查找URL
+        for line in lines:
+            if 'github.com' in line and '/issues/' in line:
+                url = line.strip()
+                break
     
     return url
 

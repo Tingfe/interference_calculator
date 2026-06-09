@@ -1,6 +1,8 @@
-# 无机质谱峰干扰计算器 2.5.0 图文用户手册
+# 无机质谱峰干扰计算器 2.6.0 图文用户手册
 
 本手册面向 GDMS、ICP-MS、SIMS 等无机质谱峰干扰筛查场景。软件默认使用中文界面，也支持切换到英文；下面以中文界面为例。
+
+**版本**: v2.6.0 | **更新日期**: 2026年6月
 
 ## 1. 主界面
 
@@ -216,6 +218,57 @@ MRP 不改变候选峰生成范围。它只用于判断候选峰是否能与目�
 
 不建议直接用于定量校正。`风险` 是筛查优先级分数，需要结合方法学和标准样品校准后才能用于定量模型。
 
+### 如何保存我的配置？
+
+v2.6.0 引入了配置持久化功能。您的设置(语言、模式、元素列表等)会自动保存到用户配置文件中，下次启动时自动恢复。
+
+配置文件位置:
+- macOS: `~/Library/Application Support/InterferenceCalculator/config.json`
+- Windows: `%APPDATA%\InterferenceCalculator\config.json`
+- Linux: `~/.config/InterferenceCalculator/config.json`
+
+### 如何重置配置？
+
+删除上述配置文件即可恢复默认设置。
+
+### 软件崩溃了怎么办？
+
+1. 检查日志文件(如果启用了日志)
+2. 导出诊断信息(见第18节)
+3. 联系技术支持时附上诊断文件
+
+### 如何提高计算速度？
+
+- 减少元素数量
+- 降低 maxsize (最大原子数)
+- 缩小窗口宽度
+- 使用更简单的离子模型(如只用 1+ 而非 1+, 2+)
+
+### 支持哪些文件格式导入？
+
+- Excel (.xlsx, .xls) - GDMS 谱图导出
+- TRR (.trr) - GD90Trace 原始文件
+- GDR (.gdr) - Elsima 原始文件
+
+### 如何更新软件？
+
+- GitHub Releases: https://github.com/Tingfe/interference_calculator/releases
+- PyPI: `pip install --upgrade interference-calculator`
+
+### 可以自定义插件吗？
+
+是的！v2.6.0 引入了插件系统。查看 `interference_calculator/plugins/README.md` 了解如何创建自定义插件。
+
+### 如何报告 Bug？
+
+请在 GitHub Issues 页面报告: https://github.com/Tingfe/interference_calculator/issues
+
+报告时请提供:
+1. 操作步骤
+2. 预期行为
+3. 实际行为
+4. 诊断文件(如果有)
+
 ## 16. Python 调用
 
 ```python
@@ -231,3 +284,93 @@ data = ic.inorganic_interference(
 ```
 
 GUI 中的 ppm 完整窗口会换算为 API 所需的 m/z 半宽。直接调用 API 时，`targetrange` 仍然表示 m/z 半宽。
+
+## 17. 插件系统 (v2.6.0 新增)
+
+### 什么是插件?
+
+插件系统允许用户扩展软件功能，无需修改核心代码。v2.6.0 引入了灵活的插件架构。
+
+### 内置插件
+
+软件自带两个示例插件:
+
+1. **Enhanced Export** - 增强数据导出
+   - 支持 JSON 格式导出
+   - 增强的 CSV 格式(自定义分隔符)
+   
+2. **Custom Rules** - 自定义计算规则
+   - 添加自定义干扰判断规则
+   - 设置验证钩子函数
+
+### 如何使用插件
+
+插件配置文件位于 `interference_calculator/plugins/builtin/` 目录。
+
+查看插件 README 了解如何创建自定义插件:
+```bash
+open interference_calculator/plugins/README.md
+```
+
+## 18. 日志和诊断 (v2.6.0 新增)
+
+### 启用日志
+
+可以通过编程方式启用详细日志:
+
+```python
+from interference_calculator.logging_system import setup_logging
+
+# 启用DEBUG级别日志，输出到文件
+logger = setup_logging(log_level="DEBUG", log_file="app.log")
+```
+
+### 诊断信息导出
+
+当遇到问题时，可以导出诊断信息:
+
+```python
+from interference_calculator.logging_system import get_logger
+
+logger = get_logger()
+diag_file = logger.export_diagnostics("diagnostics.json")
+print(f"诊断文件: {diag_file}")
+```
+
+诊断文件包含:
+- 系统和Python版本信息
+- 应用程序配置
+- 错误历史记录
+- 时间戳
+
+## 19. 性能优化建议
+
+### 批量处理元素
+
+对于大量元素，建议使用批量模式:
+
+```python
+from interference_calculator.inorganic import inorganic_interference
+
+elements = ['Fe', 'Cu', 'Zn', 'Ni', 'Co']
+results = {}
+for elem in elements:
+    results[elem] = inorganic_interference(
+        atoms={elem: 1}, 
+        target=elem
+    )
+```
+
+### 调整最大原子数
+
+较小的 `maxsize` 值可以显著提升性能:
+- `maxsize=2`: 快速筛查
+- `maxsize=3`: 标准模式(推荐)
+- `maxsize=4+`: 深度筛查(较慢)
+
+### 使用合适的窗口宽度
+
+更小的窗口宽度减少候选峰数量:
+- GDMS: 2000 ppm (标准)
+- ICP-MS: 400 ppm (高分辨)
+- SIMS: 200 ppm (超高分辨)

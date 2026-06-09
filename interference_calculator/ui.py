@@ -47,6 +47,17 @@ from interference_calculator.gdms_import import (
 from interference_calculator.molecule import Molecule, periodic_table
 from interference_calculator.ui_help import *
 from interference_calculator import __version__
+from interference_calculator.config import ConfigManager
+
+# Import refactored UI components from ui_components package
+from interference_calculator.ui_components import (
+    TableModel,
+    TableView,
+    HTMLDelegate,
+    ElementInput,
+    InterferenceFilterProxy,
+    CalculationWorker,
+)
 
 _isotope_rx = re.compile(r'(\d*[A-Z][a-z]{0,2})')
 _charges_rx = re.compile(r'(\d+)')
@@ -344,6 +355,20 @@ _UI_TEXT = {
         'calculation_error': 'Calculation Error',
         'yes': 'yes',
         'no': 'no',
+        'config_preset': 'Configuration & Presets',
+        'preset': 'Preset',
+        'select_preset': 'Select preset...',
+        'save_preset': 'Save Preset',
+        'export_config': 'Export Config',
+        'import_config': 'Import Config',
+        'preset_name_label': 'Preset name:',
+        'preset_saved': 'Preset "{}" saved successfully.',
+        'preset_loaded': 'Preset "{}" loaded successfully.',
+        'preset_load_error': 'Failed to load preset. File may be corrupted.',
+        'config_exported': 'Configuration exported successfully.',
+        'config_imported': 'Configuration imported successfully.',
+        'config_import_error': 'Failed to import configuration. File may be invalid.',
+        'error': 'Error',
     },
     'zh': {
         'window_title': '无机质谱峰干扰计算器',
@@ -524,6 +549,20 @@ _UI_TEXT = {
         'calculation_error': '计算错误',
         'yes': '是',
         'no': '否',
+        'config_preset': '配置与预设',
+        'preset': '预设',
+        'select_preset': '选择预设...',
+        'save_preset': '保存预设',
+        'export_config': '导出配置',
+        'import_config': '导入配置',
+        'preset_name_label': '预设名称：',
+        'preset_saved': '预设“{}”保存成功。',
+        'preset_loaded': '预设“{}”加载成功。',
+        'preset_load_error': '加载预设失败，文件可能已损坏。',
+        'config_exported': '配置导出成功。',
+        'config_imported': '配置导入成功。',
+        'config_import_error': '导入配置失败，文件可能无效。',
+        'error': '错误',
     },
 }
 
@@ -2805,6 +2844,10 @@ class MainWidget(widgets.QWidget):
 
     def __init__(self, parent=None):
         widgets.QWidget.__init__(self, parent=parent)
+        
+        # Initialize config manager
+        self.config_manager = ConfigManager()
+        
         self.language = 'zh'
         self.result_metrics = {'kind': 'ready'}
         self._filter_active = False
@@ -3108,6 +3151,43 @@ class MainWidget(widgets.QWidget):
         self.atoms_layout.addLayout(self.element_set_row_layout)
         self.atoms_group.setLayout(self.atoms_layout)
 
+        # Configuration management group
+        self.config_group = widgets.QGroupBox(_text(self.language, 'config_preset'))
+        self.config_group.setObjectName('configGroup')
+        self.config_layout = widgets.QFormLayout()
+        self.config_layout.setContentsMargins(12, 16, 12, 8)
+        self.config_layout.setHorizontalSpacing(12)
+        self.config_layout.setVerticalSpacing(6)
+        
+        # Preset controls
+        self.preset_label = self.create_field_label(_text(self.language, 'preset'))
+        self.preset_combo = widgets.QComboBox(parent=self)
+        self.preset_combo.addItem(_text(self.language, 'select_preset'), '')
+        self._refresh_preset_list()
+        self.preset_save_button = widgets.QPushButton(_text(self.language, 'save_preset'), parent=self)
+        self.preset_save_button.setFixedWidth(100)
+        
+        preset_row = widgets.QWidget()
+        preset_row_layout = widgets.QHBoxLayout(preset_row)
+        preset_row_layout.setContentsMargins(0, 0, 0, 0)
+        preset_row_layout.setSpacing(4)
+        preset_row_layout.addWidget(self.preset_combo, stretch=1)
+        preset_row_layout.addWidget(self.preset_save_button)
+        self.config_layout.addRow(self.preset_label, preset_row)
+        
+        # Import/Export buttons
+        self.config_export_button = widgets.QPushButton(_text(self.language, 'export_config'), parent=self)
+        self.config_import_button = widgets.QPushButton(_text(self.language, 'import_config'), parent=self)
+        config_button_row = widgets.QWidget()
+        config_button_row_layout = widgets.QHBoxLayout(config_button_row)
+        config_button_row_layout.setContentsMargins(0, 0, 0, 0)
+        config_button_row_layout.setSpacing(4)
+        config_button_row_layout.addWidget(self.config_export_button, stretch=1)
+        config_button_row_layout.addWidget(self.config_import_button, stretch=1)
+        self.config_layout.addRow(None, config_button_row)
+        
+        self.config_group.setLayout(self.config_layout)
+
         self.button_bar = widgets.QFrame(parent=self.control_panel)
         self.button_bar.setObjectName('actionBar')
         self.button_layout = widgets.QHBoxLayout()
@@ -3122,6 +3202,7 @@ class MainWidget(widgets.QWidget):
 
         self.control_layout.addWidget(self.workflow_group)
         self.control_layout.addWidget(self.atoms_group)
+        self.control_layout.addWidget(self.config_group)
         self.control_layout.addStretch(1)
         self.control_scroll.setWidget(self.controls_content)
         self.control_panel_layout.addWidget(self.control_scroll, stretch=1)
@@ -3260,6 +3341,12 @@ class MainWidget(widgets.QWidget):
         # sweep_input handled below
         self.instrument_mrp_input.valueChanged.connect(self.update_result_summary)
         self.spectrum_button.clicked.connect(self.toggle_spectrum)
+        
+        # Config management connections
+        self.preset_save_button.clicked.connect(self.save_preset)
+        self.preset_combo.activated.connect(self.load_preset)
+        self.config_export_button.clicked.connect(self.export_config)
+        self.config_import_button.clicked.connect(self.import_config)
 
         # Set jump order for tab
         self.setTabOrder(self.language_input, self.mode_input)
@@ -3285,10 +3372,42 @@ class MainWidget(widgets.QWidget):
 
         self.apply_mode_preset()
         self.apply_language()
+        
+        # Load saved settings from config
+        self._load_saved_settings()
 
     def _tr(self, key):
         """Return UI text for the active language."""
         return _text(self.language, key)
+
+    def _load_saved_settings(self):
+        """Load user preferences from config."""
+        # Language
+        lang = self.config_manager.get('language', 'zh')
+        lang_index = self.language_input.findData(lang)
+        if lang_index >= 0:
+            self.language_input.setCurrentIndex(lang_index)
+        
+        # Instrument mode
+        mode = self.config_manager.get('instrument_mode', 'GDMS')
+        mode_index = self.mode_input.findText(mode)
+        if mode_index >= 0:
+            self.mode_input.setCurrentIndex(mode_index)
+        
+        # MRP presets
+        mrp_presets = self.config_manager.get('mrp_presets', {})
+        if mrp_presets:
+            for mode_name, mrp_value in mrp_presets.items():
+                if mode_name in self.MODE_PRESETS:
+                    self.MODE_PRESETS[mode_name]['mrp'] = mrp_value
+            # Apply current mode's MRP
+            current_mode = self.mode_input.currentText()
+            if current_mode in self.MODE_PRESETS:
+                self.instrument_mrp_input.setValue(self.MODE_PRESETS[current_mode]['mrp'])
+        
+        # Recent targets - populate combo box if needed
+        recent = self.config_manager.get('recent_targets', [])
+        # Note: We'll add this to imported_target_input or create a separate combo later
 
     def create_metric_label(self, parent=None):
         """Create a compact result metric chip."""
@@ -3307,6 +3426,10 @@ class MainWidget(widgets.QWidget):
     def apply_language(self, index=None):
         """Apply selected UI language without changing calculation inputs."""
         self.language = _current_data(self.language_input) or 'en'
+        
+        # Save language preference
+        self.config_manager.set('language', self.language)
+        
         window = self.window()
         if window is not None:
             window.setWindowTitle(self._tr('window_title'))
@@ -3536,6 +3659,14 @@ class MainWidget(widgets.QWidget):
             self.sweep_input.setValue(int(preset['window']))
             self.atoms_input.setPlaceholderText(self._tr('elements_empty_hint'))
             self.mz_input.setPlaceholderText(preset['target'])
+        
+        # Save instrument mode and MRP preset
+        current_mode = self.mode_input.currentText()
+        self.config_manager.set('instrument_mode', current_mode)
+        mrp_presets = self.config_manager.get('mrp_presets', {})
+        mrp_presets[current_mode] = self.instrument_mrp_input.value()
+        self.config_manager.set('mrp_presets', mrp_presets)
+        
         self.update_result_summary()
 
     def add_element_set(self, index):
@@ -4843,6 +4974,113 @@ class MainWidget(widgets.QWidget):
             self.spectrum_window.show()
         else:
             self.spectrum_window.hide()
+
+    def _refresh_preset_list(self):
+        """Refresh preset combo box with available presets."""
+        current = self.preset_combo.currentData()
+        self.preset_combo.clear()
+        self.preset_combo.addItem(_text(self.language, 'select_preset'), '')
+        for preset_name in self.config_manager.list_presets():
+            self.preset_combo.addItem(preset_name, preset_name)
+        # Restore selection if still exists
+        if current:
+            index = self.preset_combo.findData(current)
+            if index >= 0:
+                self.preset_combo.setCurrentIndex(index)
+
+    def save_preset(self):
+        """Save current settings as a named preset."""
+        name, ok = widgets.QInputDialog.getText(
+            self,
+            self._tr('save_preset'),
+            self._tr('preset_name_label'),
+            text=''
+        )
+        if ok and name:
+            try:
+                preset_path = self.config_manager.save_preset(name)
+                self._refresh_preset_list()
+                # Select the saved preset
+                index = self.preset_combo.findData(name)
+                if index >= 0:
+                    self.preset_combo.setCurrentIndex(index)
+                self.set_status(self._tr('preset_saved').format(name), time=3000)
+            except Exception as e:
+                widgets.QMessageBox.critical(
+                    self, self._tr('error'), str(e)
+                )
+
+    def load_preset(self, index):
+        """Load a named preset."""
+        preset_name = self.preset_combo.itemData(index)
+        if not preset_name:
+            return
+        
+        success = self.config_manager.load_preset(preset_name)
+        if success:
+            # Reload UI from config
+            self._load_saved_settings()
+            self.apply_language()
+            self.apply_mode_preset()
+            self.set_status(self._tr('preset_loaded').format(preset_name), time=3000)
+        else:
+            widgets.QMessageBox.warning(
+                self, self._tr('error'), self._tr('preset_load_error')
+            )
+
+    def export_config(self):
+        """Export configuration to file."""
+        filepath, _ = widgets.QFileDialog.getSaveFileName(
+            self,
+            self._tr('export_config'),
+            '',
+            'JSON Files (*.json);;All Files (*)'
+        )
+        if filepath:
+            try:
+                self.config_manager.export_config(filepath)
+                self.set_status(self._tr('config_exported'), time=3000)
+            except Exception as e:
+                widgets.QMessageBox.critical(
+                    self, self._tr('error'), str(e)
+                )
+
+    def import_config(self):
+        """Import configuration from file."""
+        filepath, _ = widgets.QFileDialog.getOpenFileName(
+            self,
+            self._tr('import_config'),
+            '',
+            'JSON Files (*.json);;All Files (*)'
+        )
+        if filepath:
+            success = self.config_manager.import_config(filepath)
+            if success:
+                # Reload UI from config
+                self._load_saved_settings()
+                self.apply_language()
+                self.apply_mode_preset()
+                self.set_status(self._tr('config_imported'), time=3000)
+            else:
+                widgets.QMessageBox.warning(
+                    self, self._tr('error'), self._tr('config_import_error')
+                )
+
+    def closeEvent(self, event):
+        """Save settings before closing."""
+        # Save current state
+        self.config_manager.set('language', self.language)
+        self.config_manager.set('instrument_mode', self.mode_input.currentText())
+        
+        # Save MRP presets
+        mrp_presets = self.config_manager.get('mrp_presets', {})
+        for mode_name in self.MODE_PRESETS.keys():
+            mrp_presets[mode_name] = self.MODE_PRESETS[mode_name].get('mrp', 5000)
+        self.config_manager.set('mrp_presets', mrp_presets)
+        
+        # Save config and close
+        self.config_manager.close()
+        super().closeEvent(event)
 
 
 def run():

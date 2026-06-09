@@ -1,0 +1,16 @@
+# Custom Rules Plugin Configuration
+metadata:
+  name: "Custom Rules"
+  version: "1.0.0"
+  description: "Allows custom calculation rules and validations for interference calculations"
+  author: "Interference Calculator Team"
+  min_app_version: "2.6.0"
+
+plugin:
+  module: "interference_calculator/plugins/builtin/custom_rules.py"
+  class: "CustomRulesPlugin"
+
+settings:
+  enable_default_rules: true
+  max_custom_rules: 50
+  validation_timeout: 5

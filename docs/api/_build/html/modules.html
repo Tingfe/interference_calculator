@@ -1,0 +1,777 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; Interference Calculator 2.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=ae39cb24"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Interference Calculator API Documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Interference Calculator
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-interference_calculator.inorganic">Core Modules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#interference_calculator.inorganic.inorganic_interference"><code class="docutils literal notranslate"><span class="pre">inorganic_interference()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interference_calculator.molecule.Molecule"><code class="docutils literal notranslate"><span class="pre">Molecule</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.molecule.Molecule.__init__"><code class="docutils literal notranslate"><span class="pre">Molecule.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.molecule.Molecule.parse"><code class="docutils literal notranslate"><span class="pre">Molecule.parse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.molecule.Molecule.relative_abundance"><code class="docutils literal notranslate"><span class="pre">Molecule.relative_abundance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.molecule.Molecule.formula"><code class="docutils literal notranslate"><span class="pre">Molecule.formula()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-interference_calculator.plugins">Plugin System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#interference_calculator.plugins.PluginMetadata"><code class="docutils literal notranslate"><span class="pre">PluginMetadata</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginMetadata.__init__"><code class="docutils literal notranslate"><span class="pre">PluginMetadata.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginMetadata.to_dict"><code class="docutils literal notranslate"><span class="pre">PluginMetadata.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginMetadata.from_dict"><code class="docutils literal notranslate"><span class="pre">PluginMetadata.from_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#interference_calculator.plugins.Plugin"><code class="docutils literal notranslate"><span class="pre">Plugin</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.Plugin.__init__"><code class="docutils literal notranslate"><span class="pre">Plugin.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.Plugin.initialize"><code class="docutils literal notranslate"><span class="pre">Plugin.initialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.Plugin.cleanup"><code class="docutils literal notranslate"><span class="pre">Plugin.cleanup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.Plugin.get_name"><code class="docutils literal notranslate"><span class="pre">Plugin.get_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.Plugin.get_version"><code class="docutils literal notranslate"><span class="pre">Plugin.get_version()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#interference_calculator.plugins.PluginManager"><code class="docutils literal notranslate"><span class="pre">PluginManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginManager.__init__"><code class="docutils literal notranslate"><span class="pre">PluginManager.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginManager.load_plugin_from_config"><code class="docutils literal notranslate"><span class="pre">PluginManager.load_plugin_from_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginManager.load_builtin_plugin"><code class="docutils literal notranslate"><span class="pre">PluginManager.load_builtin_plugin()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginManager.discover_plugins"><code class="docutils literal notranslate"><span class="pre">PluginManager.discover_plugins()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginManager.enable_plugin"><code class="docutils literal notranslate"><span class="pre">PluginManager.enable_plugin()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginManager.disable_plugin"><code class="docutils literal notranslate"><span class="pre">PluginManager.disable_plugin()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginManager.get_plugin"><code class="docutils literal notranslate"><span class="pre">PluginManager.get_plugin()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginManager.list_plugins"><code class="docutils literal notranslate"><span class="pre">PluginManager.list_plugins()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.plugins.PluginManager.unload_plugin"><code class="docutils literal notranslate"><span class="pre">PluginManager.unload_plugin()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-interference_calculator.logging_system">Logging System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#interference_calculator.logging_system.DiagnosticInfo"><code class="docutils literal notranslate"><span class="pre">DiagnosticInfo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.DiagnosticInfo.__init__"><code class="docutils literal notranslate"><span class="pre">DiagnosticInfo.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.DiagnosticInfo.collect_system_info"><code class="docutils literal notranslate"><span class="pre">DiagnosticInfo.collect_system_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.DiagnosticInfo.collect_application_info"><code class="docutils literal notranslate"><span class="pre">DiagnosticInfo.collect_application_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.DiagnosticInfo.add_error"><code class="docutils literal notranslate"><span class="pre">DiagnosticInfo.add_error()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.DiagnosticInfo.export_diagnostics"><code class="docutils literal notranslate"><span class="pre">DiagnosticInfo.export_diagnostics()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger"><code class="docutils literal notranslate"><span class="pre">InterferenceCalculatorLogger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.__init__"><code class="docutils literal notranslate"><span class="pre">InterferenceCalculatorLogger.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.debug"><code class="docutils literal notranslate"><span class="pre">InterferenceCalculatorLogger.debug()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.info"><code class="docutils literal notranslate"><span class="pre">InterferenceCalculatorLogger.info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.warning"><code class="docutils literal notranslate"><span class="pre">InterferenceCalculatorLogger.warning()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.error"><code class="docutils literal notranslate"><span class="pre">InterferenceCalculatorLogger.error()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.critical"><code class="docutils literal notranslate"><span class="pre">InterferenceCalculatorLogger.critical()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.exception"><code class="docutils literal notranslate"><span class="pre">InterferenceCalculatorLogger.exception()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.set_level"><code class="docutils literal notranslate"><span class="pre">InterferenceCalculatorLogger.set_level()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.get_log_file_path"><code class="docutils literal notranslate"><span class="pre">InterferenceCalculatorLogger.get_log_file_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.export_diagnostics"><code class="docutils literal notranslate"><span class="pre">InterferenceCalculatorLogger.export_diagnostics()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#interference_calculator.logging_system.setup_logging"><code class="docutils literal notranslate"><span class="pre">setup_logging()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interference_calculator.logging_system.get_logger"><code class="docutils literal notranslate"><span class="pre">get_logger()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-interference_calculator.config">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#interference_calculator.config.ConfigManager"><code class="docutils literal notranslate"><span class="pre">ConfigManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.config.ConfigManager.__init__"><code class="docutils literal notranslate"><span class="pre">ConfigManager.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.config.ConfigManager.save"><code class="docutils literal notranslate"><span class="pre">ConfigManager.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.config.ConfigManager.get"><code class="docutils literal notranslate"><span class="pre">ConfigManager.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.config.ConfigManager.set"><code class="docutils literal notranslate"><span class="pre">ConfigManager.set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.config.ConfigManager.save_preset"><code class="docutils literal notranslate"><span class="pre">ConfigManager.save_preset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.config.ConfigManager.load_preset"><code class="docutils literal notranslate"><span class="pre">ConfigManager.load_preset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.config.ConfigManager.list_presets"><code class="docutils literal notranslate"><span class="pre">ConfigManager.list_presets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.config.ConfigManager.export_config"><code class="docutils literal notranslate"><span class="pre">ConfigManager.export_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.config.ConfigManager.import_config"><code class="docutils literal notranslate"><span class="pre">ConfigManager.import_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.config.ConfigManager.add_recent_target"><code class="docutils literal notranslate"><span class="pre">ConfigManager.add_recent_target()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interference_calculator.config.ConfigManager.close"><code class="docutils literal notranslate"><span class="pre">ConfigManager.close()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Interference Calculator</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+<section id="module-interference_calculator.inorganic">
+<span id="core-modules"></span><h2>Core Modules<a class="headerlink" href="#module-interference_calculator.inorganic" title="Link to this heading"></a></h2>
+<p>Template-based inorganic mass-spectrometry interference screening.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="interference_calculator.inorganic.inorganic_interference">
+<span class="sig-prename descclassname"><span class="pre">interference_calculator.inorganic.</span></span><span class="sig-name descname"><span class="pre">inorganic_interference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targetrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chargesign</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'+'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'plain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">risk_preset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gdms'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formation_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matrix_atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plasma_atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_background</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/inorganic.html#inorganic_interference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.inorganic.inorganic_interference" title="Link to this definition"></a></dt>
+<dd><p>Screen common inorganic mass-spectrometry interference candidates.</p>
+<p>This function is intentionally template-based. It prioritizes species that
+are common in GDMS and other inorganic mass-spectrometry workflows:
+atomic ions, doubly charged atomic ions, oxides, hydrides, simple
+non-metal adducts, plasma adducts, and small matrix clusters.</p>
+</dd></dl>
+
+<p id="module-interference_calculator.molecule">Molecule() is a class that takes an input string of a chemical formula,
+parses the string into atomic units, and stores relevant molecular data.
+The chemical formula can be output in a number of ways, including custom
+formatting using simple templates.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="interference_calculator.molecule.Molecule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interference_calculator.molecule.</span></span><span class="sig-name descname"><span class="pre">Molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/molecule.html#Molecule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.molecule.Molecule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Represents a molecule or molecular ion.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.molecule.Molecule.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/molecule.html#Molecule.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.molecule.Molecule.__init__" title="Link to this definition"></a></dt>
+<dd><p>Parses a chemical formula string and returns an object that
+holds properties of the molecule or molecular ion.</p>
+<p>Two forms of input string are supported: isotope notation and
+molecular formula notation. These names and notations are used
+for input and output.</p>
+<p>Isotope notation is a list of units, where each unit is of
+the form NXxxn, where N the atomic mass, Xxx is the element,
+and n is the count (subscript). Any character except A-Z, 0-9,
++, -, [, or ] may be used to separate the units in the list,
+space is most common. If no atomic mass is specified, the most
+common isotope is assumed (e.g. C -&gt; 12C). A charge may optionally
+be given as the last element. This notation is useful for inputting
+many unusual isotopes.</p>
+<p>Isotope notation: ‘12C2 15N O3 2-’</p>
+<p>Molecular formula notation is a form of shorthand. It contains
+no spaces and no atomic masses, only count numbers. If an atomic
+mass needs to be given for an isotope, it must be surrounded by [].
+A charge may optionally be given at the end, also surrounded by [].
+This form is useful for inputting larger molecules with few
+unusual isotopes.</p>
+<p>Molecular formula notation: ‘HCOOCH2[15]NH3[2-]’</p>
+<p>D is an accepted alias for 2H, but is internally converted
+to 2H. See Molecule.formula() for output options.</p>
+<p>After parsing, relevant information about the molecule, such as
+total mass, abundance, charge, and sign, as well as lists of
+atoms, isotopes, atomic masses, and a few others are stored in
+the Molecule() object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.molecule.Molecule.parse">
+<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/molecule.html#Molecule.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.molecule.Molecule.parse" title="Link to this definition"></a></dt>
+<dd><p>Parse input, retrieve elements from periodic table,
+calculate mass and abundance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.molecule.Molecule.relative_abundance">
+<span class="sig-name descname"><span class="pre">relative_abundance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/molecule.html#Molecule.relative_abundance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.molecule.Molecule.relative_abundance" title="Link to this definition"></a></dt>
+<dd><p>Given a list of isotopes and a list of count numbers
+(subscripts) calculate relative abundance for entire molecule.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.molecule.Molecule.formula">
+<span class="sig-name descname"><span class="pre">formula</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'plain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">HtoD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_charge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_isotopes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/molecule.html#Molecule.formula"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.molecule.Molecule.formula" title="Link to this definition"></a></dt>
+<dd><p>Return the molecular formula as a string.</p>
+<p>The molecular formula can be formatted as html
+(style=’html’), LaTeX (style=’latex’), LaTeX with
+mhchem package (style=’mhchem’), plain
+text isotope notation (style=’isotope’ or
+‘plain’, default), molecular formula notation
+(style=’molecular’), or in a custom format
+(style=’custom’), see below.</p>
+<p>1H and 2H will be converted to H and D; set
+HtoD=False to output as 1H and 2H instead.</p>
+<p>Charge and sign will be automatically added, unless
+show_charge is set to False.</p>
+<p>Only atomic masses of minor isotopes will be given
+in the output; set all_isotopes=True to explicitly
+give the atomic mass for each isotope. HtoD takes
+precedence over all_isotopes: H and D will be used
+even if all_isotopes=True, unless HtoD=False.</p>
+<p>If style=’custom’, a custom template can be used to
+format the molecular formula. The template must be
+a dict containing 9 keys: begin, atomic_mass, element,
+count, charge, minorjoin, majorjoin, minus, and end.
+A curly brace pair in the atomic_mass, element, count,
+and charge template strings will be replaced using
+string.format(). The minorjoin string will be used
+to join the atomic mass, element, and count
+into a unit, and the majorjoin string connects all
+the units into the output string. The begin and end
+strings are added to the beginning and end of the final
+output string, respectively.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-interference_calculator.plugins">
+<span id="plugin-system"></span><h2>Plugin System<a class="headerlink" href="#module-interference_calculator.plugins" title="Link to this heading"></a></h2>
+<p>Plugin system for Interference Calculator.</p>
+<p>This module provides a flexible plugin architecture that allows users to extend
+the functionality of the application through YAML configuration and Python plugins.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginMetadata">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interference_calculator.plugins.</span></span><span class="sig-name descname"><span class="pre">PluginMetadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">author</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_app_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'2.6.0'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginMetadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginMetadata" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Metadata for a plugin.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginMetadata.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">author</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_app_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'2.6.0'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginMetadata.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginMetadata.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginMetadata.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginMetadata.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginMetadata.to_dict" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginMetadata.from_dict">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginMetadata.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginMetadata.from_dict" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="interference_calculator.plugins.Plugin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interference_calculator.plugins.</span></span><span class="sig-name descname"><span class="pre">Plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#Plugin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.Plugin" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Base class for all plugins.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.Plugin.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#Plugin.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.Plugin.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.Plugin.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#Plugin.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.Plugin.initialize" title="Link to this definition"></a></dt>
+<dd><p>Called when the plugin is loaded. Return True if successful.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.Plugin.cleanup">
+<span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#Plugin.cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.Plugin.cleanup" title="Link to this definition"></a></dt>
+<dd><p>Called when the plugin is unloaded.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.Plugin.get_name">
+<span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#Plugin.get_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.Plugin.get_name" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.Plugin.get_version">
+<span class="sig-name descname"><span class="pre">get_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#Plugin.get_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.Plugin.get_version" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interference_calculator.plugins.</span></span><span class="sig-name descname"><span class="pre">PluginManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'2.6.0'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Manages plugin loading, initialization, and lifecycle.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginManager.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'2.6.0'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginManager.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginManager.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginManager.load_plugin_from_config">
+<span class="sig-name descname"><span class="pre">load_plugin_from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginManager.load_plugin_from_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginManager.load_plugin_from_config" title="Link to this definition"></a></dt>
+<dd><p>Load a plugin from a YAML configuration file.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginManager.load_builtin_plugin">
+<span class="sig-name descname"><span class="pre">load_builtin_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginManager.load_builtin_plugin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginManager.load_builtin_plugin" title="Link to this definition"></a></dt>
+<dd><p>Load a built-in plugin by name.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginManager.discover_plugins">
+<span class="sig-name descname"><span class="pre">discover_plugins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugins_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginManager.discover_plugins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginManager.discover_plugins" title="Link to this definition"></a></dt>
+<dd><p>Discover available plugins in a directory.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginManager.enable_plugin">
+<span class="sig-name descname"><span class="pre">enable_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginManager.enable_plugin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginManager.enable_plugin" title="Link to this definition"></a></dt>
+<dd><p>Enable a loaded plugin.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginManager.disable_plugin">
+<span class="sig-name descname"><span class="pre">disable_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginManager.disable_plugin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginManager.disable_plugin" title="Link to this definition"></a></dt>
+<dd><p>Disable a loaded plugin.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginManager.get_plugin">
+<span class="sig-name descname"><span class="pre">get_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginManager.get_plugin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginManager.get_plugin" title="Link to this definition"></a></dt>
+<dd><p>Get a loaded plugin by name.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginManager.list_plugins">
+<span class="sig-name descname"><span class="pre">list_plugins</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginManager.list_plugins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginManager.list_plugins" title="Link to this definition"></a></dt>
+<dd><p>List all loaded plugins with their status.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.plugins.PluginManager.unload_plugin">
+<span class="sig-name descname"><span class="pre">unload_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/plugins.html#PluginManager.unload_plugin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.plugins.PluginManager.unload_plugin" title="Link to this definition"></a></dt>
+<dd><p>Unload a plugin.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-interference_calculator.logging_system">
+<span id="logging-system"></span><h2>Logging System<a class="headerlink" href="#module-interference_calculator.logging_system" title="Link to this heading"></a></h2>
+<p>Logging and diagnostics system for Interference Calculator.</p>
+<p>This module provides comprehensive logging, error tracking, and diagnostic
+export functionality to help with debugging and support.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.DiagnosticInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interference_calculator.logging_system.</span></span><span class="sig-name descname"><span class="pre">DiagnosticInfo</span></span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#DiagnosticInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.DiagnosticInfo" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Collects diagnostic information about the application state.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.DiagnosticInfo.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#DiagnosticInfo.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.DiagnosticInfo.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.DiagnosticInfo.collect_system_info">
+<span class="sig-name descname"><span class="pre">collect_system_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#DiagnosticInfo.collect_system_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.DiagnosticInfo.collect_system_info" title="Link to this definition"></a></dt>
+<dd><p>Collect system information.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.DiagnosticInfo.collect_application_info">
+<span class="sig-name descname"><span class="pre">collect_application_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'2.6.0'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#DiagnosticInfo.collect_application_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.DiagnosticInfo.collect_application_info" title="Link to this definition"></a></dt>
+<dd><p>Collect application information.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.DiagnosticInfo.add_error">
+<span class="sig-name descname"><span class="pre">add_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#DiagnosticInfo.add_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.DiagnosticInfo.add_error" title="Link to this definition"></a></dt>
+<dd><p>Add an error to the error history.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.DiagnosticInfo.export_diagnostics">
+<span class="sig-name descname"><span class="pre">export_diagnostics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#DiagnosticInfo.export_diagnostics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.DiagnosticInfo.export_diagnostics" title="Link to this definition"></a></dt>
+<dd><p>Export all diagnostic information to a JSON file.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.InterferenceCalculatorLogger">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interference_calculator.logging_system.</span></span><span class="sig-name descname"><span class="pre">InterferenceCalculatorLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interference_calculator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#InterferenceCalculatorLogger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.InterferenceCalculatorLogger" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Custom logger for Interference Calculator.</p>
+<p>Provides structured logging with different levels and handlers
+for console, file, and diagnostic tracking.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.InterferenceCalculatorLogger.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'interference_calculator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#InterferenceCalculatorLogger.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize the logger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Logger name</p></li>
+<li><p><strong>log_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)</p></li>
+<li><p><strong>log_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>) – Optional log file path</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.InterferenceCalculatorLogger.debug">
+<span class="sig-name descname"><span class="pre">debug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#InterferenceCalculatorLogger.debug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.debug" title="Link to this definition"></a></dt>
+<dd><p>Log a debug message.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.InterferenceCalculatorLogger.info">
+<span class="sig-name descname"><span class="pre">info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#InterferenceCalculatorLogger.info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.info" title="Link to this definition"></a></dt>
+<dd><p>Log an info message.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.InterferenceCalculatorLogger.warning">
+<span class="sig-name descname"><span class="pre">warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#InterferenceCalculatorLogger.warning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.warning" title="Link to this definition"></a></dt>
+<dd><p>Log a warning message.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.InterferenceCalculatorLogger.error">
+<span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#InterferenceCalculatorLogger.error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.error" title="Link to this definition"></a></dt>
+<dd><p>Log an error message and track it in diagnostics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Error message</p></li>
+<li><p><strong>exc_info</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to include exception traceback</p></li>
+<li><p><strong>context</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>] </em><em>| </em><em>None</em>) – Additional context information</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.InterferenceCalculatorLogger.critical">
+<span class="sig-name descname"><span class="pre">critical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#InterferenceCalculatorLogger.critical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.critical" title="Link to this definition"></a></dt>
+<dd><p>Log a critical error and track it in diagnostics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Critical error message</p></li>
+<li><p><strong>exc_info</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to include exception traceback</p></li>
+<li><p><strong>context</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>] </em><em>| </em><em>None</em>) – Additional context information</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.InterferenceCalculatorLogger.exception">
+<span class="sig-name descname"><span class="pre">exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#InterferenceCalculatorLogger.exception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.exception" title="Link to this definition"></a></dt>
+<dd><p>Log an exception with full traceback.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Exception message</p></li>
+<li><p><strong>context</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>] </em><em>| </em><em>None</em>) – Additional context information</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.InterferenceCalculatorLogger.set_level">
+<span class="sig-name descname"><span class="pre">set_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#InterferenceCalculatorLogger.set_level"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.set_level" title="Link to this definition"></a></dt>
+<dd><p>Change the logging level.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.InterferenceCalculatorLogger.get_log_file_path">
+<span class="sig-name descname"><span class="pre">get_log_file_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#InterferenceCalculatorLogger.get_log_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.get_log_file_path" title="Link to this definition"></a></dt>
+<dd><p>Get the current log file path if configured.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.InterferenceCalculatorLogger.export_diagnostics">
+<span class="sig-name descname"><span class="pre">export_diagnostics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#InterferenceCalculatorLogger.export_diagnostics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.InterferenceCalculatorLogger.export_diagnostics" title="Link to this definition"></a></dt>
+<dd><p>Export diagnostic information to a file.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.setup_logging">
+<span class="sig-prename descclassname"><span class="pre">interference_calculator.logging_system.</span></span><span class="sig-name descname"><span class="pre">setup_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'INFO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#setup_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.setup_logging" title="Link to this definition"></a></dt>
+<dd><p>Setup logging configuration for the application.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Logging level string (DEBUG, INFO, WARNING, ERROR, CRITICAL)</p></li>
+<li><p><strong>log_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>) – Optional log file path</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured logger instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#interference_calculator.logging_system.InterferenceCalculatorLogger" title="interference_calculator.logging_system.InterferenceCalculatorLogger"><em>InterferenceCalculatorLogger</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="interference_calculator.logging_system.get_logger">
+<span class="sig-prename descclassname"><span class="pre">interference_calculator.logging_system.</span></span><span class="sig-name descname"><span class="pre">get_logger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/logging_system.html#get_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.logging_system.get_logger" title="Link to this definition"></a></dt>
+<dd><p>Get the global logger instance.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-interference_calculator.config">
+<span id="configuration"></span><h2>Configuration<a class="headerlink" href="#module-interference_calculator.config" title="Link to this heading"></a></h2>
+<p>Configuration persistence system for user preferences.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interference_calculator.config.</span></span><span class="sig-name descname"><span class="pre">ConfigManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Manage application configuration with JSON backend.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize config manager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>) – Custom config directory. Uses platform default if None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager.save" title="Link to this definition"></a></dt>
+<dd><p>Save current configuration to file.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager.get" title="Link to this definition"></a></dt>
+<dd><p>Get configuration value.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager.set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager.set" title="Link to this definition"></a></dt>
+<dd><p>Set configuration value.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager.save_preset">
+<span class="sig-name descname"><span class="pre">save_preset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager.save_preset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager.save_preset" title="Link to this definition"></a></dt>
+<dd><p>Save current settings as a named preset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path to saved preset file.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager.load_preset">
+<span class="sig-name descname"><span class="pre">load_preset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager.load_preset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager.load_preset" title="Link to this definition"></a></dt>
+<dd><p>Load a named preset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if successful, False otherwise.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager.list_presets">
+<span class="sig-name descname"><span class="pre">list_presets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager.list_presets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager.list_presets" title="Link to this definition"></a></dt>
+<dd><p>List available presets.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager.export_config">
+<span class="sig-name descname"><span class="pre">export_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager.export_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager.export_config" title="Link to this definition"></a></dt>
+<dd><p>Export configuration to specified file.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager.import_config">
+<span class="sig-name descname"><span class="pre">import_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager.import_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager.import_config" title="Link to this definition"></a></dt>
+<dd><p>Import configuration from file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if successful, False otherwise.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager.add_recent_target">
+<span class="sig-name descname"><span class="pre">add_recent_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_mz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager.add_recent_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager.add_recent_target" title="Link to this definition"></a></dt>
+<dd><p>Add target m/z to recent list (max 10).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interference_calculator.config.ConfigManager.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interference_calculator/config.html#ConfigManager.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interference_calculator.config.ConfigManager.close" title="Link to this definition"></a></dt>
+<dd><p>Save configuration on shutdown.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Interference Calculator API Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Interference Calculator Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

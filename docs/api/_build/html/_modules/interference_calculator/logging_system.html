@@ -1,0 +1,431 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>interference_calculator.logging_system &mdash; Interference Calculator 2.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ae39cb24"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Interference Calculator
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Interference Calculator</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">interference_calculator.logging_system</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for interference_calculator.logging_system</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Logging and diagnostics system for Interference Calculator.</span>
+
+<span class="sd">This module provides comprehensive logging, error tracking, and diagnostic</span>
+<span class="sd">export functionality to help with debugging and support.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
+
+
+<div class="viewcode-block" id="DiagnosticInfo">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.DiagnosticInfo">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DiagnosticInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collects diagnostic information about the application state.&quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="DiagnosticInfo.__init__">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.DiagnosticInfo.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_info</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">application_info</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_history</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+    
+<div class="viewcode-block" id="DiagnosticInfo.collect_system_info">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.DiagnosticInfo.collect_system_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">collect_system_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collect system information.&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;platform&#39;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">platform</span><span class="p">(),</span>
+            <span class="s1">&#39;python_version&#39;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">(),</span>
+            <span class="s1">&#39;python_implementation&#39;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_implementation</span><span class="p">(),</span>
+            <span class="s1">&#39;os_name&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="p">}</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_info</span></div>
+
+    
+<div class="viewcode-block" id="DiagnosticInfo.collect_application_info">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.DiagnosticInfo.collect_application_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">collect_application_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;2.6.0&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collect application information.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">application_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Interference Calculator&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span>
+            <span class="s1">&#39;working_directory&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span>
+            <span class="s1">&#39;executable&#39;</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">executable</span>
+        <span class="p">}</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">application_info</span></div>
+
+    
+<div class="viewcode-block" id="DiagnosticInfo.add_error">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.DiagnosticInfo.add_error">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+                  <span class="n">traceback_str</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add an error to the error history.&quot;&quot;&quot;</span>
+        <span class="n">error_record</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">error_type</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">message</span><span class="p">,</span>
+            <span class="s1">&#39;traceback&#39;</span><span class="p">:</span> <span class="n">traceback_str</span><span class="p">,</span>
+            <span class="s1">&#39;context&#39;</span><span class="p">:</span> <span class="n">context</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error_record</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="DiagnosticInfo.export_diagnostics">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.DiagnosticInfo.export_diagnostics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">export_diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export all diagnostic information to a JSON file.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">output_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
+            <span class="n">output_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;diagnostics_</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">.json&quot;</span>
+        
+        <span class="n">diagnostics</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;system_info&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_info</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">collect_system_info</span><span class="p">(),</span>
+            <span class="s1">&#39;application_info&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">application_info</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">collect_application_info</span><span class="p">(),</span>
+            <span class="s1">&#39;error_history&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_history</span><span class="p">,</span>
+            <span class="s1">&#39;export_timestamp&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="p">}</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">diagnostics</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">output_path</span></div>
+</div>
+
+
+
+<span class="c1"># Global diagnostic info instance</span>
+<span class="n">diagnostic_info</span> <span class="o">=</span> <span class="n">DiagnosticInfo</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="InterferenceCalculatorLogger">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.InterferenceCalculatorLogger">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InterferenceCalculatorLogger</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Custom logger for Interference Calculator.</span>
+<span class="sd">    </span>
+<span class="sd">    Provides structured logging with different levels and handlers</span>
+<span class="sd">    for console, file, and diagnostic tracking.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="InterferenceCalculatorLogger.__init__">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.InterferenceCalculatorLogger.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;interference_calculator&quot;</span><span class="p">,</span> 
+                 <span class="n">log_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+                 <span class="n">log_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the logger.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            name: Logger name</span>
+<span class="sd">            log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)</span>
+<span class="sd">            log_file: Optional log file path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
+        
+        <span class="c1"># Prevent adding duplicate handlers</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+            <span class="c1"># Console handler</span>
+            <span class="n">console_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+            <span class="n">console_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
+            <span class="n">console_format</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+                <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">datefmt</span><span class="o">=</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span>
+            <span class="p">)</span>
+            <span class="n">console_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">console_format</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">console_handler</span><span class="p">)</span>
+            
+            <span class="c1"># File handler (if specified)</span>
+            <span class="k">if</span> <span class="n">log_file</span><span class="p">:</span>
+                <span class="n">file_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                <span class="n">file_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>  <span class="c1"># Log everything to file</span>
+                <span class="n">file_format</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+                    <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(filename)s</span><span class="s1">:</span><span class="si">%(lineno)d</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+                <span class="p">)</span>
+                <span class="n">file_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">file_format</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+        
+        <span class="c1"># Collect initial diagnostics</span>
+        <span class="n">diagnostic_info</span><span class="o">.</span><span class="n">collect_system_info</span><span class="p">()</span>
+        <span class="n">diagnostic_info</span><span class="o">.</span><span class="n">collect_application_info</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="InterferenceCalculatorLogger.debug">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.InterferenceCalculatorLogger.debug">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log a debug message.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="InterferenceCalculatorLogger.info">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.InterferenceCalculatorLogger.info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log an info message.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="InterferenceCalculatorLogger.warning">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.InterferenceCalculatorLogger.warning">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log a warning message.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="InterferenceCalculatorLogger.error">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.InterferenceCalculatorLogger.error">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">exc_info</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
+              <span class="n">context</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log an error message and track it in diagnostics.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            message: Error message</span>
+<span class="sd">            exc_info: Whether to include exception traceback</span>
+<span class="sd">            context: Additional context information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">exc_info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># Track error in diagnostics</span>
+        <span class="k">if</span> <span class="n">exc_info</span><span class="p">:</span>
+            <span class="n">tb_str</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tb_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        
+        <span class="n">diagnostic_info</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span>
+            <span class="n">error_type</span><span class="o">=</span><span class="s2">&quot;ERROR&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+            <span class="n">traceback_str</span><span class="o">=</span><span class="n">tb_str</span><span class="p">,</span>
+            <span class="n">context</span><span class="o">=</span><span class="n">context</span>
+        <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="InterferenceCalculatorLogger.critical">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.InterferenceCalculatorLogger.critical">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">exc_info</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">context</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log a critical error and track it in diagnostics.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            message: Critical error message</span>
+<span class="sd">            exc_info: Whether to include exception traceback</span>
+<span class="sd">            context: Additional context information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">exc_info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># Track critical error in diagnostics</span>
+        <span class="k">if</span> <span class="n">exc_info</span><span class="p">:</span>
+            <span class="n">tb_str</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tb_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        
+        <span class="n">diagnostic_info</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span>
+            <span class="n">error_type</span><span class="o">=</span><span class="s2">&quot;CRITICAL&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+            <span class="n">traceback_str</span><span class="o">=</span><span class="n">tb_str</span><span class="p">,</span>
+            <span class="n">context</span><span class="o">=</span><span class="n">context</span>
+        <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="InterferenceCalculatorLogger.exception">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.InterferenceCalculatorLogger.exception">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log an exception with full traceback.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            message: Exception message</span>
+<span class="sd">            context: Additional context information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># Track exception in diagnostics</span>
+        <span class="n">tb_str</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+        <span class="n">diagnostic_info</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span>
+            <span class="n">error_type</span><span class="o">=</span><span class="s2">&quot;EXCEPTION&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+            <span class="n">traceback_str</span><span class="o">=</span><span class="n">tb_str</span><span class="p">,</span>
+            <span class="n">context</span><span class="o">=</span><span class="n">context</span>
+        <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="InterferenceCalculatorLogger.set_level">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.InterferenceCalculatorLogger.set_level">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change the logging level.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">):</span>
+                <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="InterferenceCalculatorLogger.get_log_file_path">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.InterferenceCalculatorLogger.get_log_file_path">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_log_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the current log file path if configured.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">handler</span><span class="o">.</span><span class="n">baseFilename</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+<div class="viewcode-block" id="InterferenceCalculatorLogger.export_diagnostics">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.InterferenceCalculatorLogger.export_diagnostics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">export_diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export diagnostic information to a file.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">diagnostic_info</span><span class="o">.</span><span class="n">export_diagnostics</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># Global logger instance</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">InterferenceCalculatorLogger</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="setup_logging">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.setup_logging">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">setup_logging</span><span class="p">(</span><span class="n">log_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="n">log_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InterferenceCalculatorLogger</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Setup logging configuration for the application.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        log_level: Logging level string (DEBUG, INFO, WARNING, ERROR, CRITICAL)</span>
+<span class="sd">        log_file: Optional log file path</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Configured logger instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">level_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;DEBUG&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+        <span class="s1">&#39;INFO&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+        <span class="s1">&#39;WARNING&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span>
+        <span class="s1">&#39;ERROR&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+        <span class="s1">&#39;CRITICAL&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span>
+    <span class="p">}</span>
+    
+    <span class="n">level</span> <span class="o">=</span> <span class="n">level_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">log_level</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    
+    <span class="k">global</span> <span class="n">logger</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">InterferenceCalculatorLogger</span><span class="p">(</span><span class="n">log_level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">log_file</span><span class="o">=</span><span class="n">log_file</span><span class="p">)</span>
+    
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Logging initialized at </span><span class="si">{</span><span class="n">log_level</span><span class="si">}</span><span class="s2"> level&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">log_file</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Log file: </span><span class="si">{</span><span class="n">log_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">logger</span></div>
+
+
+
+<div class="viewcode-block" id="get_logger">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.logging_system.get_logger">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_logger</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">InterferenceCalculatorLogger</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the global logger instance.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">logger</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Interference Calculator Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

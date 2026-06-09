@@ -1,0 +1,571 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>interference_calculator.molecule &mdash; Interference Calculator 2.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ae39cb24"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Interference Calculator
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Interference Calculator</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">interference_calculator.molecule</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for interference_calculator.molecule</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot; Molecule() is a class that takes an input string of a chemical formula,</span>
+<span class="sd">    parses the string into atomic units, and stores relevant molecular data.</span>
+<span class="sd">    The chemical formula can be output in a number of ways, including custom</span>
+<span class="sd">    formatting using simple templates.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">resources</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">factorial</span><span class="p">,</span> <span class="n">prod</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyparsing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+
+<span class="n">_periodic_table_file</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s1">&#39;interference_calculator&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;periodic_table.csv&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">_periodic_table_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+    <span class="n">periodic_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;#&#39;</span><span class="p">)</span>
+
+<span class="c1"># CODATA 2022, NIST value for electron mass in u.</span>
+<span class="n">mass_electron</span> <span class="o">=</span> <span class="mf">0.000548579909065</span>
+
+<span class="c1"># parser elements used by all forms</span>
+<span class="n">_opt_int</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Optional</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">Word</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">nums</span><span class="p">))</span>
+<span class="n">_element</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Combine</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">Word</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">alphas</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">exact</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">pp</span><span class="o">.</span><span class="n">Optional</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">Word</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">alphas</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="nb">max</span><span class="o">=</span><span class="mi">2</span><span class="p">)))</span>
+<span class="n">_neutral</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">oneOf</span><span class="p">(</span><span class="s1">&#39;o 0&#39;</span><span class="p">)</span>
+<span class="n">_charged</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">oneOf</span><span class="p">(</span><span class="s1">&#39;+ -&#39;</span><span class="p">)</span>
+
+<span class="c1">### isotope notation in Backus-Naur form (-ish)</span>
+<span class="c1"># example: 12C2 18O -</span>
+<span class="c1">#</span>
+<span class="c1"># element     ::= capital + [lowercase letter] + [lowercase letter]</span>
+<span class="c1"># atomic mass ::= integer</span>
+<span class="c1"># count       ::= integer</span>
+<span class="c1"># delimiter   ::= one or more character not A-Z, a-z, 0-9, +, -</span>
+<span class="c1"># unit        ::= [atomic mass] + element + [multiplier] + [delimiter]</span>
+<span class="c1"># charge      ::= (&quot;o&quot;|&quot;0&quot;) | ([integer] + (&quot;+&quot;|&quot;-&quot;))</span>
+<span class="c1"># molecule    ::= one or more units + [charge]</span>
+<span class="c1">#</span>
+
+<span class="n">_in_comma</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Optional</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">Suppress</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
+<span class="n">_in_unit</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">OneOrMore</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">Group</span><span class="p">(</span>
+                <span class="n">_opt_int</span><span class="p">(</span><span class="s1">&#39;atomic_mass&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">_element</span><span class="p">(</span><span class="s1">&#39;element&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">_opt_int</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">_in_comma</span>
+              <span class="p">))</span>
+<span class="n">_in_charge</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Optional</span><span class="p">(</span>
+                <span class="n">_neutral</span><span class="p">(</span><span class="s1">&#39;charge_sign&#39;</span><span class="p">)</span> <span class="o">|</span>
+                <span class="n">_opt_int</span><span class="p">(</span><span class="s1">&#39;charge_count&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">_charged</span><span class="p">(</span><span class="s1">&#39;charge_sign&#39;</span><span class="p">)</span>
+             <span class="p">)</span>
+<span class="n">_in_molecule</span> <span class="o">=</span> <span class="n">_in_unit</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">_in_charge</span>
+
+<span class="c1">### molecular notation in Backus-Naur form (-ish)</span>
+<span class="c1"># example: C2H5COOCH[15]NH3[+]</span>
+<span class="c1">#</span>
+<span class="c1"># element     ::= capital + [lowercase letter] + [lowercase letter]</span>
+<span class="c1"># atomic mass ::= &quot;[&quot; + integer + &quot;]&quot;</span>
+<span class="c1"># count       ::= integer</span>
+<span class="c1"># charge      ::= &quot;[&quot; + ((&quot;o&quot;|&quot;0&quot;) | ([integer] + (&quot;+&quot;|&quot;-&quot;))) + &quot;]&quot;</span>
+<span class="c1"># unit        ::= [atomic mass] + element + [multiplier]</span>
+<span class="c1"># molecule    ::= one or more units + [charge]</span>
+
+<span class="n">_mn_atomic_mass</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Optional</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">Combine</span><span class="p">(</span>
+                    <span class="n">pp</span><span class="o">.</span><span class="n">Suppress</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">pp</span><span class="o">.</span><span class="n">Word</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">nums</span><span class="p">)</span> <span class="o">+</span> <span class="n">pp</span><span class="o">.</span><span class="n">Suppress</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">)</span>
+                  <span class="p">))</span>
+<span class="n">_mn_unit</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">OneOrMore</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">Group</span><span class="p">(</span>
+                <span class="n">_mn_atomic_mass</span><span class="p">(</span><span class="s1">&#39;atomic_mass&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">_element</span><span class="p">(</span><span class="s1">&#39;element&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">_opt_int</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">)</span>
+              <span class="p">))</span>
+<span class="n">_mn_charge</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Optional</span><span class="p">(</span>
+                <span class="n">pp</span><span class="o">.</span><span class="n">Suppress</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+                    <span class="n">_neutral</span><span class="p">(</span><span class="s1">&#39;charge_sign&#39;</span><span class="p">)</span> <span class="o">|</span>
+                    <span class="n">_opt_int</span><span class="p">(</span><span class="s1">&#39;charge_count&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">_charged</span><span class="p">(</span><span class="s1">&#39;charge_sign&#39;</span><span class="p">)</span>
+                <span class="p">)</span> <span class="o">+</span> <span class="n">pp</span><span class="o">.</span><span class="n">Suppress</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+<span class="n">_mn_molecule</span> <span class="o">=</span> <span class="n">_mn_unit</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">_mn_charge</span>
+
+<span class="c1"># Just a list of names to choose from, for convenience.</span>
+<span class="n">templates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;latex&#39;</span><span class="p">,</span> <span class="s1">&#39;mhchem&#39;</span><span class="p">,</span> <span class="s1">&#39;isotope&#39;</span><span class="p">,</span> <span class="s1">&#39;plain&#39;</span><span class="p">,</span> <span class="s1">&#39;molecular&#39;</span><span class="p">]</span>
+
+<span class="n">html_template</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;begin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;atomic_mass&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;sup&gt;</span><span class="si">{}</span><span class="s1">&lt;/sup&gt;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;element&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;sub&gt;</span><span class="si">{}</span><span class="s1">&lt;/sub&gt;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;sup&gt;</span><span class="si">{}</span><span class="s1">&lt;/sup&gt;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;minorjoin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;majorjoin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;minus&#39;</span><span class="p">:</span> <span class="s1">&#39;&amp;ndash;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
+<span class="p">}</span>
+
+<span class="n">latex_template</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;begin&#39;</span><span class="p">:</span> <span class="s1">&#39;$\mathrm{&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;atomic_mass&#39;</span><span class="p">:</span> <span class="s1">&#39;{{}}^{{</span><span class="si">{}</span><span class="s1">}}&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;element&#39;</span><span class="p">:</span> <span class="s1">&#39;{{</span><span class="si">{}</span><span class="s1">}}&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;_{{</span><span class="si">{}</span><span class="s1">}}&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;{{}}^{{</span><span class="si">{}</span><span class="s1">}}&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;minorjoin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;majorjoin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;minus&#39;</span><span class="p">:</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="s1">&#39;}$&#39;</span>
+<span class="p">}</span>
+
+<span class="n">mhchem_template</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;begin&#39;</span><span class="p">:</span> <span class="s1">&#39;\ce{&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;atomic_mass&#39;</span><span class="p">:</span> <span class="s1">&#39;^{{</span><span class="si">{}</span><span class="s1">}}&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;element&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;^</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;minorjoin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;majorjoin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;minus&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="s1">&#39;}&#39;</span>
+<span class="p">}</span>
+
+<span class="n">isotope_template</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;begin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;atomic_mass&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;element&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;minorjoin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;majorjoin&#39;</span><span class="p">:</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
+    <span class="s1">&#39;minus&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
+<span class="p">}</span>
+
+<span class="n">molecular_template</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;begin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;atomic_mass&#39;</span><span class="p">:</span> <span class="s1">&#39;[</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;element&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;[</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;minorjoin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;majorjoin&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;minus&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="Molecule">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.molecule.Molecule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Molecule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Represents a molecule or molecular ion. &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Molecule.__init__">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.molecule.Molecule.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molecule</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Parses a chemical formula string and returns an object that</span>
+<span class="sd">            holds properties of the molecule or molecular ion.</span>
+
+<span class="sd">            Two forms of input string are supported: isotope notation and</span>
+<span class="sd">            molecular formula notation. These names and notations are used</span>
+<span class="sd">            for input and output.</span>
+
+<span class="sd">            Isotope notation is a list of units, where each unit is of</span>
+<span class="sd">            the form NXxxn, where N the atomic mass, Xxx is the element,</span>
+<span class="sd">            and n is the count (subscript). Any character except A-Z, 0-9,</span>
+<span class="sd">            +, -, [, or ] may be used to separate the units in the list,</span>
+<span class="sd">            space is most common. If no atomic mass is specified, the most</span>
+<span class="sd">            common isotope is assumed (e.g. C -&gt; 12C). A charge may optionally</span>
+<span class="sd">            be given as the last element. This notation is useful for inputting</span>
+<span class="sd">            many unusual isotopes.</span>
+
+<span class="sd">            Isotope notation: &#39;12C2 15N O3 2-&#39;</span>
+
+<span class="sd">            Molecular formula notation is a form of shorthand. It contains</span>
+<span class="sd">            no spaces and no atomic masses, only count numbers. If an atomic</span>
+<span class="sd">            mass needs to be given for an isotope, it must be surrounded by [].</span>
+<span class="sd">            A charge may optionally be given at the end, also surrounded by [].</span>
+<span class="sd">            This form is useful for inputting larger molecules with few</span>
+<span class="sd">            unusual isotopes.</span>
+
+<span class="sd">            Molecular formula notation: &#39;HCOOCH2[15]NH3[2-]&#39;</span>
+
+<span class="sd">            D is an accepted alias for 2H, but is internally converted</span>
+<span class="sd">            to 2H. See Molecule.formula() for output options.</span>
+
+<span class="sd">            After parsing, relevant information about the molecule, such as</span>
+<span class="sd">            total mass, abundance, charge, and sign, as well as lists of</span>
+<span class="sd">            atoms, isotopes, atomic masses, and a few others are stored in</span>
+<span class="sd">            the Molecule() object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input</span> <span class="o">=</span> <span class="n">molecule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass_uncertainty</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abundance</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charge</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chargesign</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isotopes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atomic_numbers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atomic_masses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">masses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass_uncertainties</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abundances</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relative_abundance</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_formula</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">formula</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span> <span class="o">+</span> <span class="s1">&#39; --&gt; &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_formula</span>
+
+<div class="viewcode-block" id="Molecule.parse">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.molecule.Molecule.parse">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Parse input, retrieve elements from periodic table,</span>
+<span class="sd">            calculate mass and abundance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="c1"># Parse input string into pyparsing.ParseResult objects.</span>
+        <span class="c1"># Inputs with separators are isotope notation; molecular notation has no spaces.</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^A-Za-z0-9\[\]+-]&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">):</span>
+            <span class="n">delim_string</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^A-Za-z0-9+-]+&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
+            <span class="n">molec</span> <span class="o">=</span> <span class="n">_in_molecule</span><span class="o">.</span><span class="n">parse_string</span><span class="p">(</span><span class="n">delim_string</span><span class="p">,</span> <span class="n">parse_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">molec</span> <span class="o">=</span> <span class="n">_mn_molecule</span><span class="o">.</span><span class="n">parse_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">parse_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">pp</span><span class="o">.</span><span class="n">ParseException</span><span class="p">:</span>
+                <span class="n">delim_string</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^A-Za-z0-9+-]+&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
+                <span class="n">molec</span> <span class="o">=</span> <span class="n">_in_molecule</span><span class="o">.</span><span class="n">parse_string</span><span class="p">(</span><span class="n">delim_string</span><span class="p">,</span> <span class="n">parse_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Collect data from ParseResult objects,</span>
+        <span class="c1"># merge mulitple occurances of same element.</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">unit</span> <span class="ow">in</span> <span class="n">molec</span><span class="o">.</span><span class="n">units</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">atomic_mass</span> <span class="o">+</span> <span class="n">unit</span><span class="o">.</span><span class="n">element</span>
+            <span class="k">if</span> <span class="n">label</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;atomic_mass&#39;</span><span class="p">:</span> <span class="n">unit</span><span class="o">.</span><span class="n">atomic_mass</span><span class="p">,</span>
+                    <span class="s1">&#39;element&#39;</span><span class="p">:</span> <span class="n">unit</span><span class="o">.</span><span class="n">element</span><span class="p">,</span>
+                    <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># Sort, normalize aliases, and split data into lists.</span>
+        <span class="n">normalized_units</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">normalized_by_isotope</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">am</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;atomic_mass&#39;</span><span class="p">]</span>
+            <span class="n">el</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;element&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">el</span> <span class="o">==</span> <span class="s1">&#39;D&#39;</span><span class="p">:</span>
+                <span class="c1"># special case</span>
+                <span class="n">el</span> <span class="o">=</span> <span class="s1">&#39;H&#39;</span>
+                <span class="n">am</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="k">elif</span> <span class="n">am</span><span class="p">:</span>
+                <span class="n">am</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">am</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># no atomic mass given, find major isotope, e.g. C -&gt; 12C</span>
+                <span class="n">am</span> <span class="o">=</span> <span class="n">periodic_table</span><span class="p">[</span><span class="n">periodic_table</span><span class="p">[</span><span class="s1">&#39;element&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">el</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;major isotope&#39;</span><span class="p">]</span>
+                <span class="n">am</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">am</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="n">el</span><span class="p">))</span>
+
+            <span class="n">isotope</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">am</span><span class="p">)</span> <span class="o">+</span> <span class="n">el</span>
+            <span class="k">if</span> <span class="n">isotope</span> <span class="ow">in</span> <span class="n">normalized_by_isotope</span><span class="p">:</span>
+                <span class="n">normalized_by_isotope</span><span class="p">[</span><span class="n">isotope</span><span class="p">][</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">unit</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;atomic_mass&#39;</span><span class="p">:</span> <span class="n">am</span><span class="p">,</span>
+                    <span class="s1">&#39;element&#39;</span><span class="p">:</span> <span class="n">el</span><span class="p">,</span>
+                    <span class="s1">&#39;isotope&#39;</span><span class="p">:</span> <span class="n">isotope</span><span class="p">,</span>
+                    <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;count&#39;</span><span class="p">],</span>
+                <span class="p">}</span>
+                <span class="n">normalized_by_isotope</span><span class="p">[</span><span class="n">isotope</span><span class="p">]</span> <span class="o">=</span> <span class="n">unit</span>
+                <span class="n">normalized_units</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">unit</span> <span class="ow">in</span> <span class="n">normalized_units</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">atomic_masses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unit</span><span class="p">[</span><span class="s1">&#39;atomic_mass&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unit</span><span class="p">[</span><span class="s1">&#39;element&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">isotopes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unit</span><span class="p">[</span><span class="s1">&#39;isotope&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unit</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Retrieve additional information from periodic table</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">isotopes</span><span class="p">:</span>
+            <span class="n">isotope</span> <span class="o">=</span> <span class="n">periodic_table</span><span class="p">[</span><span class="n">periodic_table</span><span class="p">[</span><span class="s1">&#39;isotope&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">atomic_numbers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">isotope</span><span class="p">[</span><span class="s1">&#39;atomic number&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">masses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">isotope</span><span class="p">[</span><span class="s1">&#39;mass&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mass_uncertainties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">isotope</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mass uncertainty&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">abundances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">isotope</span><span class="p">[</span><span class="s1">&#39;abundance&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Calculate total mass of molecule</span>
+        <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">masses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">+=</span> <span class="n">m</span> <span class="o">*</span> <span class="n">c</span>
+        <span class="n">uncertainty_terms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass_uncertainties</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notna</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+                <span class="n">uncertainty_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">u</span> <span class="o">*</span> <span class="n">c</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass_uncertainty</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">uncertainty_terms</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+
+        <span class="c1"># Find charge and sign</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chargesign</span> <span class="o">=</span> <span class="n">molec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;charge_sign&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chargesign</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">charge</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">charge</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">molec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;charge_count&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># Adjust mass for extra or missing electrons (charge)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chargesign</span> <span class="o">==</span> <span class="s1">&#39;+&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">-=</span> <span class="n">mass_electron</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">chargesign</span> <span class="o">==</span> <span class="s1">&#39;-&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">+=</span> <span class="n">mass_electron</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span></div>
+
+
+<div class="viewcode-block" id="Molecule.relative_abundance">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.molecule.Molecule.relative_abundance">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">relative_abundance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Given a list of isotopes and a list of count numbers</span>
+<span class="sd">            (subscripts) calculate relative abundance for entire molecule.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># multiple isotopes e.g. 28Si (92.2%) 29Si (4.7%) 30Si (3.1%)</span>
+        <span class="c1"># In this type of mass spectrometry we only look at total mass of molecule,</span>
+        <span class="c1"># not position of isotope. Therefore Si4-29Si has 5 isobaric structures:</span>
+        <span class="c1">#   Si4-29Si, Si3-29Si-Si, Si2-29Si-Si2, Si-29Si-Si3, 29Si-Si4</span>
+        <span class="c1">#</span>
+        <span class="c1"># Same problem as drawing 3 green + 2 red balls from a bag of multi-coloured</span>
+        <span class="c1"># balls. Calculate the probability mass function of multinomial distribution</span>
+        <span class="c1"># with replacement. Replacement condition is acceptable, since pool from</span>
+        <span class="c1"># which isotopes are pulled from which molecule is made (nature, sample</span>
+        <span class="c1"># in mass spectrometer during sputtering) is large compared to number of</span>
+        <span class="c1"># molecules being formed and therefore composition of pool does not change</span>
+        <span class="c1"># significantly (assuming homogenous distribution).</span>
+        <span class="c1">#</span>
+        <span class="c1">#   f(xi, n, pi) = n!/(x1!*x2!*...xk!) * (p1**x1 * p2**x2 * ... pk**xk)</span>
+        <span class="c1">#   for i = 1..k</span>
+        <span class="c1"># with</span>
+        <span class="c1">#   n = total number of all isotopes from the same parent element</span>
+        <span class="c1">#     = sum(xi) for i=1..k</span>
+        <span class="c1">#   k = number of different isotopes in molecule</span>
+        <span class="c1">#   xi = number of isotope i = count</span>
+        <span class="c1">#   pi = probability of isotope i = natural abundance</span>
+        <span class="c1">#</span>
+        <span class="c1"># Example: molecule 12C 16O2 18O</span>
+        <span class="c1"># C is independent of O</span>
+        <span class="c1"># there are 3 O in the molecule, n = 3</span>
+        <span class="c1"># there are 2 O isotopes in this molecule, k = 2</span>
+        <span class="c1"># for 16O: xi = 2, for 18O: xi = 1</span>
+        <span class="c1"># for 16O: pi = 0.9976 for 18O: pi = 0.002 (and 0.0004 for 17O)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">periodic_table</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;isotope&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">isotopes</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">counts</span>
+
+        <span class="n">parents</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;major isotope&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="n">abun_per_el</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">el</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">parents</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;major isotope&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">el</span><span class="p">]</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># Simple case of single isotope, even if it occurs n times</span>
+                <span class="n">abun</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;abundance&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="n">n</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">count_factorial</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="n">factorial</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">))</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">])</span>
+                <span class="n">abun</span> <span class="o">=</span> <span class="n">factorial</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">))</span><span class="o">/</span><span class="n">count_factorial</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;abundance&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">prod</span><span class="p">()</span>
+
+            <span class="n">abun_per_el</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">abun</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abundance</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="n">abun_per_el</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Molecule.formula">
+<a class="viewcode-back" href="../../modules.html#interference_calculator.molecule.Molecule.formula">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">formula</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;plain&#39;</span><span class="p">,</span> <span class="n">HtoD</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_charge</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">all_isotopes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="p">{}):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Return the molecular formula as a string.</span>
+
+<span class="sd">            The molecular formula can be formatted as html</span>
+<span class="sd">            (style=&#39;html&#39;), LaTeX (style=&#39;latex&#39;), LaTeX with</span>
+<span class="sd">            mhchem package (style=&#39;mhchem&#39;), plain</span>
+<span class="sd">            text isotope notation (style=&#39;isotope&#39; or</span>
+<span class="sd">            &#39;plain&#39;, default), molecular formula notation</span>
+<span class="sd">            (style=&#39;molecular&#39;), or in a custom format</span>
+<span class="sd">            (style=&#39;custom&#39;), see below.</span>
+
+<span class="sd">            1H and 2H will be converted to H and D; set</span>
+<span class="sd">            HtoD=False to output as 1H and 2H instead.</span>
+
+<span class="sd">            Charge and sign will be automatically added, unless</span>
+<span class="sd">            show_charge is set to False.</span>
+
+<span class="sd">            Only atomic masses of minor isotopes will be given</span>
+<span class="sd">            in the output; set all_isotopes=True to explicitly</span>
+<span class="sd">            give the atomic mass for each isotope. HtoD takes</span>
+<span class="sd">            precedence over all_isotopes: H and D will be used</span>
+<span class="sd">            even if all_isotopes=True, unless HtoD=False.</span>
+
+<span class="sd">            If style=&#39;custom&#39;, a custom template can be used to</span>
+<span class="sd">            format the molecular formula. The template must be</span>
+<span class="sd">            a dict containing 9 keys: begin, atomic_mass, element,</span>
+<span class="sd">            count, charge, minorjoin, majorjoin, minus, and end.</span>
+<span class="sd">            A curly brace pair in the atomic_mass, element, count,</span>
+<span class="sd">            and charge template strings will be replaced using</span>
+<span class="sd">            string.format(). The minorjoin string will be used</span>
+<span class="sd">            to join the atomic mass, element, and count</span>
+<span class="sd">            into a unit, and the majorjoin string connects all</span>
+<span class="sd">            the units into the output string. The begin and end</span>
+<span class="sd">            strings are added to the beginning and end of the final</span>
+<span class="sd">            output string, respectively.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Force copy of list without using list.copy (python 2)</span>
+        <span class="n">elem</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
+        <span class="n">amass</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atomic_masses</span><span class="p">]</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">HtoD</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">am</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">amass</span><span class="p">,</span> <span class="n">elem</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">el</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">am</span> <span class="o">==</span> <span class="s1">&#39;1&#39;</span><span class="p">:</span>
+                        <span class="n">amass</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                    <span class="k">elif</span> <span class="n">am</span> <span class="o">==</span> <span class="s1">&#39;2&#39;</span><span class="p">:</span>
+                        <span class="n">amass</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                        <span class="n">elem</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;D&#39;</span>
+
+        <span class="k">if</span> <span class="n">style</span> <span class="o">==</span> <span class="s1">&#39;html&#39;</span><span class="p">:</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="n">html_template</span>
+        <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="s1">&#39;latex&#39;</span><span class="p">:</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="n">latex_template</span>
+        <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="s1">&#39;mhchem&#39;</span><span class="p">:</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="n">mhchem_template</span>
+        <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="s1">&#39;molecular&#39;</span><span class="p">:</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="n">molecular_template</span>
+        <span class="k">elif</span> <span class="n">style</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;plain&#39;</span><span class="p">,</span> <span class="s1">&#39;isotope&#39;</span><span class="p">):</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="n">isotope_template</span>
+        <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="s1">&#39;custom&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">template</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;If you select style=&quot;custom&quot;, you must supply a custom template.&#39;</span><span class="p">)</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="n">template</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;style must be one of &quot;html&quot;, &quot;latex&quot;, &quot;mhchem&quot;, &#39;</span>
+            <span class="n">msg</span> <span class="o">+=</span> <span class="s1">&#39;&quot;plain&quot;, &quot;isotope&quot;, &quot;molecular&quot;, or &quot;custom&quot;.&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">show_charge</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chargesign</span> <span class="o">==</span> <span class="s1">&#39;-&#39;</span> <span class="ow">and</span> <span class="n">templ</span><span class="p">[</span><span class="s1">&#39;minus&#39;</span><span class="p">]:</span>
+                <span class="n">chargesign</span> <span class="o">=</span> <span class="n">templ</span><span class="p">[</span><span class="s1">&#39;minus&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">chargesign</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chargesign</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">charge</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">charge</span> <span class="o">=</span> <span class="n">chargesign</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">charge</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charge</span><span class="p">)</span> <span class="o">+</span> <span class="n">chargesign</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">charge</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="n">molecule</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">am</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">ct</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">amass</span><span class="p">,</span> <span class="n">elem</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">am</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">all_isotopes</span> <span class="ow">and</span>
+                    <span class="p">(</span><span class="n">periodic_table</span><span class="p">[</span><span class="s1">&#39;major isotope&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">am</span> <span class="o">+</span> <span class="n">el</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()):</span>
+                        <span class="n">am_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">am_str</span> <span class="o">=</span> <span class="n">templ</span><span class="p">[</span><span class="s1">&#39;atomic_mass&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">am</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">am_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="n">el_str</span> <span class="o">=</span> <span class="n">templ</span><span class="p">[</span><span class="s1">&#39;element&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">el</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ct</span><span class="p">:</span>
+                <span class="n">ct_str</span> <span class="o">=</span> <span class="n">templ</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ct</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ct_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">templ</span><span class="p">[</span><span class="s1">&#39;minorjoin&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">am_str</span><span class="p">,</span> <span class="n">el_str</span><span class="p">,</span> <span class="n">ct_str</span><span class="p">))</span>
+            <span class="n">molecule</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">charge</span><span class="p">:</span>
+            <span class="n">molecule</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">templ</span><span class="p">[</span><span class="s1">&#39;charge&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">charge</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">templ</span><span class="p">[</span><span class="s1">&#39;begin&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">templ</span><span class="p">[</span><span class="s1">&#39;majorjoin&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span> <span class="o">+</span> <span class="n">templ</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Interference Calculator Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

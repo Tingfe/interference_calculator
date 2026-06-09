@@ -1,0 +1,17 @@
+# Enhanced Export Plugin Configuration
+metadata:
+  name: "Enhanced Export"
+  version: "1.0.0"
+  description: "Provides JSON and enhanced CSV export formats for calculation results"
+  author: "Interference Calculator Team"
+  min_app_version: "2.6.0"
+
+plugin:
+  module: "interference_calculator/plugins/builtin/enhanced_export.py"
+  class: "EnhancedExportPlugin"
+
+settings:
+  default_format: "json"
+  json_indent: 2
+  csv_delimiter: ","
+  encoding: "utf-8-sig"
