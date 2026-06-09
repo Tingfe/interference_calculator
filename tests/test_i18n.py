@@ -49,17 +49,13 @@ class TestTranslationManager:
         assert result is True
         assert manager.get_current_language() == 'zh'
     
-    def test_set_language_japanese(self):
-        """Test setting language to Japanese."""
+    def test_set_language_chinese(self):
+        """Test setting language to Chinese."""
         manager = TranslationManager()
-        result = manager.set_language('ja')
+        result = manager.set_language('zh')
         
-        # May or may not be available depending on import
-        if 'ja' in manager.translations:
-            assert result is True
-            assert manager.get_current_language() == 'ja'
-        else:
-            assert result is False
+        assert result is True
+        assert manager.get_current_language() == 'zh'
     
     def test_set_invalid_language(self):
         """Test setting invalid language code."""
@@ -160,42 +156,6 @@ class TestConvenienceFunctions:
         manager2 = get_translation_manager()
         assert manager1 is manager2  # Same instance
 
-
-class TestJapaneseTranslations:
-    """Test Japanese translations if available."""
-    
-    def test_japanese_module_import(self):
-        """Test that Japanese translation module can be imported."""
-        try:
-            from interference_calculator.i18n_ja import get_japanese_translations
-            data = get_japanese_translations()
-            
-            assert 'ui_text' in data
-            assert 'type_display' in data
-            assert 'column_display' in data
-        except ImportError:
-            pytest.skip("Japanese translations not available")
-    
-    def test_japanese_ui_text(self):
-        """Test Japanese UI text content."""
-        try:
-            from interference_calculator.i18n_ja import UI_TEXT_JA
-            
-            assert 'calculate' in UI_TEXT_JA
-            assert 'title' in UI_TEXT_JA
-            assert isinstance(UI_TEXT_JA['title'], str)
-        except ImportError:
-            pytest.skip("Japanese translations not available")
-    
-    def test_japanese_type_display(self):
-        """Test Japanese type display translations."""
-        try:
-            from interference_calculator.i18n_ja import TYPE_DISPLAY_JA
-            
-            assert 'atomic' in TYPE_DISPLAY_JA
-            assert isinstance(TYPE_DISPLAY_JA['atomic'], str)
-        except ImportError:
-            pytest.skip("Japanese translations not available")
 
 
 if __name__ == '__main__':

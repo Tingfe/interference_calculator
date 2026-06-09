@@ -29,22 +29,6 @@ class TranslationManager:
             'name': 'Chinese',
             'native_name': '中文'
         }
-        
-        # Japanese
-        try:
-            from interference_calculator.i18n_ja import get_japanese_translations
-            ja_data = get_japanese_translations()
-            self.translations['ja'] = {
-                'name': 'Japanese',
-                'native_name': '日本語',
-                'ui_text': ja_data['ui_text'],
-                'type_display': ja_data['type_display'],
-                'column_display': ja_data['column_display'],
-                'mode_names': ja_data['mode_names'],
-                'charge_options': ja_data['charge_options'],
-            }
-        except ImportError:
-            pass  # Japanese translations not available
     
     def set_language(self, language_code: str) -> bool:
         """

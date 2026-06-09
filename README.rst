@@ -41,7 +41,7 @@ v2.6.0 是一次全面优化发布，包含性能、架构、质量、文档和�
 * **结构化日志系统**：5 个日志级别，错误跟踪和诊断信息，JSON 诊断报告导出。
 * **API 文档完善**：Sphinx 自动生成 HTML 文档，Google 风格 docstrings，完整类型注解。
 * **用户手册扩展**：从 234 行扩展到 378 行，新增插件、日志、性能 3 个章节，FAQ 扩展到 14 个问题。
-* **国际化支持**：新增日语翻译，运行时语言切换，支持英语、中文、日语三种语言。
+* **国际化支持**：运行时在英语和中文之间切换。
 * **Poetry 构建系统**：完整的 pyproject.toml 配置，依赖分组管理，保持 pip 向后兼容。
 * **CI/CD 优化**：5 个增强工作流，12 种 Python/OS 组合测试，自动化代码质量检查，Dependabot 集成。
 
@@ -349,7 +349,7 @@ Version 2.6.0 is a comprehensive optimization release with major upgrades in per
 * **Structured Logging System**: 5 log levels, error tracking and diagnostic information, JSON diagnostic report export.
 * **Complete API Documentation**: Sphinx auto-generated HTML documentation, Google-style docstrings, complete type annotations.
 * **Expanded User Manual**: From 234 to 378 lines, 3 new chapters (Plugins, Logging, Performance), FAQ expanded to 14 questions.
-* **Internationalization Support**: Japanese translation added, runtime language switching, support for English, Chinese, and Japanese.
+* **Internationalization Support**: Runtime language switching between English and Chinese.
 * **Poetry Build System**: Complete pyproject.toml configuration, dependency group management, maintained pip backward compatibility.
 * **CI/CD Optimization**: 5 enhanced workflows, 12 Python/OS combination tests, automated code quality checks, Dependabot integration.
 
