@@ -27,6 +27,12 @@ GDMS_FORMATION_FACTORS = {
     'plasma adduct': 1.0e-4,
     'background molecule': 1.0e-5,
     'cluster': 1.0e-5,
+    # Extended templates for maxsize >= 4
+    'trioxide': 1.0e-7,
+    'trihydride': 1.0e-6,
+    'mixed oxide-hydride': 1.0e-6,
+    # Extended templates for maxsize >= 5
+    'tetraoxide': 1.0e-9,
 }
 
 ICP_MS_FORMATION_FACTORS = {
@@ -43,6 +49,12 @@ ICP_MS_FORMATION_FACTORS = {
     'plasma adduct': 1.0e-3,
     'background molecule': 1.0e-4,
     'cluster': 1.0e-6,
+    # Extended templates for maxsize >= 4
+    'trioxide': 1.0e-7,
+    'trihydride': 1.0e-6,
+    'mixed oxide-hydride': 1.0e-6,
+    # Extended templates for maxsize >= 5
+    'tetraoxide': 1.0e-9,
 }
 
 SIMS_FORMATION_FACTORS = {
@@ -59,6 +71,12 @@ SIMS_FORMATION_FACTORS = {
     'plasma adduct': 1.0e-6,
     'background molecule': 1.0e-4,
     'cluster': 1.0e-3,
+    # Extended templates for maxsize >= 4
+    'trioxide': 1.0e-6,
+    'trihydride': 1.0e-5,
+    'mixed oxide-hydride': 1.0e-5,
+    # Extended templates for maxsize >= 5
+    'tetraoxide': 1.0e-8,
 }
 
 FORMATION_FACTOR_PRESETS = {
@@ -355,6 +373,58 @@ def _candidate_formulas(atoms, charges, chargesign, maxsize,
         for first, second in itertools.combinations_with_replacement(matrix, 2):
             for parts in _binary_formulas(first, second):
                 yield parts, 'cluster', molecular_charge
+
+    # Extended templates for maxsize >= 4 (tri-oxides, tri-hydrides, etc.)
+    if maxsize >= 4:
+        # Trioxides (MO3+) - important for heavy elements
+        if 'O' in selected:
+            for base in matrix:
+                if base == 'O':
+                    continue
+                for parts in _adduct_formulas(base, 'O', 3):
+                    yield parts, 'trioxide', molecular_charge
+        
+        # Trihydrides (MH3+) - less common but possible
+        if 'H' in selected:
+            for base in matrix:
+                if base == 'H':
+                    continue
+                for parts in _adduct_formulas(base, 'H', 3):
+                    yield parts, 'trihydride', molecular_charge
+        
+        # Mixed adducts: MOH2+, MO2H+ (4 atoms total)
+        if {'O', 'H'}.issubset(selected):
+            for base in matrix:
+                if base in ('O', 'H'):
+                    continue
+                # MO2H+
+                for parts in _multi_adduct_formulas(base, ('O', 'O', 'H')):
+                    yield parts, 'mixed oxide-hydride', molecular_charge
+                # MOH2+
+                for parts in _multi_adduct_formulas(base, ('O', 'H', 'H')):
+                    yield parts, 'mixed oxide-hydride', molecular_charge
+    
+    # Even larger clusters for maxsize >= 5
+    if maxsize >= 5:
+        # Tetraoxides (MO4+)
+        if 'O' in selected:
+            for base in matrix:
+                if base == 'O':
+                    continue
+                for parts in _adduct_formulas(base, 'O', 4):
+                    yield parts, 'tetraoxide', molecular_charge
+        
+        # Larger mixed adducts: MO3H+, MO2H2+, MOH3+
+        if {'O', 'H'}.issubset(selected):
+            for base in matrix:
+                if base in ('O', 'H'):
+                    continue
+                for parts in _multi_adduct_formulas(base, ('O', 'O', 'O', 'H')):
+                    yield parts, 'mixed oxide-hydride', molecular_charge
+                for parts in _multi_adduct_formulas(base, ('O', 'O', 'H', 'H')):
+                    yield parts, 'mixed oxide-hydride', molecular_charge
+                for parts in _multi_adduct_formulas(base, ('O', 'H', 'H', 'H')):
+                    yield parts, 'mixed oxide-hydride', molecular_charge
 
 
 def _isotopes(element):
