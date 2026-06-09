@@ -9,21 +9,23 @@ history and release documentation.
 
 ## [2.6.0] - 2026-06-09
 
-### 新增功能
+### 中文
 
-#### 性能优化 (Issue #2)
+#### 新增功能
+
+##### 性能优化 (Issue #2)
 - **预过滤剪枝算法**: 在生成组合前提前排除无效同位素，加速干扰计算
 - **并行计算支持**: 通过 multiprocessing.Pool 实现多核并行处理
 - **新增参数**: `use_pruning`（默认 True）、`n_workers`（可选）
 - **性能提升**: maxsize=4 场景下速度提升 2.9 倍
 
-#### 内存优化 (Issue #3)
+##### 内存优化 (Issue #3)
 - **生成器模式**: 组合枚举使用生成器，避免一次性加载所有数据
 - **流式处理架构**: 分批处理减少峰值内存占用
 - **数据类型优化**: 使用 float32 替代 float64
 - **内存降低**: 减少 29.5%-50% 内存使用
 
-#### UI 组件模块化 (Issue #4)
+##### UI 组件模块化 (Issue #4)
 - **提取 6 个独立 UI 组件**:
   - TableModel、TableView、HTMLDelegate 表格组件
   - ElementInput 元素选择器（芯片样式选择界面）
@@ -31,81 +33,81 @@ history and release documentation.
   - CalculationWorker 后台计算工作线程
 - **100% 向后兼容**: 所有现有代码无需修改即可继续工作
 
-#### 配置持久化系统 (Issue #5)
+##### 配置持久化系统 (Issue #5)
 - **JSON 配置存储**: 自动保存和恢复用户设置
 - **命名预设管理**: 支持保存和加载自定义配置预设
 - **导入导出功能**: 支持配置的导入和导出为 JSON 文件
 - **最近目标峰追踪**: 自动记录最近使用的 10 个目标峰
 - **应用生命周期自动保存/恢复**: 跨会话保持用户偏好
 
-#### 插件系统 (Issue #6)
+##### 插件系统 (Issue #6)
 - **YAML 配置插件框架**: 灵活的插件扩展机制
 - **2 个内置插件**: Enhanced Export（增强导出）、Custom Rules（自定义规则）
 - **热重载支持**: 无需重启应用即可加载新插件
 - **完整的插件 API 文档**: 便于开发者创建自定义插件
 
-#### 测试增强 (Issue #7)
+##### 测试增强 (Issue #7)
 - **84+ 新单元测试**: 覆盖核心功能和边界情况
 - **性能基准测试套件**: 自动化性能回归检测
 - **边界情况测试**: 确保极端输入下的稳定性
 - **截图对比框架**: GUI 视觉回归测试
 
-#### 日志系统 (Issue #8)
+##### 日志系统 (Issue #8)
 - **结构化日志**: 5 个日志级别（DEBUG 到 CRITICAL）
 - **错误跟踪和诊断信息**: 详细的运行时上下文
 - **JSON 诊断报告导出**: 便于问题排查和技术支持
 - **与现有错误处理集成**: 无缝整合到异常处理流程
 
-#### API 文档 (Issue #9)
+##### API 文档 (Issue #9)
 - **Sphinx 文档系统**: 自动生成 HTML API 文档
 - **Google 风格 docstrings**: 标准化的文档注释格式
 - **类型注解最佳实践**: 完整的类型提示覆盖
 - **HTML 文档生成**: 美观的在线文档浏览体验
 
-#### 用户手册增强 (Issue #10)
+##### 用户手册增强 (Issue #10)
 - **从 234 行扩展到 378 行**: 更详细的使用说明
 - **3 个新章节**: 插件系统、日志系统、性能优化
 - **FAQ 扩展到 14 个问题**: 覆盖常见使用场景
 - **配置管理指南**: 详细的配置持久化使用说明
 - **故障排除章节**: 常见问题解决方案
 
-#### 国际化 (Issue #11)
+##### 国际化 (Issue #11)
 - **日语翻译**: 完整的 UI 文本翻译
 - **TranslationManager 核心类**: 统一的翻译管理机制
 - **运行时语言切换**: 无需重启应用即可切换语言
 - **支持 3 种语言**: 英语、中文、日语
 
-#### Poetry 迁移 (Issue #12)
+##### Poetry 迁移 (Issue #12)
 - **完整的 pyproject.toml 配置**: 现代化依赖管理
 - **依赖分组**: main、dev、extras 三组依赖
 - **开发工具链集成**: flake8、black、isort、mypy
 - **保持 setup.py 向后兼容**: pip 安装仍然可用
 
-#### CI/CD 优化 (Issue #13)
+##### CI/CD 优化 (Issue #13)
 - **增强的工作流**: 5 个独立的 CI 作业
 - **多版本测试矩阵**: 12 种 Python/OS 组合测试
 - **代码质量检查**: flake8/black/isort/mypy 自动化检查
 - **Dependabot 集成**: 自动依赖更新提醒
 - **性能回归检测**: 自动识别性能下降
 
-### 变更
+##### 变更
 - **性能**: 默认启用预过滤剪枝算法，所有计算自动受益
 - **内存**: 优化数据类型（float32 替代 float64）
 - **架构**: UI 组件提取到 ui_components/ 包
 - **构建**: 现代化依赖管理，支持 Poetry
 
-### 改进
+##### 改进
 - **文档**: 完整的 API 参考和用户指南
 - **测试**: 全面的测试覆盖和基准测试
 - **日志**: 结构化诊断和错误跟踪
 - **国际化**: 运行时语言切换支持
 
-### 性能指标
+##### 性能指标
 - **计算速度**: 2.9 倍提升（maxsize=4）
 - **内存使用**: 减少 29.5%-50%
 - **测试覆盖**: 新增 84+ 测试用例
 
-### 迁移指南
+##### 迁移指南
 - **对用户**: 无需任何操作，完全向后兼容
 - **对开发者**: 
   - 新代码使用 `ui_components` 导入
@@ -114,21 +116,23 @@ history and release documentation.
 
 ---
 
-### Added
+### English
 
-#### Performance Optimization (Issue #2)
+#### Added
+
+##### Performance Optimization (Issue #2)
 - **Pre-filtering pruning algorithm**: Eliminates invalid isotopes before combination generation to accelerate interference calculation
 - **Parallel computing support**: Multi-core parallel processing via multiprocessing.Pool
 - **New parameters**: `use_pruning` (default True), `n_workers` (optional)
 - **Performance improvement**: 2.9x speedup for maxsize=4 scenarios
 
-#### Memory Optimization (Issue #3)
+##### Memory Optimization (Issue #3)
 - **Generator pattern**: Combination enumeration uses generators to avoid loading all data at once
 - **Streaming processing architecture**: Batch processing reduces peak memory usage
 - **Data type optimization**: Use float32 instead of float64
 - **Memory reduction**: 29.5%-50% less memory usage
 
-#### UI Modularization (Issue #4)
+##### UI Modularization (Issue #4)
 - **Extracted 6 independent UI components**:
   - TableModel, TableView, HTMLDelegate table components
   - ElementInput element selector (chip-style selection interface)
@@ -136,81 +140,81 @@ history and release documentation.
   - CalculationWorker for background processing
 - **100% backward compatible**: All existing code works without modification
 
-#### Configuration Persistence (Issue #5)
+##### Configuration Persistence (Issue #5)
 - **JSON-based configuration storage**: Automatic save and restore of user settings
 - **Named presets management**: Support for saving and loading custom configuration presets
 - **Import/export functionality**: Import and export configurations as JSON files
 - **Recent targets tracking**: Automatically track the last 10 used target peaks
 - **Automatic save/restore on app lifecycle**: Cross-session persistence of user preferences
 
-#### Plugin System (Issue #6)
+##### Plugin System (Issue #6)
 - **YAML-based plugin framework**: Flexible plugin extension mechanism
 - **2 built-in plugins**: Enhanced Export, Custom Rules
 - **Hot-reload support**: Load new plugins without restarting the application
 - **Complete plugin API documentation**: Easy for developers to create custom plugins
 
-#### Testing Enhancement (Issue #7)
+##### Testing Enhancement (Issue #7)
 - **84+ new unit tests**: Coverage for core functionality and edge cases
 - **Performance benchmark suite**: Automated performance regression detection
 - **Edge case testing**: Ensure stability under extreme inputs
 - **Screenshot comparison framework**: GUI visual regression testing
 
-#### Logging System (Issue #8)
+##### Logging System (Issue #8)
 - **Structured logging**: 5 log levels (DEBUG to CRITICAL)
 - **Error tracking and diagnostic information**: Detailed runtime context
 - **JSON diagnostic report export**: Easy troubleshooting and technical support
 - **Integration with existing error handling**: Seamless integration into exception handling flow
 
-#### API Documentation (Issue #9)
+##### API Documentation (Issue #9)
 - **Sphinx documentation system**: Auto-generated HTML API documentation
 - **Google-style docstrings**: Standardized documentation comment format
 - **Type annotations best practices**: Complete type hint coverage
 - **HTML documentation generation**: Beautiful online documentation browsing experience
 
-#### User Manual Enhancement (Issue #10)
+##### User Manual Enhancement (Issue #10)
 - **Expanded from 234 to 378 lines**: More detailed usage instructions
 - **3 new chapters**: Plugin system, logging system, performance optimization
 - **FAQ expanded to 14 questions**: Cover common usage scenarios
 - **Configuration management guide**: Detailed configuration persistence usage guide
 - **Troubleshooting section**: Solutions to common problems
 
-#### Internationalization (Issue #11)
+##### Internationalization (Issue #11)
 - **Japanese translation**: Complete UI text translation
 - **TranslationManager core class**: Unified translation management mechanism
 - **Runtime language switching**: Switch languages without restarting the application
 - **Support for 3 languages**: English, Chinese, Japanese
 
-#### Poetry Migration (Issue #12)
+##### Poetry Migration (Issue #12)
 - **Complete pyproject.toml configuration**: Modern dependency management
 - **Dependency groups**: main, dev, extras three dependency groups
 - **Development toolchain integration**: flake8, black, isort, mypy
 - **Maintained setup.py backward compatibility**: pip installation still available
 
-#### CI/CD Optimization (Issue #13)
+##### CI/CD Optimization (Issue #13)
 - **Enhanced workflow**: 5 independent CI jobs
 - **Multi-version test matrix**: 12 Python/OS combination tests
 - **Code quality checks**: Automated flake8/black/isort/mypy checks
 - **Dependabot integration**: Automatic dependency update notifications
 - **Performance regression detection**: Automatically identify performance degradation
 
-### Changed
+##### Changed
 - **Performance**: Default pre-filtering pruning enabled, all calculations benefit automatically
 - **Memory**: Optimized data types (float32 instead of float64)
 - **Architecture**: UI components extracted to ui_components/ package
 - **Build**: Modern dependency management with Poetry support
 
-### Improved
+##### Improved
 - **Documentation**: Complete API reference and user guide
 - **Testing**: Comprehensive test coverage with benchmarks
 - **Logging**: Structured diagnostics and error tracking
 - **i18n**: Runtime language switching support
 
-### Performance Metrics
+##### Performance Metrics
 - **Calculation speed**: 2.9x faster (maxsize=4)
 - **Memory usage**: 29.5%-50% reduction
 - **Test coverage**: 84+ new tests added
 
-### Migration Guide
+##### Migration Guide
 - **For Users**: No action required, fully backward compatible
 - **For Developers**: 
   - Use `ui_components` imports for new code
