@@ -74,6 +74,7 @@ setup(
     extras_require = {
         'data': ['requests'],
         'export': [],
+        'test': ['pytest>=7.0'],
     },
     entry_points = {
         'gui_scripts': ['interference_calculator=interference_calculator.ui:run']
