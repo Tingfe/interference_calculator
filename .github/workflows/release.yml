@@ -492,7 +492,12 @@ jobs:
           EOF
           chmod 600 "$HOME/.netrc"
 
-          git push \
+          # Delete old tag on Gitee if exists, then push new one
+          git push --delete \
+            "https://gitee.com/${GITEE_OWNER}/${GITEE_REPO}.git" \
+            "refs/tags/${TAG_NAME}" || true
+          
+          git push --force \
             "https://gitee.com/${GITEE_OWNER}/${GITEE_REPO}.git" \
             "refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}"
 
