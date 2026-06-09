@@ -310,121 +310,120 @@ def _candidate_formulas(atoms, charges, chargesign, maxsize,
     if maxsize < 2 or chargesign in ('o', '0'):
         return
 
-    molecular_charge = 1
-    if molecular_charge not in charges:
-        molecular_charge = charges[0]
-
-    # Matrix/background adducts such as MO+, MH+, MC+, MN+, and MCl+.
-    for ligand, (species_type, count) in LIGAND_TYPES.items():
-        if ligand not in selected:
-            continue
-        for base in matrix:
-            if base == ligand:
+    # Generate molecular ions for all requested charge states
+    # Note: Doubly charged molecules (MO2+, MH2+, etc.) are rare but possible
+    for mol_charge in charges:
+        # Matrix/background adducts such as MO+, MH+, MC+, MN+, and MCl+.
+        for ligand, (species_type, count) in LIGAND_TYPES.items():
+            if ligand not in selected:
                 continue
-            for parts in _adduct_formulas(base, ligand, count):
-                yield parts, species_type, molecular_charge
+            for base in matrix:
+                if base == ligand:
+                    continue
+                for parts in _adduct_formulas(base, ligand, count):
+                    yield parts, species_type, mol_charge
 
-    # Dioxides are common enough to keep separate from generic clusters.
-    if 'O' in selected and maxsize >= 3:
-        for base in matrix:
-            if base == 'O':
-                continue
-            for parts in _adduct_formulas(base, 'O', 2):
-                yield parts, 'dioxide', molecular_charge
-
-    # Hydroxides such as MOH+ are common in wet ICP-MS backgrounds and can
-    # also be useful screening candidates for residual gas chemistry.
-    if {'O', 'H'}.issubset(selected) and maxsize >= 3:
-        for base in matrix:
-            if base in ('O', 'H'):
-                continue
-            for parts in _multi_adduct_formulas(base, ('O', 'H')):
-                yield parts, 'hydroxide', molecular_charge
-
-    # Plasma adducts such as ArO+, ArN+, ArCl+, and ArM+.
-    for plasma_element in plasma:
-        for partner in atoms:
-            if partner == plasma_element:
-                continue
-            for parts in _binary_formulas(plasma_element, partner):
-                yield parts, 'plasma adduct', molecular_charge
-
-    # Common background ions such as CO+, CN+, NO+, O2+, H2O+, SO+, and
-    # CO2+. These are intentionally limited to light/background elements so
-    # the template remains much narrower than unrestricted enumeration.
-    if include_background and maxsize >= 2:
-        background_pool = [
-            a for a in background
-            if a in BACKGROUND_MOLECULE_BASES and a in selected
-        ]
-        for first, second in itertools.combinations_with_replacement(background_pool, 2):
-            for parts in _binary_formulas(first, second):
-                yield parts, 'background molecule', molecular_charge
-        if 'O' in background_pool and maxsize >= 3:
-            for base in background_pool:
+        # Dioxides are common enough to keep separate from generic clusters.
+        if 'O' in selected and maxsize >= 3:
+            for base in matrix:
                 if base == 'O':
                     continue
                 for parts in _adduct_formulas(base, 'O', 2):
-                    yield parts, 'background molecule', molecular_charge
+                    yield parts, 'dioxide', mol_charge
 
-    # Small matrix clusters. This captures common M2+ and MM'+ species without
-    # falling back to full unrestricted enumeration.
-    if maxsize >= 2:
-        for first, second in itertools.combinations_with_replacement(matrix, 2):
-            for parts in _binary_formulas(first, second):
-                yield parts, 'cluster', molecular_charge
-
-    # Extended templates for maxsize >= 4 (tri-oxides, tri-hydrides, etc.)
-    if maxsize >= 4:
-        # Trioxides (MO3+) - important for heavy elements
-        if 'O' in selected:
-            for base in matrix:
-                if base == 'O':
-                    continue
-                for parts in _adduct_formulas(base, 'O', 3):
-                    yield parts, 'trioxide', molecular_charge
-        
-        # Trihydrides (MH3+) - less common but possible
-        if 'H' in selected:
-            for base in matrix:
-                if base == 'H':
-                    continue
-                for parts in _adduct_formulas(base, 'H', 3):
-                    yield parts, 'trihydride', molecular_charge
-        
-        # Mixed adducts: MOH2+, MO2H+ (4 atoms total)
-        if {'O', 'H'}.issubset(selected):
+        # Hydroxides such as MOH+ are common in wet ICP-MS backgrounds and can
+        # also be useful screening candidates for residual gas chemistry.
+        if {'O', 'H'}.issubset(selected) and maxsize >= 3:
             for base in matrix:
                 if base in ('O', 'H'):
                     continue
-                # MO2H+
-                for parts in _multi_adduct_formulas(base, ('O', 'O', 'H')):
-                    yield parts, 'mixed oxide-hydride', molecular_charge
-                # MOH2+
-                for parts in _multi_adduct_formulas(base, ('O', 'H', 'H')):
-                    yield parts, 'mixed oxide-hydride', molecular_charge
-    
-    # Even larger clusters for maxsize >= 5
-    if maxsize >= 5:
-        # Tetraoxides (MO4+)
-        if 'O' in selected:
-            for base in matrix:
-                if base == 'O':
+                for parts in _multi_adduct_formulas(base, ('O', 'H')):
+                    yield parts, 'hydroxide', mol_charge
+
+        # Plasma adducts such as ArO+, ArN+, ArCl+, and ArM+.
+        for plasma_element in plasma:
+            for partner in atoms:
+                if partner == plasma_element:
                     continue
-                for parts in _adduct_formulas(base, 'O', 4):
-                    yield parts, 'tetraoxide', molecular_charge
+                for parts in _binary_formulas(plasma_element, partner):
+                    yield parts, 'plasma adduct', mol_charge
+
+        # Common background ions such as CO+, CN+, NO+, O2+, H2O+, SO+, and
+        # CO2+. These are intentionally limited to light/background elements so
+        # the template remains much narrower than unrestricted enumeration.
+        if include_background and maxsize >= 2:
+            background_pool = [
+                a for a in background
+                if a in BACKGROUND_MOLECULE_BASES and a in selected
+            ]
+            for first, second in itertools.combinations_with_replacement(background_pool, 2):
+                for parts in _binary_formulas(first, second):
+                    yield parts, 'background molecule', mol_charge
+            if 'O' in background_pool and maxsize >= 3:
+                for base in background_pool:
+                    if base == 'O':
+                        continue
+                    for parts in _adduct_formulas(base, 'O', 2):
+                        yield parts, 'background molecule', mol_charge
+
+        # Small matrix clusters. This captures common M2+ and MM'+ species without
+        # falling back to full unrestricted enumeration.
+        if maxsize >= 2:
+            for first, second in itertools.combinations_with_replacement(matrix, 2):
+                for parts in _binary_formulas(first, second):
+                    yield parts, 'cluster', mol_charge
+
+        # Extended templates for maxsize >= 4 (tri-oxides, tri-hydrides, etc.)
+        if maxsize >= 4:
+            # Trioxides (MO3+) - important for heavy elements
+            if 'O' in selected:
+                for base in matrix:
+                    if base == 'O':
+                        continue
+                    for parts in _adduct_formulas(base, 'O', 3):
+                        yield parts, 'trioxide', mol_charge
+            
+            # Trihydrides (MH3+) - less common but possible
+            if 'H' in selected:
+                for base in matrix:
+                    if base == 'H':
+                        continue
+                    for parts in _adduct_formulas(base, 'H', 3):
+                        yield parts, 'trihydride', mol_charge
+            
+            # Mixed adducts: MOH2+, MO2H+ (4 atoms total)
+            if {'O', 'H'}.issubset(selected):
+                for base in matrix:
+                    if base in ('O', 'H'):
+                        continue
+                    # MO2H+
+                    for parts in _multi_adduct_formulas(base, ('O', 'O', 'H')):
+                        yield parts, 'mixed oxide-hydride', mol_charge
+                    # MOH2+
+                    for parts in _multi_adduct_formulas(base, ('O', 'H', 'H')):
+                        yield parts, 'mixed oxide-hydride', mol_charge
         
-        # Larger mixed adducts: MO3H+, MO2H2+, MOH3+
-        if {'O', 'H'}.issubset(selected):
-            for base in matrix:
-                if base in ('O', 'H'):
-                    continue
-                for parts in _multi_adduct_formulas(base, ('O', 'O', 'O', 'H')):
-                    yield parts, 'mixed oxide-hydride', molecular_charge
-                for parts in _multi_adduct_formulas(base, ('O', 'O', 'H', 'H')):
-                    yield parts, 'mixed oxide-hydride', molecular_charge
-                for parts in _multi_adduct_formulas(base, ('O', 'H', 'H', 'H')):
-                    yield parts, 'mixed oxide-hydride', molecular_charge
+        # Even larger clusters for maxsize >= 5
+        if maxsize >= 5:
+            # Tetraoxides (MO4+)
+            if 'O' in selected:
+                for base in matrix:
+                    if base == 'O':
+                        continue
+                    for parts in _adduct_formulas(base, 'O', 4):
+                        yield parts, 'tetraoxide', mol_charge
+            
+            # Larger mixed adducts: MO3H+, MO2H2+, MOH3+
+            if {'O', 'H'}.issubset(selected):
+                for base in matrix:
+                    if base in ('O', 'H'):
+                        continue
+                    for parts in _multi_adduct_formulas(base, ('O', 'O', 'O', 'H')):
+                        yield parts, 'mixed oxide-hydride', mol_charge
+                    for parts in _multi_adduct_formulas(base, ('O', 'O', 'H', 'H')):
+                        yield parts, 'mixed oxide-hydride', mol_charge
+                    for parts in _multi_adduct_formulas(base, ('O', 'H', 'H', 'H')):
+                        yield parts, 'mixed oxide-hydride', mol_charge
 
 
 def _isotopes(element):
