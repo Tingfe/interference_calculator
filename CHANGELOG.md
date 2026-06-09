@@ -7,6 +7,76 @@ This changelog focuses on product changes that matter to users. Internal
 implementation details, CI mechanics, and test-only changes are kept in commit
 history and release documentation.
 
+## [2.6.1] - 2026-06-09
+
+### 中文
+
+#### Bug 修复
+
+##### 无机干扰计算模板扩展 (maxsize > 3)
+- **问题**: `inorganic_interference` 函数即使设置 `maxsize=6`，也只生成 ≤3 原子的分子
+- **根因**: 模板驱动方法硬编码了 maxsize=3 的限制
+- **修复**: 添加 4-5 原子模板支持
+  - 三氧化物 (MO₃⁺)、三氢化物 (MH₃⁺)
+  - 混合加合物 (MO₂H⁺, MOH₂⁺)
+  - 四氧化物 (MO₄⁺) 及更大混合团簇
+- **影响**: 现在 `maxsize` 参数真正生效，支持深度分析
+
+##### 分子离子多电荷支持
+- **问题**: 只有原子离子支持多电荷，所有分子模板固定为单电荷
+- **根因**: `molecular_charge` 变量被硬编码为 1 或 `charges[0]`
+- **修复**: 所有分子模板现在遍历用户指定的所有电荷状态
+- **影响**: 设置 `charge=[1, 2]` 时，会生成 MO⁺ 和 MO²⁺ 等双电荷分子
+
+#### 文档改进
+
+##### 形成因子理论依据完善
+- **文献调研**: 深度调研 12+ 篇关键文献 (JJF 1159-2006 国标、ACS 论文等)
+- **置信度标注**: 所有形成因子添加 ★★★★★ 到 ★☆☆☆☆ 置信度评级
+  - ★★★★★ ICP-MS 氧化物/双电荷: 基于国际标准，不确定度 <20%
+  - ★★★☆☆ GDMS/SIMS: 从 ICP-MS 外推，不确定度 50-100%
+  - ★☆☆☆☆ maxsize ≥ 4: 纯理论推测，无实验验证
+- **参数调整**: 基于文献证据优化 GDMS 参数
+  - 双电荷: 1.0e-2 → 5.0e-3 (辉光放电能量分布更温和)
+  - 等离子体加合物: 1.0e-4 → 5.0e-5 (低气压碰撞频率低)
+- **用户校准**: 添加详细的用户校准流程文档和示例代码
+- **透明度**: 明确标注哪些值有文献支撑，哪些是经验估计
+
+### English
+
+#### Bug Fixes
+
+##### Inorganic Interference Template Extension (maxsize > 3)
+- **Issue**: `inorganic_interference` only generated molecules with ≤3 atoms even when `maxsize=6` was set
+- **Root Cause**: Template-driven approach had hardcoded maxsize=3 limit
+- **Fix**: Added support for 4-5 atom templates
+  - Trioxides (MO₃⁺), trihydrides (MH₃⁺)
+  - Mixed adducts (MO₂H⁺, MOH₂⁺)
+  - Tetraoxides (MO₄⁺) and larger mixed clusters
+- **Impact**: `maxsize` parameter now works correctly for deep analysis
+
+##### Multi-Charge Support for Molecular Ions
+- **Issue**: Only atomic ions supported multiple charges; all molecular templates were fixed at single charge
+- **Root Cause**: `molecular_charge` variable was hardcoded to 1 or `charges[0]`
+- **Fix**: All molecular templates now iterate over all user-specified charge states
+- **Impact**: Setting `charge=[1, 2]` generates both MO⁺ and MO²⁺ doubly charged molecules
+
+#### Documentation Improvements
+
+##### Formation Factor Theoretical Foundation
+- **Literature Review**: Comprehensive survey of 12+ key references (JJF 1159-2006 standard, ACS papers, etc.)
+- **Confidence Ratings**: All formation factors annotated with ★★★★★ to ★☆☆☆☆ confidence levels
+  - ★★★★★ ICP-MS oxide/double charge: Based on international standards, uncertainty <20%
+  - ★★★☆☆ GDMS/SIMS: Extrapolated from ICP-MS, uncertainty 50-100%
+  - ★☆☆☆☆ maxsize ≥ 4: Pure theoretical estimates, no experimental validation
+- **Parameter Adjustments**: Optimized GDMS parameters based on literature evidence
+  - Doubly charged: 1.0e-2 → 5.0e-3 (milder energy distribution in glow discharge)
+  - Plasma adducts: 1.0e-4 → 5.0e-5 (lower collision frequency at low pressure)
+- **User Calibration**: Added detailed calibration procedure documentation with code examples
+- **Transparency**: Clearly marked which values have literature support vs. empirical estimates
+
+---
+
 ## [2.6.0] - 2026-06-09
 
 ### 中文
