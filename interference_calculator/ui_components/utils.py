@@ -1,9 +1,30 @@
 """Shared utility functions for UI components.
 
 This module contains helper functions used across multiple UI component modules.
+It is dependency-free (only imports Qt) so that ui.py and ui_components/* can
+share constants and helpers without creating circular imports.
 """
 
 from PyQt5 import QtGui
+
+
+# ---------------------------------------------------------------------------
+# Colour palette constants
+#
+# Qt uses 0-255 ints, Matplotlib uses 0-1 floats for RGB.
+# Palette follows a data-dense scientific tool system: blue for primary data,
+# amber for unresolved/risk states, red for destructive/error states.
+#
+# These live here (rather than in ui.py) so that ui_components modules can
+# import them without pulling in the whole ui.py module (circular import).
+# ---------------------------------------------------------------------------
+_red = (220, 38, 38)    # dc2626
+_blue = (30, 64, 175)   # 1e40af
+_amber = (217, 119, 6)  # d97706
+_blueF = [c / 255 for c in _blue]
+_redF = [c / 255 for c in _red]
+_amberF = [c / 255 for c in _amber]
+_mutedF = [100 / 255, 116 / 255, 139 / 255]
 
 
 # UI text dictionaries (imported from ui.py to avoid circular dependencies)

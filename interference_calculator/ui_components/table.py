@@ -6,6 +6,7 @@ This module contains:
 - HTMLDelegate: Item delegate for rendering HTML in table cells
 """
 
+import logging
 import re
 
 import numpy as np
@@ -14,8 +15,14 @@ from PyQt5 import QtCore, QtGui
 from PyQt5 import QtWidgets as widgets
 
 from interference_calculator.molecule import Molecule
-from interference_calculator.ui import _red
-from interference_calculator.ui_components.utils import _text, _type_display, _column_display
+from interference_calculator.ui_components.utils import (
+    _red,
+    _text,
+    _type_display,
+    _column_display,
+)
+
+_logger = logging.getLogger(__name__)
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -43,7 +50,8 @@ class TableModel(QtCore.QAbstractTableModel):
                         # formula
                         try:
                             m = Molecule(value)
-                        except Exception:
+                        except Exception as exc:
+                            _logger.debug('Could not parse %r as molecule: %s', value, exc)
                             return str(value)
                         else:
                             return re.sub(r'<[^>]+>', '', m.formula(style='html', all_isotopes=True))
@@ -78,7 +86,8 @@ class TableModel(QtCore.QAbstractTableModel):
                         # formula
                         try:
                             m = Molecule(value)
-                        except Exception:
+                        except Exception as exc:
+                            _logger.debug('Could not parse %r as molecule: %s', value, exc)
                             return str(value)
                         else:
                             return re.sub(r'<[^>]+>', '', m.formula(style='html', all_isotopes=True))
@@ -210,18 +219,3 @@ class HTMLDelegate(widgets.QStyledItemDelegate):
         textbox.setTextWidth(options.rect.width())
 
         return QtCore.QSize(textbox.idealWidth(), textbox.size().height())
-
-
-# Lazy imports to avoid circular dependencies
-def __getattr__(name):
-    if name == 'np':
-        import numpy as np
-        return np
-    elif name == 'pd':
-        import pandas as pd
-        return pd
-    elif name == '_red':
-        # Import from ui module for color constant
-        from interference_calculator.ui import _red
-        return _red
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

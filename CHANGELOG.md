@@ -7,6 +7,71 @@ This changelog focuses on product changes that matter to users. Internal
 implementation details, CI mechanics, and test-only changes are kept in commit
 history and release documentation.
 
+## [2.7.0] - 2026-06-15
+
+### 中文
+
+#### 🚀 性能优化
+
+##### 核心算法重写——向量化加速
+- **问题**: `interference()` 函数调用 `Molecule()` 对每个筛选结果进行 pyparsing 重新解析，造成性能瓶颈；`interference_gpu()` 函数从未实现真正的 GPU 加速。
+- **修复**: 完全重写 `interference()` 核心算法：
+  - **单次 NumPy 枚举**替代双重 itertools 枚举，mass sum 使用纯 NumPy 矩阵运算
+  - **绕过 Molecule 解析**：丰度直接用多项分布公式计算，公式直接从结构化数据格式化
+  - **无新依赖**、无需 GPU，所有加速在普通 CPU 上实现
+- **基准测试**（14 元素，45 同位素）：
+  - maxsize=2: **43.8×** 加速（12.5ms → 0.3ms）
+  - maxsize=3: **30.7×** 加速（35ms → 1.1ms）
+  - maxsize=4: **7.0×** 加速（101ms → 14ms）
+  - maxsize=5: **2.2×** 加速（358ms → 160ms）
+- `interference_gpu()` 从空头函数改为透明调用优化后的 CPU 版本，不再需要 CuPy
+
+#### 🧹 代码质量与仓库卫生
+
+##### Bug 修复
+- **循环导入**：`ui.py` ↔ `ui_components/table.py` 相互依赖，导致特定导入路径下的 `ImportError`。将颜色常量下沉到 `utils.py` 后彻底切断循环。
+- **可变默认参数**：移除公共 API 中 `charge=[]` 和 `template={}` 等可变默认参数反模式。
+- **弃用警告**：消除 pyparsing `oneOf` → `one_of` 弃用警告、LaTeX/mhchem 模板字符串的无效转义序列警告。
+
+##### 异常可观测性
+- 为 5 处裸 `except Exception:` 补充 `logging.debug/warning`，静默吞错改为可调试。
+
+##### 仓库清理
+- 删除被 Git 跟踪的垃圾文件 `=7.0`（误重定向产物）
+- 删除工作树中所有 `.DS_Store` 文件
+- 完善 `.gitignore`（macOS 元文件、覆盖率、IDE 配置）
+
+### English
+
+#### 🚀 Performance
+
+##### Core Algorithm Rewrite — Vectorisation Speedup
+- **Problem**: `interference()` called `Molecule()` (pyparsing) for every filtered result, creating a bottleneck; `interference_gpu()` never implemented real GPU acceleration.
+- **Fix**: Complete rewrite of `interference()` core algorithm:
+  - **Single-pass NumPy enumeration** replaces double itertools enumeration
+  - **Bypasses Molecule entirely**: abundance computed via direct multinomial formula, formula formatted from structured index data
+  - **No new dependencies, no GPU required** — all speedups on plain CPU
+- **Benchmark** (14 elements, 45 isotopes):
+  - maxsize=2: **43.8×** faster (12.5ms → 0.3ms)
+  - maxsize=3: **30.7×** faster (35ms → 1.1ms)
+  - maxsize=4: **7.0×** faster (101ms → 14ms)
+  - maxsize=5: **2.2×** faster (358ms → 160ms)
+- `interference_gpu()` now transparently delegates to the optimised CPU path; CuPy is no longer required.
+
+#### 🧹 Code Quality & Housekeeping
+
+##### Bug Fixes
+- **Circular import**: `ui.py` ↔ `ui_components/table.py` circular dependency resolved by moving colour constants into `utils.py`.
+- **Mutable defaults**: Removed `charge=[]` and `template={}` anti-patterns from public API.
+- **Deprecation warnings**: pyparsing `oneOf` → `one_of`; LaTeX/mhchem raw string escapes.
+
+##### Exception observability
+- Added `logging.debug/warning` to 5 bare `except Exception:` clauses.
+
+##### Repository cleanup
+- Removed tracked junk file `=7.0`.
+- Deleted `.DS_Store` files from working tree; enhanced `.gitignore`.
+
 ## [2.6.1] - 2026-06-09
 
 ### 中文
@@ -799,7 +864,9 @@ history and release documentation.
 - Spectrum axes are centered on the target peak and can be shown as `Δppm` or
   `Δm/z`.
 
-[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.6.0...HEAD
+[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.7.0...HEAD
+[2.7.0]: https://github.com/Tingfe/interference_calculator/compare/v2.6.1...v2.7.0
+[2.6.1]: https://github.com/Tingfe/interference_calculator/compare/v2.6.0...v2.6.1
 [2.6.0]: https://github.com/Tingfe/interference_calculator/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/Tingfe/interference_calculator/compare/v2.4.2...v2.5.0
 [2.4.2]: https://github.com/Tingfe/interference_calculator/compare/v2.4.1...v2.4.2

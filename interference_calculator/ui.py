@@ -58,6 +58,15 @@ from interference_calculator.ui_components import (
     InterferenceFilterProxy,
     CalculationWorker,
 )
+from interference_calculator.ui_components.utils import (
+    _red,
+    _blue,
+    _amber,
+    _blueF,
+    _redF,
+    _amberF,
+    _mutedF,
+)
 
 _isotope_rx = re.compile(r'(\d*[A-Z][a-z]{0,2})')
 _charges_rx = re.compile(r'(\d+)')
@@ -109,16 +118,8 @@ def _sort_profiles_periodic(profiles):
         ),
     )
 
-# Qt uses 0-255 ints, Matplotlib uses 0-1 floats for RGB.
-# Palette follows a data-dense scientific tool system: blue for primary data,
-# amber for unresolved/risk states, red for destructive/error states.
-_red = (220, 38, 38)    #dc2626
-_blue = (30, 64, 175)   #1e40af
-_amber = (217, 119, 6)  #d97706
-_blueF = [c/255 for c in _blue]
-_redF = [c/255 for c in _red]
-_amberF = [c/255 for c in _amber]
-_mutedF = [100/255, 116/255, 139/255]
+# Colour palette constants are imported from ui_components.utils above
+# (defined there to avoid a circular import with ui_components.table).
 
 _TYPE_DISPLAY = {
     'en': {

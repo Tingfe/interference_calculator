@@ -7,6 +7,9 @@ import os
 import time
 import unittest
 
+import numpy as np
+import pandas as pd
+
 import interference_calculator as ic
 
 
@@ -191,20 +194,22 @@ class TestPerformanceOptimization(unittest.TestCase):
 
 
 class TestGPUInterface(unittest.TestCase):
-    """Test GPU acceleration interface (stub)."""
-    
-    def test_gpu_interface_raises_import_error_without_cupy(self):
-        """Test that GPU function raises helpful error when CuPy not installed."""
+    """Test GPU compatibility wrapper (now delegates to optimised CPU path)."""
+
+    def test_gpu_interface_delegates_to_interference(self):
+        """Test that interference_gpu produces identical results."""
         atoms = ['As', 'Ar']
         target_mz = 75.0
-        
-        # Should raise ImportError with helpful message
-        with self.assertRaises(ImportError) as context:
-            ic.interference_gpu(atoms, target_mz, maxsize=2)
-        
-        # Check error message mentions CuPy
-        self.assertIn('CuPy', str(context.exception))
-        self.assertIn('cupy-cuda', str(context.exception))
+
+        df_gpu = ic.interference_gpu(atoms, target_mz, maxsize=2)
+        df_cpu = ic.interference(atoms, target_mz, maxsize=2)
+
+        self.assertIsInstance(df_gpu, pd.DataFrame)
+        self.assertEqual(len(df_gpu), len(df_cpu))
+        # Columns and core values should match
+        for col in ('molecule', 'charge', 'mass/charge', 'probability'):
+            self.assertTrue((df_gpu[col] == df_cpu[col]).all(),
+                            msg='Column {} differs'.format(col))
 
 
 if __name__ == '__main__':

@@ -21,8 +21,8 @@ mass_electron = 0.000548579909065
 # parser elements used by all forms
 _opt_int = pp.Optional(pp.Word(pp.nums))
 _element = pp.Combine(pp.Word(pp.alphas.upper(), exact=1) + pp.Optional(pp.Word(pp.alphas.lower(), max=2)))
-_neutral = pp.oneOf('o 0')
-_charged = pp.oneOf('+ -')
+_neutral = pp.one_of('o 0')
+_charged = pp.one_of('+ -')
 
 ### isotope notation in Backus-Naur form (-ish)
 # example: 12C2 18O -
@@ -86,7 +86,7 @@ html_template = {
 }
 
 latex_template = {
-    'begin': '$\mathrm{',
+    'begin': r'$\mathrm{',
     'atomic_mass': '{{}}^{{{}}}',
     'element': '{{{}}}',
     'count': '_{{{}}}',
@@ -98,7 +98,7 @@ latex_template = {
 }
 
 mhchem_template = {
-    'begin': '\ce{',
+    'begin': r'\ce{',
     'atomic_mass': '^{{{}}}',
     'element': '{}',
     'count': '{}',
@@ -347,7 +347,7 @@ class Molecule(object):
             abun_per_el.append(abun)
         self.abundance = prod(abun_per_el)
 
-    def formula(self, style='plain', HtoD=True, show_charge=True, all_isotopes=False, template={}):
+    def formula(self, style='plain', HtoD=True, show_charge=True, all_isotopes=False, template=None):
         """ Return the molecular formula as a string.
 
             The molecular formula can be formatted as html

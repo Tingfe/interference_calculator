@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """ Calculate mass interference and standard isotopic ratios for mass spectrometry. """
 
-__version__ = '2.6.1'
+__version__ = '2.7.0'
 __name__ = 'interference_calculator'
 __author__ = 'Zan Peeters'
 __maintainer__ = 'Tingfe'
@@ -30,7 +30,6 @@ __all__ = [
     'mass_electron',
     'templates',
     'interference',
-    'interference_gpu',
     'standard_ratio',
     'inorganic_interference',
 ]
