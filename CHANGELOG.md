@@ -7,6 +7,27 @@ This changelog focuses on product changes that matter to users. Internal
 implementation details, CI mechanics, and test-only changes are kept in commit
 history and release documentation.
 
+## [2.8.1] - 2026-07-08
+
+### 中文
+
+#### Bug 修复
+- 修复导入 TRR/GDR 实测峰叠加在干扰谱图中看起来与原始峰型不一致的问题。
+- 候选干扰峰仍使用对数风险轴；导入的 Mass / Values 实测 profile 现在使用线性、单峰归一化尺度绘制，更接近原始 TRR/GDR 点列的可见峰形。
+- 谱图工具栏文案从“实测峰（测试）”调整为“实测峰形”，并明确“匹配 m/z”只是可选的显示对齐，不改变干扰计算或结果表。
+
+### English
+
+#### Bug Fixes
+- Fixed imported TRR/GDR profile overlays appearing visibly different from the
+  original peak shape in the interference spectrum window.
+- Candidate interference stems still use the logarithmic risk axis, while
+  imported Mass/Values profile traces are now drawn with a linear,
+  profile-normalised scale so the visible shape follows the raw TRR/GDR points
+  more closely.
+- Updated profile-overlay labels and help text to clarify that Match m/z is an
+  optional display alignment and does not change calculations or result tables.
+
 ## [2.8.0] - 2026-07-08
 
 ### 中文
@@ -913,7 +934,8 @@ history and release documentation.
 - Spectrum axes are centered on the target peak and can be shown as `Δppm` or
   `Δm/z`.
 
-[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.8.0...HEAD
+[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.8.1...HEAD
+[2.8.1]: https://github.com/Tingfe/interference_calculator/compare/v2.8.0...v2.8.1
 [2.8.0]: https://github.com/Tingfe/interference_calculator/compare/v2.7.0...v2.8.0
 [2.7.0]: https://github.com/Tingfe/interference_calculator/compare/v2.6.1...v2.7.0
 [2.6.1]: https://github.com/Tingfe/interference_calculator/compare/v2.6.0...v2.6.1

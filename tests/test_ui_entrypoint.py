@@ -448,6 +448,19 @@ class UIImportedElementSetTests(unittest.TestCase):
         self.assertAlmostEqual(float(ys.max()), 100.0)
         spectrum.close()
 
+    def test_spectrum_draws_imported_profile_with_linear_y_scale(self):
+        spectrum = self.ui.Spectrum(language='en')
+        rect = self.ui.QtCore.QRectF(0.0, 0.0, 100.0, 210.0)
+
+        y0 = spectrum._profile_y_pixel_for(0.0, rect)
+        y50 = spectrum._profile_y_pixel_for(50.0, rect)
+        y100 = spectrum._profile_y_pixel_for(100.0, rect)
+
+        self.assertAlmostEqual(y0 - y50, y50 - y100)
+        self.assertGreater(y0, y50)
+        self.assertGreater(y50, y100)
+        spectrum.close()
+
     def test_spectrum_can_match_imported_profile_center_to_theoretical_mz(self):
         spectrum = self.ui.Spectrum(language='en')
         target_mz = 55.934936

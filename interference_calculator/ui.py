@@ -181,7 +181,7 @@ _UI_TEXT = {
         'spectrum_target_title': 'Target-centered interference spectrum',
         'spectrum_title': 'Inorganic interference spectrum',
         'y_normalised': '{} (normalised)',
-        'y_normalised_with_profiles': '{} / profile signal (profile-normalised)',
+        'y_normalised_with_profiles': '{} (log) / profile signal (linear, profile-normalised)',
         'candidate': 'candidate',
         'not_resolved': 'not resolved',
         'target_peak': 'target',
@@ -319,12 +319,12 @@ _UI_TEXT = {
         'zoom_out_y': 'Zoom out (Y axis)',
         'zoom_in_y': 'Zoom in (Y axis)',
         'reset_view': 'Reset view',
-        'show_imported_profiles': 'Profiles (test)',
+        'show_imported_profiles': 'Profile shape',
         'show_imported_profiles_tooltip': (
-            'Experimental overlay, off by default. Show imported GDMS '
-            'Mass/Values peak profiles. The selected target profile '
-            'centroid/apex is aligned to the theoretical target center before '
-            'plotting.'
+            'Show imported GDMS Mass/Values peak profiles using their original '
+            'point shape and a linear normalised profile scale. The x-axis is '
+            'shown in the current target-centered coordinates. Use Match m/z '
+            'only when you want display-only theoretical alignment.'
         ),
         'match_profile_mz': 'Match m/z',
         'match_profile_mz_tooltip': (
@@ -385,7 +385,7 @@ _UI_TEXT = {
         'spectrum_target_title': '以目标峰为中心的干扰谱图',
         'spectrum_title': '无机干扰谱图',
         'y_normalised': '{}（归一化）',
-        'y_normalised_with_profiles': '{} / 实测信号（各峰归一化）',
+        'y_normalised_with_profiles': '{}（log）/ 实测信号（线性，各峰归一化）',
         'candidate': '候选峰',
         'not_resolved': '未分辨',
         'target_peak': '目标峰',
@@ -520,10 +520,11 @@ _UI_TEXT = {
         'zoom_out_y': '缩小 Y 轴',
         'zoom_in_y': '放大 Y 轴',
         'reset_view': '重置视图',
-        'show_imported_profiles': '实测峰（测试）',
+        'show_imported_profiles': '实测峰形',
         'show_imported_profiles_tooltip': (
-            '实验性叠加功能，默认关闭。显示导入的 GDMS Mass / Values 真实峰形。'
-            '绘图前会将所选目标峰的谱图质心 / 峰顶对齐到理论目标峰中心。'
+            '显示导入的 GDMS Mass / Values 真实峰形，使用原始点列和线性归一化'
+            '实测峰尺度。横坐标沿用当前目标居中坐标；只有需要理论位置对齐时，'
+            '再使用“匹配 m/z”。'
         ),
         'match_profile_mz': '匹配 m/z',
         'match_profile_mz_tooltip': (
@@ -1809,6 +1810,24 @@ class Spectrum(widgets.QWidget):
             return np.array([]), np.array([])
         return np.array(xs, dtype=float), np.array(ys, dtype=float)
 
+    def _profile_y_pixel_for(self, y_value, chart_rect):
+        """Map a normalised imported profile signal with a linear y scale.
+
+        Candidate interference stems use the logarithmic risk axis. Imported
+        GDMS profile traces are different data: they are real Mass/Values peak
+        shapes. Drawing them linearly preserves the visible TRR/GDR peak shape
+        and avoids the log axis making shoulders and tails look broader than
+        they are in the raw profile viewer.
+        """
+        try:
+            y_value = float(y_value)
+        except (TypeError, ValueError):
+            y_value = 0.0
+        if not np.isfinite(y_value):
+            y_value = 0.0
+        y_value = max(0.0, min(100.0, y_value))
+        return chart_rect.bottom() - (y_value / 105.0) * chart_rect.height()
+
     def _label_indices(self):
         priority = np.ones(self._data.shape[0], dtype=int)
         priority[self._unresolved_mask] = 2
@@ -2272,7 +2291,10 @@ class Spectrum(widgets.QWidget):
                     if x_value < x_min or x_value > x_max:
                         started = False
                         continue
-                    point = QtCore.QPointF(x2p(x_value), y2p(y_value))
+                    point = QtCore.QPointF(
+                        x2p(x_value),
+                        self._profile_y_pixel_for(y_value, cr),
+                    )
                     if not started:
                         path.moveTo(point)
                         started = True
@@ -2285,7 +2307,10 @@ class Spectrum(widgets.QWidget):
                 apex_x = xs[apex_row]
                 apex_y = ys[apex_row]
                 raw_mass, raw_intensity = overlay.get('points', ())[int(apex_row)]
-                apex_point = QtCore.QPointF(x2p(apex_x), y2p(apex_y))
+                apex_point = QtCore.QPointF(
+                    x2p(apex_x),
+                    self._profile_y_pixel_for(apex_y, cr),
+                )
                 marker_color = QtGui.QColor(color)
                 marker_color.setAlpha(170 if overlay.get('is_target') else 105)
                 painter.setPen(QtGui.QPen(marker_color, 1.0))

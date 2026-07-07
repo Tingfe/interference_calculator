@@ -210,10 +210,10 @@ mass/intensity data; raw-file import prefers the stored centroid mass as the
 observed position. Imported target labels show natural isotope abundance.
 Multi-run raw files ask for a run selection and mark isotope-set mismatches.
 The spectrum view can also overlay the real peak profiles from the imported
-file. The selected target profile
-centroid/apex is aligned to the theoretical target center before plotting, so
-real profile shapes and theoretical interference candidates share the same
-target-centered axis. This overlay is experimental and off by default. The
+file. Imported Mass/Values points are drawn as a linear, profile-normalised
+trace so the visible peak shape follows the raw profile points more closely
+than the logarithmic interference-risk axis. The x-axis still uses the current
+target-centered coordinates for comparison with candidate interferences. The
 spectrum toolbar also provides a display-only Match m/z switch that aligns each
 observed profile center to the corresponding theoretical isotope m/z for visual
 comparison. It turns on profile overlays automatically and draws guide lines
@@ -294,11 +294,11 @@ TRR 或 Elsima GDR 原始文件，读取 Fe{56} 这类同位素谱图，用文�
 谱图 m/z；原始文件导入会优先使用保存的质心质量作为 observed 位置。
 导入目标峰列表会显示同位素天然丰度，m/z 详情显示在下方。多 Run 原始文件会先选择
 Run，并标记同位素集合不同于多数 Run 的项目。
-谱图窗口还可以通过默认关闭的实验开关叠加显示导入文件中的真实峰形；
-绘图前会将所选目标峰
-的谱图质心 / 峰顶对齐到理论目标峰中心，因此真实峰形和理论干扰候选峰共用同一个
-目标居中横轴。谱图工具栏还提供仅用于显示的匹配 m/z 开关，可将每条实测峰中心
-对齐到对应同位素的理论 m/z，并显示参考线和偏移量标签，便于目视比较。</p>
+谱图窗口还可以叠加显示导入文件中的真实峰形。导入的 Mass / Values 点会按线性、
+单峰归一化方式绘制，使可见峰形更接近原始谱图点列，而不是被干扰风险的对数坐标
+改变外观。横坐标仍沿用当前目标居中坐标，便于和候选干扰峰比较。谱图工具栏还提供
+仅用于显示的匹配 m/z 开关，可将每条实测峰中心对齐到对应同位素的理论 m/z，并显示
+参考线和偏移量标签，便于目视比较。</p>
 
 <p>GDMS 的目标窗口默认使用 2000 ppm，并按完整窗口宽度输入。例如 2000 ppm 表示
 软件会在校准后的目标峰两侧各搜索 1000 ppm。有导入 Mass 点时，可选的自动开关会
