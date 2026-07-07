@@ -29,6 +29,17 @@ mass window, and resolving power. General scan keeps the older enumeration path.
 </body></html>
 '''
 
+sample_profile_tooltip = '''
+<html><head/><body>
+<p><b>Sample prior profile.</b></p>
+<p>Applies matrix, impurity ppm, background, and plasma priors to the
+interference risk score. Use this when the sample type is known, such as
+high-purity metals, stainless steel, silicate/glass, or graphite/carbon.</p>
+<p>Profiles are qualitative screening priors, not certified material
+specifications.</p>
+</body></html>
+'''
+
 charge_preset_input_tooltip = '''
 <html><head/><body>
 <p><b>Ion charge preset.</b></p>
@@ -329,6 +340,7 @@ _TOOLTIPS = {
         'atoms': atoms_input_tooltip,
         'element_set': element_set_input_tooltip,
         'mode': mode_input_tooltip,
+        'sample_profile': sample_profile_tooltip,
         'charge_preset': charge_preset_input_tooltip,
         'mz': mz_input_tooltip,
         'mzrange': mzrange_input_tooltip,
@@ -363,6 +375,14 @@ _TOOLTIPS = {
 <p><b>仪器预设。</b></p>
 <p>GDMS、ICP-MS 和 SIMS 会设置离子电荷、风险模型、质量窗口和分辨能力的实用默认值。
 通用扫描保留原有枚举计算路径。</p>
+</body></html>
+''',
+        'sample_profile': '''
+<html><head/><body>
+<p><b>样品先验画像。</b></p>
+<p>把基体、杂质 ppm、背景元素和等离子体气氛纳入干扰风险评分。
+当样品类型已知时使用，例如高纯金属、不锈钢、硅酸盐/玻璃或石墨/碳基体。</p>
+<p>画像是定性筛查先验，不是材料牌号标准或证书限值。</p>
 </body></html>
 ''',
         'charge_preset': '''

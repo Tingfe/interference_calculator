@@ -27,18 +27,25 @@ jobs:
       - name: Run flake8
         run: |
           flake8 interference_calculator/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
-      
-      - name: Check code formatting with black
+
+      - name: Compile package modules
         run: |
-          black --check interference_calculator/ tests/ || echo "Code formatting issues found"
-      
-      - name: Check import sorting with isort
+          python -m compileall -q interference_calculator
+
+      - name: Check code formatting with black (advisory)
+        continue-on-error: true
         run: |
-          isort --check-only interference_calculator/ tests/ || echo "Import sorting issues found"
-      
-      - name: Run mypy type checking
+          black --check interference_calculator/ tests/
+
+      - name: Check import sorting with isort (advisory)
+        continue-on-error: true
         run: |
-          mypy interference_calculator/ --ignore-missing-imports || echo "Type checking warnings found"
+          isort --check-only interference_calculator/ tests/
+
+      - name: Run mypy type checking (advisory)
+        continue-on-error: true
+        run: |
+          mypy interference_calculator/ --ignore-missing-imports
 
   # Test Matrix
   test:

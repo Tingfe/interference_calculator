@@ -1,8 +1,8 @@
-# 无机质谱峰干扰计算器 2.6.0 图文用户手册
+# 无机质谱峰干扰计算器 2.8.0 图文用户手册
 
 本手册面向 GDMS、ICP-MS、SIMS 等无机质谱峰干扰筛查场景。软件默认使用中文界面，也支持切换到英文；下面以中文界面为例。
 
-**版本**: v2.6.0 | **更新日期**: 2026年6月
+**版本**: v2.8.0 | **更新日期**: 2026年7月
 
 ## 1. 主界面
 
@@ -151,7 +151,15 @@ MRP 不改变候选峰生成范围。它只用于判断候选峰是否能与目�
 
 如果 `可分辨` 为 `否`，说明该候选峰在当前仪器条件下可能与目标峰重叠，需要优先关注。
 
-`风险` 是定性排序分数，用于筛查优先级，不是定量校正因子。
+`风险` 是定性排序分数，用于筛查优先级，不是定量校正因子。若通过 Python API 传入 `sample_profile`，风险会进一步乘以样品先验；结果表会新增 `sample prior`、`unweighted relative risk`、`expected relative intensity` 和 `risk rationale`，用于说明该风险来自基体、杂质还是背景元素。
+
+内置画像是面向 GDMS 干扰筛查的定性先验，不是材料牌号标准或证书限值。当前包括：
+
+- 高纯单质：Al、Cu、Fe、Ni、Ti、Si、Mg
+- 常见合金/基体：铝合金、不锈钢、镍基合金、铜基合金
+- 非金属/氧化物基体：硅酸盐/玻璃、石墨/碳基体
+
+例如高纯铝画像中，Al 是基体，AlO、AlH、Al2 等基体相关干扰会得到更高权重；Fe、Si、Mg、Cu 等 ppm 级杂质会按预估含量降低权重；O、H、C、N、Cl、S 按背景活度参与计算。
 
 ## 12. 查看谱图
 
@@ -239,6 +247,8 @@ v2.6.0 引入了配置持久化功能。您的设置(语言、模式、元素列
 
 ### 如何提高计算速度？
 
+v2.7.0 已默认使用向量化核心计算路径，通常不需要额外打开并行或剪枝开关。若计算仍然很慢，优先从输入规模入手：
+
 - 减少元素数量
 - 降低 maxsize (最大原子数)
 - 缩小窗口宽度
@@ -284,6 +294,38 @@ data = ic.inorganic_interference(
 ```
 
 GUI 中的 ppm 完整窗口会换算为 API 所需的 m/z 半宽。直接调用 API 时，`targetrange` 仍然表示 m/z 半宽。
+
+高纯铝样品画像：
+
+```python
+data = ic.inorganic_interference(
+    [],
+    None,
+    charge=[1],
+    maxsize=3,
+    risk_preset='gdms',
+    sample_profile='high-purity-aluminum',
+)
+```
+
+自定义样品画像：
+
+```python
+profile = {
+    'matrix': {'Al': 0.99999},
+    'expected_impurities_ppm': {'Fe': 10, 'Si': 20, 'Mg': 5, 'Cu': 1},
+    'background': {'O': 'medium', 'H': 'medium', 'C': 'low', 'N': 'low'},
+    'plasma': {'Ar': 'plasma'},
+    'unknown_element_activity': 'trace',
+}
+
+data = ic.inorganic_interference(
+    ['Al', 'Fe', 'Si', 'Mg', 'Cu', 'O', 'H', 'C', 'N', 'Ar'],
+    27.0,
+    targetrange=0.05,
+    sample_profile=profile,
+)
+```
 
 ## 17. 插件系统 (v2.6.0 新增)
 

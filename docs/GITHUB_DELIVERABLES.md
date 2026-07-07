@@ -114,7 +114,7 @@ Issue链接:
    :target: https://github.com/Tingfe/interference_calculator/graphs/contributors
    :alt: Contributors
 
-当前开发重点：**Optimization Roadmap 2026** (v2.6.0)
+当前开发重点：**Optimization Roadmap 2026** (v2.8.0)
 
 查看项目进展: `Project Board <https://github.com/Tingfe/interference_calculator/projects/1>`_
 ```

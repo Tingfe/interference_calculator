@@ -16,7 +16,8 @@ class CalculationWorker(QtCore.QObject):
     error = QtCore.pyqtSignal(str)
 
     def __init__(self, atoms, mz, targetrange, maxsize, charge, chargesign,
-                 risk_preset=None, instrument_mrp=0, language='en'):
+                 risk_preset=None, instrument_mrp=0, language='en',
+                 sample_profile=None):
         QtCore.QObject.__init__(self)
         self.atoms = atoms
         self.mz = mz
@@ -27,6 +28,7 @@ class CalculationWorker(QtCore.QObject):
         self.risk_preset = risk_preset
         self.instrument_mrp = instrument_mrp
         self.language = language
+        self.sample_profile = sample_profile
         self._cancelled = False
 
     def cancel(self):
@@ -44,7 +46,8 @@ class CalculationWorker(QtCore.QObject):
                 data = inorganic_interference(
                     self.atoms, self.mz, targetrange=self.targetrange,
                     maxsize=self.maxsize, charge=self.charge,
-                    chargesign=self.chargesign, risk_preset=self.risk_preset)
+                    chargesign=self.chargesign, risk_preset=self.risk_preset,
+                    sample_profile=self.sample_profile)
             if self._cancelled:
                 return
 

@@ -7,7 +7,7 @@
 .. _chinese-section:
 
 ============================================================
-无机质谱峰干扰计算器 / Inorganic MS Interference Calculator 2.6
+无机质谱峰干扰计算器 / Inorganic MS Interference Calculator 2.8
 ============================================================
 
 `English <english-section_>`_ | **中文**
@@ -26,6 +26,37 @@ GitHub Actions 自动构建，并发布在
 .. image:: docs/images/main_zh.png
    :align: center
    :alt: 中文界面截图
+
+2.8 版更新内容
+--------------
+
+v2.8.0 重点增强样品相关的动态干扰判断：
+
+* **样品画像先验**：计算时可选择材料画像，把基体、主要成分、痕量杂质、
+  背景气体和等离子体来源纳入干扰风险排序。
+* **内置常见材料体系**：包含高纯 Al/Cu/Fe/Ni/Ti/Si/Mg、铝合金、不锈钢、
+  镍基合金、铜基合金、硅酸盐玻璃、石墨/碳材料等 13 类画像。
+* **更透明的风险输出**：启用样品画像后，结果会显示样品先验、未加权风险、
+  预期相对强度和风险依据，便于判断干扰峰是否符合当前样品背景。
+* **GUI 直接选择画像**：主界面新增样品画像下拉框，未选择时保持原有计算逻辑。
+* **可扩展实验室经验库**：公共 API 支持传入自定义 ``sample_profile`` dict，
+  便于把实际样品体系和内部经验逐步沉淀到筛查模型中。
+
+2.7 版更新内容
+--------------
+
+v2.7.0 是一次面向核心计算性能和发布质量的稳定化发布：
+
+* **核心算法向量化重写**：``interference()`` 使用 NumPy 批量枚举和质量计算，
+  避免对每个候选结果重复调用 ``Molecule()`` / pyparsing 解析。
+* **CPU 即可获得大幅加速**：典型基准中 ``maxsize=2`` 至 ``maxsize=5`` 分别取得
+  约 43.8x、30.7x、7.0x 和 2.2x 加速，不再依赖未实现的 GPU 路径。
+* **API 向后兼容**：``use_pruning``、``n_workers`` 和 ``use_streaming`` 参数仍可
+  接收，但 2.7 的向量化路径已经不再依赖这些旧优化开关。
+* **代码质量修复**：清理循环导入、可变默认参数、弃用 API warning 和若干静默异常，
+  提升调试可见性。
+* **发布说明同步**：2.7 的中英文变更记录位于 ``CHANGELOG.md``，GitHub Release 会
+  自动提取对应版本段落。
 
 2.6 版更新内容
 --------------
@@ -65,7 +96,7 @@ v2.6.0 是一次全面优化发布，包含性能、架构、质量、文档和�
 项目信息
 --------
 
-当前版本：``2.6.0``
+当前版本：``2.8.0``
 
 原作者：Zan Peeters
 
@@ -90,7 +121,7 @@ v2.6.0 是一次全面优化发布，包含性能、架构、质量、文档和�
    :target: https://github.com/Tingfe/interference_calculator/graphs/contributors
    :alt: Contributors
 
-当前开发重点：**Optimization Roadmap 2026** (v2.6.0)
+当前开发重点：**Optimization Roadmap 2026** (v2.8.0 样品画像与动态干扰风险)
 
 查看项目进展: `Project Board <https://github.com/Tingfe/interference_calculator/projects/1>`_
 
@@ -216,6 +247,24 @@ GDMS 快速工作流
 
    相对风险 = 同位素概率 × 形成因子
 
+提供 ``sample_profile`` 时，软件会进一步融合样品先验：
+
+.. code-block:: text
+
+   相对风险 = 同位素概率 × 形成因子 × 样品先验
+
+例如高纯铝样品中，Al 基体相关的氧化物、氢化物和团簇会获得更高先验；
+ppm 级 Fe/Si/Mg/Cu 杂质相关干扰会按预估含量降低；O/H/C/N/Cl/S 等背景元素按
+背景活度参与计算。结果表会额外给出 ``sample prior``、``unweighted relative risk``、
+``expected relative intensity`` 和 ``risk rationale``，便于追溯风险来自基体、
+杂质还是背景。
+
+当前内置画像是面向 GDMS 干扰筛查的定性先验，不是材料牌号标准或证书限值：
+
+* 高纯单质：Al、Cu、Fe、Ni、Ti、Si、Mg
+* 常见合金/基体：铝合金、不锈钢、镍基合金、铜基合金
+* 非金属/氧化物基体：硅酸盐/玻璃、石墨/碳基体
+
 用于对可能的干扰进行排序审查，不应在缺乏特定方法校准的情况下用作定量丰度校正。
 
 数据来源
@@ -241,6 +290,38 @@ Python API
        charge=[1, 2],
        maxsize=3,
        risk_preset='gdms',
+   )
+
+高纯铝样品画像：
+
+.. code-block:: python
+
+   data = ic.inorganic_interference(
+       [],
+       None,
+       charge=[1],
+       maxsize=3,
+       risk_preset='gdms',
+       sample_profile='high-purity-aluminum',
+   )
+
+自定义样品画像：
+
+.. code-block:: python
+
+   profile = {
+       'matrix': {'Al': 0.99999},
+       'expected_impurities_ppm': {'Fe': 10, 'Si': 20, 'Mg': 5, 'Cu': 1},
+       'background': {'O': 'medium', 'H': 'medium', 'C': 'low', 'N': 'low'},
+       'plasma': {'Ar': 'plasma'},
+       'unknown_element_activity': 'trace',
+   }
+
+   data = ic.inorganic_interference(
+       ['Al', 'Fe', 'Si', 'Mg', 'Cu', 'O', 'H', 'C', 'N', 'Ar'],
+       27.0,
+       targetrange=0.05,
+       sample_profile=profile,
    )
 
 通用分子枚举仍可使用：
@@ -305,7 +386,7 @@ BSD 3-Clause Clear。详见 ``LICENSE.rst``。
 .. _english-section:
 
 =========================================
-Inorganic MS Interference Calculator 2.6
+Inorganic MS Interference Calculator 2.8
 =========================================
 
 **English** | `中文 <chinese-section_>`_
@@ -334,6 +415,45 @@ spectrum, and a compact data-dense results table.
 .. image:: docs/images/main_en.png
    :align: center
    :alt: English UI screenshot
+
+What Changed In 2.8
+-------------------
+
+Version 2.8.0 focuses on sample-aware dynamic interference screening:
+
+* **Sample-profile priors**: calculations can include material profiles that
+  weight matrix elements, major constituents, trace impurities, background
+  gases, and plasma sources in relative-risk ranking.
+* **Built-in material systems**: 13 profiles are included for high-purity
+  Al/Cu/Fe/Ni/Ti/Si/Mg, aluminum alloy, stainless steel, nickel-base alloy,
+  copper-base alloy, silicate glass, and graphite/carbon materials.
+* **More transparent risk output**: when a sample profile is enabled, results
+  include sample prior, unweighted risk, expected relative intensity, and risk
+  rationale fields.
+* **GUI profile selection**: the main window now has a sample-profile selector;
+  leaving it empty preserves the previous calculation behavior.
+* **Extensible lab knowledge base**: the public API accepts custom
+  ``sample_profile`` dictionaries for lab-specific material systems.
+
+What Changed In 2.7
+-------------------
+
+Version 2.7.0 is a stability and performance release focused on the core
+interference engine and release hygiene:
+
+* **Vectorised core algorithm**: ``interference()`` now uses NumPy batch
+  enumeration and mass calculation instead of reparsing each filtered result
+  through ``Molecule()`` / pyparsing.
+* **Large CPU speedups without GPU dependencies**: benchmarked speedups are
+  about 43.8x, 30.7x, 7.0x, and 2.2x for ``maxsize=2`` through ``maxsize=5``.
+  The old GPU wrapper now delegates to the optimized CPU path.
+* **Backward-compatible API**: ``use_pruning``, ``n_workers``, and
+  ``use_streaming`` are still accepted, but the 2.7 vectorised path no longer
+  depends on those legacy optimization switches.
+* **Code-quality fixes**: circular imports, mutable public defaults,
+  deprecation warnings, and several silent exception handlers were cleaned up.
+* **Release-note alignment**: the authoritative bilingual 2.7 release notes are
+  maintained in ``CHANGELOG.md`` and extracted automatically by GitHub Releases.
 
 What Changed In 2.6
 -------------------
@@ -405,7 +525,7 @@ import, target selection, release packaging, and startup experience:
 Project Metadata
 ----------------
 
-Current version: ``2.6.0``
+Current version: ``2.8.0``
 
 Original author: Zan Peeters
 
@@ -430,7 +550,7 @@ Development Status
    :target: https://github.com/Tingfe/interference_calculator/graphs/contributors
    :alt: Contributors
 
-Current focus: **Optimization Roadmap 2026** (v2.6.0)
+Current focus: **Optimization Roadmap 2026** (v2.8.0 sample profiles and dynamic interference risk)
 
 View progress: `Project Board <https://github.com/Tingfe/interference_calculator/projects/1>`_
 
@@ -602,6 +722,28 @@ Relative risk
 
    relative risk = isotope probability × formation factor
 
+When ``sample_profile`` is supplied, sample-specific priors are included:
+
+.. code-block:: text
+
+   relative risk = isotope probability × formation factor × sample prior
+
+For a high-purity aluminum sample, Al matrix oxides, hydrides, and clusters are
+weighted up; ppm-level Fe/Si/Mg/Cu impurity species are weighted by their
+expected concentration; O/H/C/N/Cl/S background species are weighted by their
+background activity. The result table adds ``sample prior``,
+``unweighted relative risk``, ``expected relative intensity``, and
+``risk rationale`` columns so the score can be traced back to matrix,
+impurity, or background assumptions.
+
+Built-in profiles are qualitative GDMS screening priors, not material-grade
+specifications or certificate limits:
+
+* High-purity elements: Al, Cu, Fe, Ni, Ti, Si, Mg
+* Common alloys/matrices: aluminum alloy, stainless steel, Ni-base alloy,
+  Cu-base alloy
+* Non-metal/oxide matrices: silicate/glass, graphite/carbon
+
 It helps rank interferences for review. It should not be used as a quantitative
 abundance correction without method-specific calibration.
 
@@ -631,6 +773,38 @@ Inorganic screening:
        charge=[1, 2],
        maxsize=3,
        risk_preset='gdms',
+   )
+
+High-purity aluminum sample profile:
+
+.. code-block:: python
+
+   data = ic.inorganic_interference(
+       [],
+       None,
+       charge=[1],
+       maxsize=3,
+       risk_preset='gdms',
+       sample_profile='high-purity-aluminum',
+   )
+
+Custom sample profile:
+
+.. code-block:: python
+
+   profile = {
+       'matrix': {'Al': 0.99999},
+       'expected_impurities_ppm': {'Fe': 10, 'Si': 20, 'Mg': 5, 'Cu': 1},
+       'background': {'O': 'medium', 'H': 'medium', 'C': 'low', 'N': 'low'},
+       'plasma': {'Ar': 'plasma'},
+       'unknown_element_activity': 'trace',
+   }
+
+   data = ic.inorganic_interference(
+       ['Al', 'Fe', 'Si', 'Mg', 'Cu', 'O', 'H', 'C', 'N', 'Ar'],
+       27.0,
+       targetrange=0.05,
+       sample_profile=profile,
    )
 
 General molecular enumeration is still available:

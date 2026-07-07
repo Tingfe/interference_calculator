@@ -69,7 +69,11 @@ class TableModel(QtCore.QAbstractTableModel):
                         return '{:.0f}'.format(value)
                     elif colname in ('probability', 'prob.'):
                         return '{:.5g}'.format(value)
-                    elif colname in ('formation factor', 'relative risk', 'risk'):
+                    elif colname in (
+                        'formation factor', 'relative risk', 'risk',
+                        'unweighted relative risk', 'sample prior',
+                        'expected relative intensity',
+                    ):
                         if value == '':
                             return ''
                         return '{:.3g}'.format(value)

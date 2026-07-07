@@ -1,5 +1,6 @@
 import math
 import unittest
+import warnings
 
 import interference_calculator as ic
 
@@ -66,6 +67,19 @@ class InterferenceTests(unittest.TestCase):
         target = data.loc[data['target']].iloc[0]
         self.assertEqual(target['charge'], 0)
         self.assertAlmostEqual(target['mass/charge'], ic.Molecule('75As').mass)
+
+    def test_interference_target_row_does_not_emit_mrp_divide_warning(self):
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always', RuntimeWarning)
+            data = ic.interference(['As'], '75As', targetrange=0.01, charge=1, chargesign='+')
+
+        self.assertEqual(data['target'].sum(), 1)
+        divide_warnings = [
+            item for item in caught
+            if issubclass(item.category, RuntimeWarning)
+            and 'divide by zero' in str(item.message)
+        ]
+        self.assertEqual(divide_warnings, [])
 
     def test_standard_ratio_calculates_relative_ratios(self):
         data = ic.standard_ratio(['O'])
@@ -160,6 +174,101 @@ class InorganicInterferenceTests(unittest.TestCase):
     def test_inorganic_mode_rejects_unknown_risk_preset(self):
         with self.assertRaises(ValueError):
             ic.inorganic_interference(['Ar', 'Cl'], '75As', risk_preset='unknown')
+
+    def test_inorganic_mode_weights_risk_with_sample_profile(self):
+        profile = {
+            'matrix': {'Al': 0.99999},
+            'expected_impurities_ppm': {'Fe': 10.0, 'Cu': 1.0},
+            'background': {'O': 'medium'},
+            'unknown_element_activity': 'ultra_trace',
+        }
+        data = ic.inorganic_interference(
+            ['Al', 'Fe', 'Cu', 'O'],
+            None,
+            charge=[1],
+            maxsize=2,
+            sample_profile=profile,
+        )
+
+        self.assertIn('sample prior', data.columns)
+        self.assertIn('unweighted relative risk', data.columns)
+        self.assertIn('expected relative intensity', data.columns)
+        self.assertIn('risk rationale', data.columns)
+
+        oxides = data[data['type'] == 'oxide']
+        al_oxide_risk = oxides[
+            oxides['molecule'].str.contains('Al')
+        ]['relative risk'].max()
+        fe_oxide_risk = oxides[
+            oxides['molecule'].str.contains('Fe')
+        ]['relative risk'].max()
+        self.assertGreater(al_oxide_risk, fe_oxide_risk)
+        cu_atomic_prior = data[
+            (data['type'] == 'atomic') & data['molecule'].str.contains('Cu')
+        ]['sample prior'].max()
+        self.assertAlmostEqual(cu_atomic_prior, 1.0e-6)
+
+    def test_inorganic_mode_sample_profile_preset_expands_atoms(self):
+        data = ic.inorganic_interference(
+            [],
+            None,
+            charge=[1],
+            maxsize=2,
+            sample_profile='high-purity-aluminum',
+        )
+
+        self.assertFalse(data.empty)
+        self.assertIn('Al', ''.join(data['molecule'].astype(str).tolist()))
+        self.assertIn('sample prior', data.columns)
+
+    def test_inorganic_mode_includes_common_sample_profile_presets(self):
+        expected_profiles = {
+            'high-purity-aluminum',
+            'high-purity-copper',
+            'high-purity-iron',
+            'high-purity-nickel',
+            'high-purity-titanium',
+            'high-purity-silicon',
+            'high-purity-magnesium',
+            'aluminum-alloy',
+            'stainless-steel',
+            'nickel-base-alloy',
+            'copper-base-alloy',
+            'silicate-glass',
+            'graphite-carbon',
+        }
+
+        self.assertTrue(expected_profiles.issubset(ic.SAMPLE_PROFILE_PRESETS))
+
+    def test_inorganic_mode_accepts_sample_profile_aliases(self):
+        data = ic.inorganic_interference(
+            [],
+            None,
+            charge=[1],
+            maxsize=1,
+            sample_profile='stainless steel',
+        )
+
+        self.assertFalse(data.empty)
+        self.assertIn('sample prior', data.columns)
+        self.assertTrue(data['risk rationale'].astype(str).str.contains('Cr:matrix').any())
+
+    def test_inorganic_mode_sample_profile_roles_drive_candidate_generation(self):
+        data = ic.inorganic_interference(
+            [],
+            None,
+            charge=[1],
+            maxsize=2,
+            sample_profile='graphite',
+        )
+
+        clusters = data[data['type'] == 'cluster']
+        self.assertFalse(clusters.empty)
+        self.assertTrue(clusters['risk rationale'].astype(str).str.contains('C:matrix').any())
+
+    def test_inorganic_mode_rejects_unknown_sample_profile(self):
+        with self.assertRaises(ValueError):
+            ic.inorganic_interference(['Al'], None, sample_profile='unknown-profile')
 
 
 if __name__ == '__main__':

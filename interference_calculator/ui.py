@@ -44,6 +44,7 @@ from interference_calculator.gdms_import import (
     parse_gdms_profile_file,
     parse_gdms_raw_runs,
 )
+from interference_calculator.inorganic import SAMPLE_PROFILE_PRESETS
 from interference_calculator.molecule import Molecule, periodic_table
 from interference_calculator.ui_help import *
 from interference_calculator import __version__
@@ -158,6 +159,10 @@ _COLUMN_DISPLAY = {
         'probability': '概率',
         'prob.': '概率',
         'relative risk': '风险',
+        'unweighted relative risk': '未加权风险',
+        'sample prior': '样品先验',
+        'expected relative intensity': '预期相对强度',
+        'risk rationale': '风险依据',
         'risk': '风险',
         'ok': '可分辨',
         'isotope': '同位素',
@@ -196,6 +201,9 @@ _UI_TEXT = {
         'language': 'Language',
         'workflow': 'workflow',
         'mode': 'mode',
+        'sample_profile': 'sample',
+        'sample_profile_none': 'none',
+        'sample_profile_high_purity_aluminum': 'high purity Al',
         'target_group': 'target peak',
         'target': 'target',
         'sweep': 'sweep',
@@ -397,6 +405,9 @@ _UI_TEXT = {
         'language': '语言',
         'workflow': '流程',
         'mode': '模式',
+        'sample_profile': '样品',
+        'sample_profile_none': '无',
+        'sample_profile_high_purity_aluminum': '高纯铝',
         'target_group': '目标峰',
         'target': '目标',
         'sweep': '扫描窗口',
@@ -578,6 +589,13 @@ def _type_display(language, value):
 
 def _column_display(language, value):
     return _COLUMN_DISPLAY.get(language, _COLUMN_DISPLAY['en']).get(value, value)
+
+
+def _sample_profile_display(language, profile):
+    if language == 'zh':
+        return profile.get('label_zh') or profile.get('label_en') or profile.get('name', '')
+    return profile.get('label_en') or profile.get('name', '')
+
 
 def _ui_font(point_size=None, weight=None):
     font = QtGui.QFont()
@@ -942,7 +960,11 @@ class TableModel(QtCore.QAbstractTableModel):
                         return '{:.0f}'.format(value)
                     elif colname in ('probability', 'prob.'):
                         return '{:.5g}'.format(value)
-                    elif colname in ('formation factor', 'relative risk', 'risk'):
+                    elif colname in (
+                        'formation factor', 'relative risk', 'risk',
+                        'unweighted relative risk', 'sample prior',
+                        'expected relative intensity',
+                    ):
                         if value == '':
                             return ''
                         return '{:.3g}'.format(value)
@@ -1868,6 +1890,10 @@ class Spectrum(widgets.QWidget):
             lines.append(f"MRP: {self._format_peak_value(row['MRP'], 5)}")
         if 'relative risk' in row:
             lines.append(f"{_column_display(self.language, 'risk')}: {self._format_peak_value(row['relative risk'], 4)}")
+        if 'sample prior' in row:
+            lines.append(f"{_column_display(self.language, 'sample prior')}: {self._format_peak_value(row['sample prior'], 4)}")
+        if 'risk rationale' in row and row['risk rationale']:
+            lines.append(f"{_column_display(self.language, 'risk rationale')}: {row['risk rationale']}")
         if 'resolved' in row and row['resolved'] != '':
             resolved = _text(self.language, 'yes') if bool(row['resolved']) else _text(self.language, 'no')
             lines.append(f"{_column_display(self.language, 'ok')}: {resolved}")
@@ -2733,7 +2759,8 @@ class CalculationWorker(QtCore.QObject):
     error = QtCore.pyqtSignal(str)
 
     def __init__(self, atoms, mz, targetrange, maxsize, charge, chargesign,
-                 risk_preset=None, instrument_mrp=0, language='en'):
+                 risk_preset=None, instrument_mrp=0, language='en',
+                 sample_profile=None):
         QtCore.QObject.__init__(self)
         self.atoms = atoms
         self.mz = mz
@@ -2744,6 +2771,7 @@ class CalculationWorker(QtCore.QObject):
         self.risk_preset = risk_preset
         self.instrument_mrp = instrument_mrp
         self.language = language
+        self.sample_profile = sample_profile
         self._cancelled = False
 
     def cancel(self):
@@ -2761,7 +2789,8 @@ class CalculationWorker(QtCore.QObject):
                 data = inorganic_interference(
                     self.atoms, self.mz, targetrange=self.targetrange,
                     maxsize=self.maxsize, charge=self.charge,
-                    chargesign=self.chargesign, risk_preset=self.risk_preset)
+                    chargesign=self.chargesign, risk_preset=self.risk_preset,
+                    sample_profile=self.sample_profile)
             if self._cancelled:
                 return
 
@@ -2871,6 +2900,14 @@ class MainWidget(widgets.QWidget):
         self.mode_input.addItem('GDMS', 'gdms')
         self.mode_input.addItem('ICP-MS', 'icp-ms')
         self.mode_input.addItem('SIMS', 'sims')
+
+        self.sample_profile_input = widgets.QComboBox(parent=self)
+        self.sample_profile_input.addItem(_text(self.language, 'sample_profile_none'), None)
+        for profile_key, profile in SAMPLE_PROFILE_PRESETS.items():
+            self.sample_profile_input.addItem(
+                _sample_profile_display(self.language, profile),
+                profile_key,
+            )
 
         self.atoms_input = ElementInput(parent=self)
         self.atoms_input.setMinimumHeight(132)
@@ -3050,6 +3087,8 @@ class MainWidget(widgets.QWidget):
         self.workflow_layout.setVerticalSpacing(6)
         self.mode_label = self.create_field_label(_text(self.language, 'mode'))
         self.workflow_layout.addRow(self.mode_label, self.mode_input)
+        self.sample_profile_label = self.create_field_label(_text(self.language, 'sample_profile'))
+        self.workflow_layout.addRow(self.sample_profile_label, self.sample_profile_input)
         target_group = widgets.QWidget()
         target_group_layout = widgets.QVBoxLayout(target_group)
         target_group_layout.setContentsMargins(0, 0, 0, 0)
@@ -3333,6 +3372,7 @@ class MainWidget(widgets.QWidget):
         self.manual_target_toggle.toggled.connect(self._on_manual_target_toggled)
         self.language_input.currentIndexChanged.connect(self.apply_language)
         self.mode_input.currentIndexChanged.connect(self.apply_mode_preset)
+        self.sample_profile_input.currentIndexChanged.connect(self._on_sample_profile_changed)
         self.charge_preset_input.currentIndexChanged.connect(self._on_target_isotope_changed)
         self.auto_sweep_toggle.toggled.connect(self._on_auto_sweep_toggled)
         self.auto_mrp_toggle.toggled.connect(self._on_auto_mrp_toggled)
@@ -3351,7 +3391,8 @@ class MainWidget(widgets.QWidget):
 
         # Set jump order for tab
         self.setTabOrder(self.language_input, self.mode_input)
-        self.setTabOrder(self.mode_input, self.import_gdms_button)
+        self.setTabOrder(self.mode_input, self.sample_profile_input)
+        self.setTabOrder(self.sample_profile_input, self.import_gdms_button)
         self.setTabOrder(self.import_gdms_button, self.imported_target_input)
         self.setTabOrder(self.imported_target_input, self.manual_target_toggle)
         self.setTabOrder(self.manual_target_toggle, self._target_element_input)
@@ -3451,6 +3492,15 @@ class MainWidget(widgets.QWidget):
         self.language_label.setText(self._tr('language'))
         self.workflow_group.setTitle(self._tr('workflow'))
         self.mode_label.setText(self._tr('mode'))
+        self.sample_profile_label.setText(self._tr('sample_profile'))
+        self.sample_profile_input.setItemText(0, self._tr('sample_profile_none'))
+        for index in range(1, self.sample_profile_input.count()):
+            profile_key = self.sample_profile_input.itemData(index)
+            profile = SAMPLE_PROFILE_PRESETS.get(profile_key, {})
+            self.sample_profile_input.setItemText(
+                index,
+                _sample_profile_display(self.language, profile),
+            )
         self.auto_sweep_toggle.setText(self._tr('auto_sweep'))
         self.sweep_label.setText(self._tr('sweep'))
         self.target_label.setText(self._tr('target'))
@@ -3500,6 +3550,7 @@ class MainWidget(widgets.QWidget):
     def set_tooltips(self):
         """Set localized widget tooltips."""
         self.mode_input.setToolTip(tooltip_text(self.language, 'mode'))
+        self.sample_profile_input.setToolTip(tooltip_text(self.language, 'sample_profile'))
         self.atoms_input.setToolTip('')
         self.element_set_input.setToolTip(tooltip_text(self.language, 'element_set'))
         self.charge_preset_input.setToolTip(tooltip_text(self.language, 'charge_preset'))
@@ -3668,6 +3719,10 @@ class MainWidget(widgets.QWidget):
         mrp_presets[current_mode] = self.instrument_mrp_input.value()
         self.config_manager.set('mrp_presets', mrp_presets)
         
+        self.update_result_summary()
+
+    def _on_sample_profile_changed(self, index=None):
+        """Refresh summaries when the sample prior profile changes."""
         self.update_result_summary()
 
     def add_element_set(self, index):
@@ -4625,6 +4680,10 @@ class MainWidget(widgets.QWidget):
             'prob.': 98,
             'formation factor': 120,
             'relative risk': 110,
+            'unweighted relative risk': 145,
+            'sample prior': 105,
+            'expected relative intensity': 155,
+            'risk rationale': 220,
             'risk': 96,
             'resolved': 85,
             'ok': 54,
@@ -4666,6 +4725,9 @@ class MainWidget(widgets.QWidget):
         """
         atoms = self.atoms_input.elements() if hasattr(self, 'atoms_input') else self.atoms
         if not atoms:
+            if hasattr(self, 'sample_profile_input') and _current_data(self.sample_profile_input):
+                self.atoms = []
+                return True
             self.warn(self._tr('empty_atoms'))
             return False
         for a in atoms:
@@ -4781,6 +4843,7 @@ class MainWidget(widgets.QWidget):
         # Disable inputs during calculation
         self.interference_button.setEnabled(False)
         self.maxsize_input.setEnabled(False)
+        self.sample_profile_input.setEnabled(False)
         self.charge_preset_input.setEnabled(False)
         self.atoms_input.setReadOnly(True)
 
@@ -4795,6 +4858,7 @@ class MainWidget(widgets.QWidget):
             self.charges, self.chargesign, risk_preset,
             instrument_mrp=self.instrument_mrp_input.value(),
             language=self.language,
+            sample_profile=_current_data(self.sample_profile_input),
         )
         thread = QtCore.QThread(self)
         self._calc_worker = worker
@@ -4871,13 +4935,22 @@ class MainWidget(widgets.QWidget):
         self._attach_gdms_profile_overlays(spectrum_data)
         self._spectrum_data = spectrum_data
 
-        display_data = data[['molecule', 'type', 'charge', 'mass/charge',
-                             'mass/charge diff', '\u0394ppm', 'MRP',
-                             'probability', 'relative risk', 'resolved',
-                             'target']].copy()
-        display_data.columns = ['ion', 'type', 'z', 'm/z', '\u0394m/z',
-                                '\u0394ppm', 'MRP', 'prob.', 'risk', 'ok',
-                                'target']
+        display_columns = ['molecule', 'type', 'charge', 'mass/charge',
+                           'mass/charge diff', '\u0394ppm', 'MRP',
+                           'probability', 'relative risk']
+        display_names = ['ion', 'type', 'z', 'm/z', '\u0394m/z',
+                         '\u0394ppm', 'MRP', 'prob.', 'risk']
+        for colname in (
+            'sample prior', 'unweighted relative risk',
+            'expected relative intensity', 'risk rationale',
+        ):
+            if colname in data.columns:
+                display_columns.append(colname)
+                display_names.append(colname)
+        display_columns += ['resolved', 'target']
+        display_names += ['ok', 'target']
+        display_data = data[display_columns].copy()
+        display_data.columns = display_names
 
         candidate_count = int((~display_data['target'].astype(bool)).sum())
         unresolved_count = int(sum((value != '') and not bool(value) for value in display_data['ok']))
@@ -4904,6 +4977,7 @@ class MainWidget(widgets.QWidget):
         """Re-enable inputs after calculation completes or errors."""
         self.interference_button.setEnabled(True)
         self.maxsize_input.setEnabled(True)
+        self.sample_profile_input.setEnabled(True)
         self.charge_preset_input.setEnabled(True)
         self.atoms_input.setReadOnly(False)
         widgets.QApplication.restoreOverrideCursor()

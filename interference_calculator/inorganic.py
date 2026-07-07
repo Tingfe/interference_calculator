@@ -57,7 +57,9 @@ References
 - Stuewer, Anal. Bioanal. Chem. (1990): GDMS review
 """
 
+import copy
 import itertools
+from collections import Counter
 
 import numpy as np
 import pandas as pd
@@ -288,12 +290,451 @@ LIGAND_TYPES = {
     'I': ('halide', 1),
 }
 
+SAMPLE_ACTIVITY_LEVELS = {
+    'absent': 0.0,
+    'none': 0.0,
+    'ultra_trace': 1.0e-9,
+    'ultra-trace': 1.0e-9,
+    'very_low': 1.0e-8,
+    'very-low': 1.0e-8,
+    'trace': 1.0e-6,
+    'low': 1.0e-4,
+    'medium': 1.0e-2,
+    'high': 1.0e-1,
+    'major': 1.0,
+    'matrix': 1.0,
+    'plasma': 1.0,
+}
+
+GDMS_BACKGROUND_DEFAULT = {
+    'O': 'medium',
+    'H': 'medium',
+    'C': 'low',
+    'N': 'low',
+    'Cl': 'very_low',
+    'S': 'very_low',
+}
+
+GDMS_BACKGROUND_LOW = {
+    'O': 'low',
+    'H': 'low',
+    'C': 'low',
+    'N': 'very_low',
+    'Cl': 'very_low',
+    'S': 'very_low',
+}
+
+ARGON_PLASMA = {'Ar': 'plasma'}
+
+# These sample profiles are qualitative screening priors, not certified
+# composition limits. They encode common GDMS use cases: the dominant matrix,
+# likely alloying/trace elements, residual-gas/background chemistry, and Ar
+# plasma. Users should replace ppm values with their own material certificate
+# or preliminary GDMS result when quantitative ranking matters.
+SAMPLE_PROFILE_PRESETS = {
+    'high-purity-aluminum': {
+        'name': 'High purity aluminum',
+        'label_en': 'High purity Al',
+        'label_zh': '高纯铝',
+        'matrix': {'Al': 0.99999},
+        'expected_impurities_ppm': {
+            'Fe': 10.0,
+            'Si': 20.0,
+            'Mg': 5.0,
+            'Cu': 1.0,
+        },
+        'background': GDMS_BACKGROUND_DEFAULT,
+        'plasma': ARGON_PLASMA,
+        'description': 'Pure metal matrix with common Al impurities and GDMS residual gas species.',
+        'description_zh': '单质铝基体，包含常见铝中杂质和 GDMS 残余气体背景。',
+        'unknown_element_activity': 'trace',
+    },
+    'high-purity-copper': {
+        'name': 'High purity copper',
+        'label_en': 'High purity Cu',
+        'label_zh': '高纯铜',
+        'matrix': {'Cu': 0.99999},
+        'expected_impurities_ppm': {
+            'Ag': 10.0,
+            'Fe': 5.0,
+            'Ni': 5.0,
+            'Zn': 5.0,
+            'Pb': 2.0,
+            'Sn': 2.0,
+        },
+        'background': GDMS_BACKGROUND_LOW,
+        'plasma': ARGON_PLASMA,
+        'description': 'Pure Cu matrix with common metallic impurities.',
+        'description_zh': '单质铜基体，包含常见金属杂质。',
+        'unknown_element_activity': 'trace',
+    },
+    'high-purity-iron': {
+        'name': 'High purity iron',
+        'label_en': 'High purity Fe',
+        'label_zh': '高纯铁',
+        'matrix': {'Fe': 0.9999},
+        'expected_impurities_ppm': {
+            'Mn': 20.0,
+            'Si': 20.0,
+            'Ni': 10.0,
+            'Cr': 10.0,
+            'Cu': 5.0,
+        },
+        'background': GDMS_BACKGROUND_DEFAULT,
+        'plasma': ARGON_PLASMA,
+        'description': 'Pure Fe matrix with common steelmaking residual elements.',
+        'description_zh': '单质铁基体，包含钢铁材料常见残留元素。',
+        'unknown_element_activity': 'trace',
+    },
+    'high-purity-nickel': {
+        'name': 'High purity nickel',
+        'label_en': 'High purity Ni',
+        'label_zh': '高纯镍',
+        'matrix': {'Ni': 0.9999},
+        'expected_impurities_ppm': {
+            'Fe': 20.0,
+            'Co': 20.0,
+            'Cu': 10.0,
+            'Cr': 10.0,
+            'Mn': 5.0,
+            'Si': 5.0,
+        },
+        'background': GDMS_BACKGROUND_LOW,
+        'plasma': ARGON_PLASMA,
+        'description': 'Pure Ni matrix with Fe/Co/Cu/Cr residuals commonly reviewed in Ni materials.',
+        'description_zh': '单质镍基体，包含镍材料中常关注的 Fe/Co/Cu/Cr 等残留。',
+        'unknown_element_activity': 'trace',
+    },
+    'high-purity-titanium': {
+        'name': 'High purity titanium',
+        'label_en': 'High purity Ti',
+        'label_zh': '高纯钛',
+        'matrix': {'Ti': 0.999},
+        'expected_impurities_ppm': {
+            'Fe': 50.0,
+            'Al': 20.0,
+            'V': 20.0,
+            'Ni': 10.0,
+            'Cr': 10.0,
+            'Si': 10.0,
+            'Mo': 5.0,
+        },
+        'background': {
+            'O': 'medium',
+            'H': 'low',
+            'C': 'low',
+            'N': 'low',
+            'Cl': 'very_low',
+            'S': 'very_low',
+        },
+        'plasma': ARGON_PLASMA,
+        'description': 'Ti matrix with interstitial/background O/H/C/N and common metallic residuals.',
+        'description_zh': '钛基体，考虑 O/H/C/N 间隙/背景元素及常见金属残留。',
+        'unknown_element_activity': 'trace',
+    },
+    'high-purity-silicon': {
+        'name': 'High purity silicon',
+        'label_en': 'High purity Si',
+        'label_zh': '高纯硅',
+        'matrix': {'Si': 0.99999},
+        'expected_impurities_ppm': {
+            'B': 1.0,
+            'P': 1.0,
+            'Al': 2.0,
+            'Fe': 2.0,
+            'Ca': 2.0,
+            'Na': 2.0,
+            'K': 1.0,
+            'Cu': 1.0,
+        },
+        'background': {
+            'O': 'medium',
+            'H': 'low',
+            'C': 'low',
+            'N': 'very_low',
+            'Cl': 'very_low',
+            'S': 'very_low',
+        },
+        'plasma': ARGON_PLASMA,
+        'description': 'Si matrix with semiconductor-relevant dopants and metallic impurities.',
+        'description_zh': '硅基体，包含半导体材料常关注的掺杂/金属杂质。',
+        'unknown_element_activity': 'trace',
+    },
+    'high-purity-magnesium': {
+        'name': 'High purity magnesium',
+        'label_en': 'High purity Mg',
+        'label_zh': '高纯镁',
+        'matrix': {'Mg': 0.9999},
+        'expected_impurities_ppm': {
+            'Al': 20.0,
+            'Zn': 20.0,
+            'Mn': 10.0,
+            'Fe': 5.0,
+            'Si': 5.0,
+            'Ca': 5.0,
+            'Cu': 2.0,
+            'Ni': 1.0,
+        },
+        'background': GDMS_BACKGROUND_DEFAULT,
+        'plasma': ARGON_PLASMA,
+        'description': 'Pure Mg matrix with common light-alloy residuals.',
+        'description_zh': '镁基体，包含轻合金材料常见残留元素。',
+        'unknown_element_activity': 'trace',
+    },
+    'aluminum-alloy': {
+        'name': 'Aluminum alloy',
+        'label_en': 'Al alloy',
+        'label_zh': '铝合金',
+        'matrix': {
+            'Al': 0.97,
+            'Mg': 0.01,
+            'Si': 0.008,
+            'Cu': 0.005,
+            'Mn': 0.005,
+            'Zn': 0.005,
+            'Fe': 0.005,
+            'Ti': 0.001,
+        },
+        'background': GDMS_BACKGROUND_DEFAULT,
+        'plasma': ARGON_PLASMA,
+        'description': 'Generic Al-alloy screening profile covering common alloying additions.',
+        'description_zh': '通用铝合金筛查画像，覆盖常见合金化元素。',
+        'unknown_element_activity': 'trace',
+    },
+    'stainless-steel': {
+        'name': 'Stainless steel',
+        'label_en': 'Stainless steel',
+        'label_zh': '不锈钢',
+        'matrix': {
+            'Fe': 0.68,
+            'Cr': 0.18,
+            'Ni': 0.10,
+            'Mn': 0.02,
+            'Mo': 0.02,
+        },
+        'expected_impurities_ppm': {
+            'Si': 5000.0,
+            'C': 800.0,
+            'P': 450.0,
+            'S': 300.0,
+            'Cu': 3000.0,
+            'Co': 1000.0,
+        },
+        'background': {
+            'O': 'low',
+            'H': 'low',
+            'N': 'low',
+            'Cl': 'very_low',
+        },
+        'plasma': ARGON_PLASMA,
+        'description': 'Fe-Cr-Ni matrix with common stainless steel alloying and residual elements.',
+        'description_zh': 'Fe-Cr-Ni 基体，包含不锈钢常见合金化及残留元素。',
+        'unknown_element_activity': 'trace',
+    },
+    'nickel-base-alloy': {
+        'name': 'Nickel-base alloy',
+        'label_en': 'Ni-base alloy',
+        'label_zh': '镍基合金',
+        'matrix': {
+            'Ni': 0.55,
+            'Cr': 0.18,
+            'Fe': 0.10,
+            'Mo': 0.06,
+            'Co': 0.03,
+            'Nb': 0.03,
+            'Al': 0.01,
+            'Ti': 0.01,
+        },
+        'expected_impurities_ppm': {
+            'Mn': 5000.0,
+            'Si': 3000.0,
+            'Cu': 2000.0,
+            'C': 800.0,
+            'P': 300.0,
+            'S': 150.0,
+        },
+        'background': {
+            'O': 'low',
+            'H': 'low',
+            'N': 'low',
+            'Cl': 'very_low',
+        },
+        'plasma': ARGON_PLASMA,
+        'description': 'Generic superalloy-style Ni-Cr-Fe-Mo/Nb screening profile.',
+        'description_zh': '通用镍基高温合金式 Ni-Cr-Fe-Mo/Nb 筛查画像。',
+        'unknown_element_activity': 'trace',
+    },
+    'copper-base-alloy': {
+        'name': 'Copper-base alloy',
+        'label_en': 'Cu-base alloy',
+        'label_zh': '铜基合金',
+        'matrix': {
+            'Cu': 0.92,
+            'Zn': 0.04,
+            'Sn': 0.02,
+            'Ni': 0.01,
+            'Pb': 0.005,
+            'Fe': 0.003,
+        },
+        'expected_impurities_ppm': {
+            'Al': 1000.0,
+            'Mn': 1000.0,
+            'Si': 500.0,
+            'Ag': 500.0,
+        },
+        'background': GDMS_BACKGROUND_LOW,
+        'plasma': ARGON_PLASMA,
+        'description': 'Generic brass/bronze-style Cu alloy screening profile.',
+        'description_zh': '通用黄铜/青铜式铜基合金筛查画像。',
+        'unknown_element_activity': 'trace',
+    },
+    'silicate-glass': {
+        'name': 'Silicate or glass matrix',
+        'label_en': 'Silicate / glass',
+        'label_zh': '硅酸盐 / 玻璃',
+        'matrix': {
+            'O': 0.50,
+            'Si': 0.35,
+            'Al': 0.05,
+            'Na': 0.04,
+            'Ca': 0.03,
+            'Mg': 0.02,
+            'K': 0.01,
+        },
+        'expected_impurities_ppm': {
+            'Fe': 1000.0,
+            'Ti': 500.0,
+            'Mn': 100.0,
+            'P': 100.0,
+            'B': 100.0,
+        },
+        'background': {
+            'H': 'low',
+            'C': 'low',
+            'N': 'very_low',
+            'Cl': 'very_low',
+            'S': 'very_low',
+        },
+        'plasma': ARGON_PLASMA,
+        'description': 'Oxide/silicate matrix where O and Si are true matrix components.',
+        'description_zh': '氧化物/硅酸盐基体，O 和 Si 作为真实基体参与先验。',
+        'unknown_element_activity': 'trace',
+    },
+    'graphite-carbon': {
+        'name': 'Graphite or carbon matrix',
+        'label_en': 'Graphite / carbon',
+        'label_zh': '石墨 / 碳基体',
+        'matrix': {'C': 0.999},
+        'expected_impurities_ppm': {
+            'B': 10.0,
+            'Si': 10.0,
+            'Fe': 5.0,
+            'Ca': 5.0,
+            'Al': 5.0,
+            'Na': 2.0,
+            'K': 2.0,
+        },
+        'background': {
+            'O': 'medium',
+            'H': 'low',
+            'N': 'low',
+            'S': 'very_low',
+            'Cl': 'very_low',
+        },
+        'plasma': ARGON_PLASMA,
+        'description': 'Carbon matrix with common ash-forming impurities and surface oxygen/hydrogen.',
+        'description_zh': '碳基体，包含常见灰分杂质及表面 O/H 背景。',
+        'unknown_element_activity': 'trace',
+    },
+}
+
+SAMPLE_PROFILE_ALIASES = {
+    'high_purity_aluminum': 'high-purity-aluminum',
+    'high purity aluminum': 'high-purity-aluminum',
+    'high-purity-aluminium': 'high-purity-aluminum',
+    'high_purity_aluminium': 'high-purity-aluminum',
+    'high purity aluminium': 'high-purity-aluminum',
+    'pure-aluminum': 'high-purity-aluminum',
+    'pure_aluminum': 'high-purity-aluminum',
+    'pure aluminium': 'high-purity-aluminum',
+    'pure-aluminium': 'high-purity-aluminum',
+    'aluminum': 'high-purity-aluminum',
+    'aluminium': 'high-purity-aluminum',
+    'al': 'high-purity-aluminum',
+    'high_purity_copper': 'high-purity-copper',
+    'high purity copper': 'high-purity-copper',
+    'pure-copper': 'high-purity-copper',
+    'pure_copper': 'high-purity-copper',
+    'copper': 'high-purity-copper',
+    'cu': 'high-purity-copper',
+    'high_purity_iron': 'high-purity-iron',
+    'high purity iron': 'high-purity-iron',
+    'pure-iron': 'high-purity-iron',
+    'pure_iron': 'high-purity-iron',
+    'iron': 'high-purity-iron',
+    'fe': 'high-purity-iron',
+    'high_purity_nickel': 'high-purity-nickel',
+    'high purity nickel': 'high-purity-nickel',
+    'pure-nickel': 'high-purity-nickel',
+    'pure_nickel': 'high-purity-nickel',
+    'nickel': 'high-purity-nickel',
+    'ni': 'high-purity-nickel',
+    'high_purity_titanium': 'high-purity-titanium',
+    'high purity titanium': 'high-purity-titanium',
+    'pure-titanium': 'high-purity-titanium',
+    'pure_titanium': 'high-purity-titanium',
+    'titanium': 'high-purity-titanium',
+    'ti': 'high-purity-titanium',
+    'high_purity_silicon': 'high-purity-silicon',
+    'high purity silicon': 'high-purity-silicon',
+    'pure-silicon': 'high-purity-silicon',
+    'pure_silicon': 'high-purity-silicon',
+    'silicon': 'high-purity-silicon',
+    'si': 'high-purity-silicon',
+    'high_purity_magnesium': 'high-purity-magnesium',
+    'high purity magnesium': 'high-purity-magnesium',
+    'pure-magnesium': 'high-purity-magnesium',
+    'pure_magnesium': 'high-purity-magnesium',
+    'magnesium': 'high-purity-magnesium',
+    'mg': 'high-purity-magnesium',
+    'aluminium-alloy': 'aluminum-alloy',
+    'aluminium_alloy': 'aluminum-alloy',
+    'aluminum_alloy': 'aluminum-alloy',
+    'al alloy': 'aluminum-alloy',
+    'al-alloy': 'aluminum-alloy',
+    'stainless': 'stainless-steel',
+    'stainless_steel': 'stainless-steel',
+    'stainless steel': 'stainless-steel',
+    'steel': 'stainless-steel',
+    'nickel_base_alloy': 'nickel-base-alloy',
+    'nickel base alloy': 'nickel-base-alloy',
+    'nickel alloy': 'nickel-base-alloy',
+    'ni-base-alloy': 'nickel-base-alloy',
+    'ni_base_alloy': 'nickel-base-alloy',
+    'copper_base_alloy': 'copper-base-alloy',
+    'copper base alloy': 'copper-base-alloy',
+    'copper alloy': 'copper-base-alloy',
+    'cu-base-alloy': 'copper-base-alloy',
+    'cu_base_alloy': 'copper-base-alloy',
+    'brass': 'copper-base-alloy',
+    'bronze': 'copper-base-alloy',
+    'silicate': 'silicate-glass',
+    'silicate_glass': 'silicate-glass',
+    'silicate glass': 'silicate-glass',
+    'glass': 'silicate-glass',
+    'graphite': 'graphite-carbon',
+    'carbon': 'graphite-carbon',
+    'graphite_carbon': 'graphite-carbon',
+    'graphite carbon': 'graphite-carbon',
+}
+
 
 def inorganic_interference(atoms, target, targetrange=0.3, charge=(1, 2),
                            chargesign='+', maxsize=3, style='plain',
                            risk_preset='gdms', formation_factors=None,
                            matrix_atoms=None, plasma_atoms=None,
-                           background_atoms=None, include_background=True):
+                           background_atoms=None, include_background=True,
+                           sample_profile=None):
     """Screen common inorganic mass-spectrometry interference candidates.
 
     This function is intentionally template-based. It prioritizes species that
@@ -351,6 +792,13 @@ def inorganic_interference(atoms, target, targetrange=0.3, charge=(1, 2),
         Explicitly specify atom roles (advanced usage)
     include_background : bool, optional
         Include background molecules like CO⁺, CN⁺ (default True)
+    sample_profile : dict or str, optional
+        Sample-specific prior information used to weight candidate risk.
+        The built-in ``'high-purity-aluminum'`` preset treats Al as matrix,
+        common alloying/impurity elements as ppm-level species, and O/H/C/N/Cl/S
+        as background activity terms. A custom profile can provide
+        ``matrix``, ``expected_impurities_ppm``, ``background``, ``plasma``, and
+        ``unknown_element_activity`` fields.
 
     Returns
     -------
@@ -365,6 +813,11 @@ def inorganic_interference(atoms, target, targetrange=0.3, charge=(1, 2),
         - probability: Isotopic abundance
         - formation factor: Species-specific formation probability
         - relative risk: probability × formation_factor
+          (or sample-weighted risk when sample_profile is supplied)
+        - sample prior: Sample/source activity prior (when sample_profile is supplied)
+        - expected relative intensity: Weighted risk score (when sample_profile is supplied)
+        - risk rationale: Elements and activity terms used in the weighting
+          (when sample_profile is supplied)
         - target: Boolean flag for target ion
 
     Uncertainty Notes
@@ -402,17 +855,34 @@ def inorganic_interference(atoms, target, targetrange=0.3, charge=(1, 2),
     ...                             risk_preset='icp-ms')
     >>> # Warning: trioxide/tetraoxide factors are extrapolated
     """
+    sample_context = _sample_context(sample_profile)
+    if atoms is None and sample_context is not None:
+        atoms = []
     atoms = _normalize_atoms(atoms)
+    if sample_context is not None:
+        atoms = _normalize_atoms(list(atoms) + sample_context['atoms'])
     charges = _normalize_charges(charge)
     risk_factors = _formation_factors(risk_preset, formation_factors)
     if chargesign not in ('+', '-', 'o', '0'):
         raise ValueError('chargesign must be either "+", "-", "o", or "0".')
 
     target_info = _target_info(target, charges, chargesign)
+    candidate_matrix_atoms = matrix_atoms
+    candidate_plasma_atoms = plasma_atoms
+    candidate_background_atoms = background_atoms
+    if sample_context is not None:
+        if candidate_matrix_atoms is None:
+            candidate_matrix_atoms = sample_context['sample_atoms']
+        if candidate_plasma_atoms is None:
+            candidate_plasma_atoms = sample_context['plasma_atoms']
+        if candidate_background_atoms is None:
+            candidate_background_atoms = sample_context['background_atoms']
+
     candidates = _candidate_formulas(
         atoms, charges, chargesign, maxsize,
-        matrix_atoms=matrix_atoms, plasma_atoms=plasma_atoms,
-        background_atoms=background_atoms, include_background=include_background,
+        matrix_atoms=candidate_matrix_atoms, plasma_atoms=candidate_plasma_atoms,
+        background_atoms=candidate_background_atoms,
+        include_background=include_background,
     )
     rows = []
     seen = set()
@@ -443,7 +913,10 @@ def inorganic_interference(atoms, target, targetrange=0.3, charge=(1, 2),
             continue
 
         formation_factor = risk_factors.get(species_type, 1.0e-6)
-        rows.append({
+        unweighted_risk = molecule.abundance * formation_factor
+        sample_prior, risk_rationale = _sample_prior(parts, sample_context)
+        weighted_risk = unweighted_risk * sample_prior
+        row = {
             'molecule': label,
             'type': species_type,
             'charge': species_charge,
@@ -454,22 +927,38 @@ def inorganic_interference(atoms, target, targetrange=0.3, charge=(1, 2),
             'MRP': mrp,
             'probability': molecule.abundance,
             'formation factor': formation_factor,
-            'relative risk': molecule.abundance * formation_factor,
+            'relative risk': weighted_risk,
             'target': False,
-        })
+        }
+        if sample_context is not None:
+            row.update({
+                'sample prior': sample_prior,
+                'unweighted relative risk': unweighted_risk,
+                'expected relative intensity': weighted_risk,
+                'risk rationale': risk_rationale,
+            })
+        rows.append(row)
 
-    data = pd.DataFrame(rows, columns=[
+    columns = [
         'molecule', 'type', 'charge', 'mass/charge', 'mass/charge diff',
         'mass uncertainty', 'm/z uncertainty', 'MRP', 'probability',
         'formation factor', 'relative risk', 'target',
-    ])
+    ]
+    if sample_context is not None:
+        columns = columns[:-1] + [
+            'sample prior', 'unweighted relative risk',
+            'expected relative intensity', 'risk rationale',
+        ] + columns[-1:]
+    data = pd.DataFrame(rows, columns=columns)
     if not data.empty and target_info['has_target']:
         data = data.assign(_abs_diff=data['mass/charge diff'].abs())
         data = data.sort_values(['_abs_diff', 'relative risk'], ascending=[True, False])
         data = data.drop(columns='_abs_diff')
+    elif not data.empty and sample_context is not None:
+        data = data.sort_values('relative risk', ascending=False)
 
     if target_info['has_target']:
-        target_row = pd.DataFrame([{
+        target_payload = {
             'molecule': target_info['label'],
             'type': 'target',
             'charge': target_info['charge'],
@@ -482,7 +971,15 @@ def inorganic_interference(atoms, target, targetrange=0.3, charge=(1, 2),
             'formation factor': 1.0,
             'relative risk': target_info['abundance'],
             'target': True,
-        }])
+        }
+        if sample_context is not None:
+            target_payload.update({
+                'sample prior': 1.0,
+                'unweighted relative risk': target_info['abundance'],
+                'expected relative intensity': target_info['abundance'],
+                'risk rationale': 'target ion',
+            })
+        target_row = pd.DataFrame([target_payload], columns=columns)
         if data.empty:
             data = target_row
         else:
@@ -520,6 +1017,184 @@ def _formation_factors(risk_preset, formation_factors):
     if formation_factors:
         factors.update(formation_factors)
     return factors
+
+
+def _sample_context(sample_profile):
+    if sample_profile is None:
+        return None
+    profile = _resolve_sample_profile(sample_profile)
+    activities = {}
+    roles = {}
+    atoms = []
+
+    def add_atom(element, activity, role):
+        if not element:
+            return
+        value = max(float(activity), 0.0)
+        activities[element] = value
+        roles[element] = role
+        if element not in atoms:
+            atoms.append(element)
+
+    for element, value in _profile_mapping(profile.get('matrix')).items():
+        add_atom(element, _activity_value(value, default='matrix'), 'matrix')
+
+    impurity_sources = (
+        'expected_impurities_ppm', 'impurities_ppm',
+        'expected_impurities', 'impurities',
+    )
+    for key in impurity_sources:
+        for element, value in _profile_mapping(profile.get(key)).items():
+            if key.endswith('_ppm'):
+                activity = _ppm_activity(value)
+            else:
+                activity = _impurity_activity(value)
+            add_atom(element, activity, 'impurity')
+
+    for element, value in _profile_mapping(profile.get('background')).items():
+        add_atom(element, _activity_value(value, default='medium'), 'background')
+
+    for element, value in _profile_mapping(profile.get('plasma')).items():
+        add_atom(element, _activity_value(value, default='plasma'), 'plasma')
+
+    direct_keys = ('element_activity', 'element_activities', 'element_weights')
+    for key in direct_keys:
+        for element, value in _profile_mapping(profile.get(key)).items():
+            add_atom(element, _activity_value(value, default='trace'), 'specified')
+
+    default_activity = _activity_value(
+        profile.get('unknown_element_activity',
+                    profile.get('default_activity', 'trace')),
+        default='trace',
+    )
+    return {
+        'activities': activities,
+        'roles': roles,
+        'atoms': atoms,
+        'sample_atoms': [
+            atom for atom in atoms
+            if roles.get(atom) in ('matrix', 'impurity', 'specified')
+        ],
+        'background_atoms': [
+            atom for atom in atoms
+            if roles.get(atom) == 'background'
+        ],
+        'plasma_atoms': [
+            atom for atom in atoms
+            if roles.get(atom) == 'plasma'
+        ],
+        'default_activity': default_activity,
+    }
+
+
+def _resolve_sample_profile(sample_profile):
+    if isinstance(sample_profile, str):
+        key = sample_profile.strip().lower().replace('_', '-')
+        key = SAMPLE_PROFILE_ALIASES.get(key, key)
+        try:
+            return copy.deepcopy(SAMPLE_PROFILE_PRESETS[key])
+        except KeyError:
+            msg = 'sample_profile must be a dict or one of {}.'.format(
+                ', '.join(sorted(SAMPLE_PROFILE_PRESETS))
+            )
+            raise ValueError(msg)
+    if not isinstance(sample_profile, dict):
+        raise TypeError('sample_profile must be a dict, str, or None.')
+    return copy.deepcopy(sample_profile)
+
+
+def _profile_mapping(value):
+    if not value:
+        return {}
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        return {value: None}
+    try:
+        return {element: None for element in value}
+    except TypeError:
+        return {}
+
+
+def _activity_value(value, default='trace'):
+    if value is None:
+        return SAMPLE_ACTIVITY_LEVELS[default]
+    if isinstance(value, dict):
+        for key in ('activity', 'fraction', 'weight', 'level'):
+            if key in value:
+                return _activity_value(value[key], default=default)
+        if 'ppm' in value:
+            return _ppm_to_activity(value['ppm'])
+        return SAMPLE_ACTIVITY_LEVELS[default]
+    if isinstance(value, str):
+        key = value.strip().lower().replace(' ', '_')
+        if key in SAMPLE_ACTIVITY_LEVELS:
+            return SAMPLE_ACTIVITY_LEVELS[key]
+        return float(key)
+    return float(value)
+
+
+def _impurity_activity(value):
+    if value is None:
+        return SAMPLE_ACTIVITY_LEVELS['trace']
+    if isinstance(value, dict):
+        if 'ppm' in value:
+            return _ppm_to_activity(value['ppm'])
+        if 'fraction' in value:
+            return _activity_value(value['fraction'])
+        if 'activity' in value:
+            return _activity_value(value['activity'])
+        return SAMPLE_ACTIVITY_LEVELS['trace']
+    if isinstance(value, str):
+        key = value.strip().lower().replace(' ', '_')
+        if key in SAMPLE_ACTIVITY_LEVELS:
+            return SAMPLE_ACTIVITY_LEVELS[key]
+        return _ppm_to_activity(float(key))
+    numeric = float(value)
+    if numeric > 1.0:
+        return _ppm_to_activity(numeric)
+    return max(numeric, 0.0)
+
+
+def _ppm_activity(value):
+    if value is None:
+        return SAMPLE_ACTIVITY_LEVELS['trace']
+    if isinstance(value, dict) and 'ppm' in value:
+        return _ppm_to_activity(value['ppm'])
+    return _ppm_to_activity(value)
+
+
+def _ppm_to_activity(value):
+    return max(float(value), 0.0) * 1.0e-6
+
+
+def _sample_prior(parts, sample_context):
+    if sample_context is None:
+        return 1.0, ''
+    counts = Counter(_element_from_isotope(part) for part in parts)
+    prior = 1.0
+    rationale = []
+    for element in sorted(counts):
+        count = counts[element]
+        activity = sample_context['activities'].get(
+            element, sample_context['default_activity'])
+        role = sample_context['roles'].get(element, 'unknown')
+        prior *= activity ** count
+        suffix = '^{}'.format(count) if count > 1 else ''
+        rationale.append('{}:{}={}{}'.format(
+            element, role, _format_activity(activity), suffix))
+    return prior, '; '.join(rationale)
+
+
+def _element_from_isotope(isotope):
+    text = str(isotope)
+    while text and text[0].isdigit():
+        text = text[1:]
+    return text
+
+
+def _format_activity(value):
+    return '{:.3g}'.format(value)
 
 
 def _target_info(target, charges, chargesign):

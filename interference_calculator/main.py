@@ -429,7 +429,9 @@ def interference(atoms, target, targetrange=0.3, maxsize=5, charge=(1,),
     # ------------------------------------------------------------------ #
     if has_target:
         mz_diff = sel_mz - target_mz
-        mrp = np.where(np.abs(mz_diff) > 1e-15, target_mz / np.abs(mz_diff), np.inf)
+        abs_diff = np.abs(mz_diff)
+        mrp = np.full(n_sel, np.inf, dtype=np.float64)
+        np.divide(target_mz, abs_diff, out=mrp, where=abs_diff > 1e-15)
     else:
         mz_diff = np.zeros(n_sel, dtype=np.float64)
         mrp = np.full(n_sel, np.inf)

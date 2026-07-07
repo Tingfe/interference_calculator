@@ -193,7 +193,10 @@ Before tagging:
 4. Run tests locally:
 
 ```bash
-.venv/bin/python -m unittest discover -s tests -v
+python3 -m pip install -e ".[test]"
+python3 -m pytest
+python3 -m unittest discover -s tests -v
+PYTHONPYCACHEPREFIX=/private/tmp/interference_pycache python3 -m compileall -q interference_calculator
 git diff --check
 ```
 
@@ -210,7 +213,10 @@ git diff --check
 4. 本地运行测试：
 
 ```bash
-.venv/bin/python -m unittest discover -s tests -v
+python3 -m pip install -e ".[test]"
+python3 -m pytest
+python3 -m unittest discover -s tests -v
+PYTHONPYCACHEPREFIX=/private/tmp/interference_pycache python3 -m compileall -q interference_calculator
 git diff --check
 ```
 

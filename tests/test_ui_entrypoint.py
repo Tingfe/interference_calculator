@@ -83,6 +83,31 @@ class UICalculationReferenceTests(unittest.TestCase):
         for actual, expected in zip(non_target['Δppm'], expected_ppm):
             self.assertAlmostEqual(actual, expected)
 
+    def test_worker_passes_sample_profile_to_inorganic_calculation(self):
+        data_out = []
+        errors = []
+        worker = self.ui.CalculationWorker(
+            [],
+            27.0,
+            targetrange=0.1,
+            maxsize=2,
+            charge=(1,),
+            chargesign='+',
+            risk_preset='gdms',
+            instrument_mrp=4000,
+            sample_profile='high-purity-aluminum',
+        )
+        worker.finished.connect(data_out.append)
+        worker.error.connect(errors.append)
+        worker.run()
+
+        self.assertFalse(errors)
+        self.assertTrue(data_out)
+        data = data_out[0]
+        self.assertIn('sample prior', data.columns)
+        self.assertIn('risk rationale', data.columns)
+        self.assertTrue(data['risk rationale'].astype(str).str.contains('Al:matrix').any())
+
 
 class UIImportedElementSetTests(unittest.TestCase):
     @classmethod
@@ -103,6 +128,12 @@ class UIImportedElementSetTests(unittest.TestCase):
         self.assertEqual(window.windowTitle(), '无机质谱峰干扰计算器')
         self.assertEqual(widget.interference_button.text(), '计算')
         self.assertEqual(widget.language_input.itemData(0), 'zh')
+        self.assertIsNone(widget.sample_profile_input.itemData(0))
+        profile_keys = {
+            widget.sample_profile_input.itemData(index)
+            for index in range(1, widget.sample_profile_input.count())
+        }
+        self.assertEqual(profile_keys, set(self.ui.SAMPLE_PROFILE_PRESETS))
         window.close()
 
     def test_help_dialog_opens_in_both_languages(self):

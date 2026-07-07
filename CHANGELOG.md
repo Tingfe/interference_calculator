@@ -7,6 +7,55 @@ This changelog focuses on product changes that matter to users. Internal
 implementation details, CI mechanics, and test-only changes are kept in commit
 history and release documentation.
 
+## [2.8.0] - 2026-07-08
+
+### 中文
+
+#### 样品画像与动态干扰风险
+- 新增样品画像先验，可在无机干扰计算中把基体、主要成分、痕量杂质、背景气体和等离子体来源纳入相对风险排序。
+- 内置 13 类常见材料画像：高纯 Al/Cu/Fe/Ni/Ti/Si/Mg、铝合金、不锈钢、镍基合金、铜基合金、硅酸盐玻璃、石墨/碳材料。
+- 风险模型现在同时输出未加权风险、样品先验、预期相对强度和风险依据，便于区分“理论上可能”与“在当前样品中更可能”。
+- 样品画像支持别名输入，并可通过自定义 dict 扩展，适合实验室按实际材料体系维护内部经验库。
+
+#### GUI 与可用性
+- GUI 增加样品画像下拉框，选择画像后可直接影响干扰候选生成和风险排序。
+- 结果表动态显示样品画像相关列，未启用画像时保持原有紧凑表格。
+- Help 文案补充样品画像说明，并明确这些画像是定性筛查先验，不等同于认证标准样品成分。
+
+#### 质量保障
+- 增加样品画像、别名解析、画像驱动候选生成、GUI 下拉框和 worker 参数传递测试。
+- 保持核心 unittest、pytest、flake8 关键错误扫描和编译检查通过。
+
+### English
+
+#### Sample Profiles And Dynamic Interference Priors
+- Added sample-profile priors so inorganic interference screening can account
+  for matrix elements, major constituents, trace impurities, background gases,
+  and plasma sources when ranking relative risk.
+- Added 13 built-in material profiles: high-purity Al/Cu/Fe/Ni/Ti/Si/Mg,
+  aluminum alloy, stainless steel, nickel-base alloy, copper-base alloy,
+  silicate glass, and graphite/carbon materials.
+- Risk output now includes unweighted risk, sample prior, expected relative
+  intensity, and rationale fields, making it easier to separate theoretical
+  possibilities from interferences that are more plausible for the current
+  sample.
+- Profiles support aliases and custom dictionaries, so labs can extend the
+  model with their own material-specific screening knowledge.
+
+#### GUI And Usability
+- Added a sample-profile selector to the GUI; selected profiles influence
+  candidate generation and risk ranking directly.
+- Result tables show sample-profile columns only when relevant, preserving the
+  compact default view.
+- Help text now documents sample profiles and clarifies that built-in profiles
+  are qualitative screening priors, not certified reference compositions.
+
+#### Quality Assurance
+- Added tests for profile weighting, alias resolution, profile-driven
+  candidate generation, GUI selector contents, and worker argument propagation.
+- Kept core unittest, pytest, flake8 critical-error scanning, and compile checks
+  passing.
+
 ## [2.7.0] - 2026-06-15
 
 ### 中文
@@ -864,7 +913,8 @@ history and release documentation.
 - Spectrum axes are centered on the target peak and can be shown as `Δppm` or
   `Δm/z`.
 
-[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.7.0...HEAD
+[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.8.0...HEAD
+[2.8.0]: https://github.com/Tingfe/interference_calculator/compare/v2.7.0...v2.8.0
 [2.7.0]: https://github.com/Tingfe/interference_calculator/compare/v2.6.1...v2.7.0
 [2.6.1]: https://github.com/Tingfe/interference_calculator/compare/v2.6.0...v2.6.1
 [2.6.0]: https://github.com/Tingfe/interference_calculator/compare/v2.5.0...v2.6.0
