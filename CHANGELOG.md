@@ -7,6 +7,29 @@ This changelog focuses on product changes that matter to users. Internal
 implementation details, CI mechanics, and test-only changes are kept in commit
 history and release documentation.
 
+## [2.8.2] - 2026-07-14
+
+### 中文
+
+#### Windows 兼容性
+- 新增独立的旧版 Windows 免安装包
+  `InterferenceCalculator-Windows-legacy-vX.Y.Z.zip`，用于处理旧系统启动时报
+  `api-ms-win-core-path-l1-1-0.dll` 缺失的问题。
+- 现有 `InterferenceCalculator-Windows-vX.Y.Z.zip` 仍作为当前 Windows 10/11
+  推荐包，避免为了兼容旧系统降低新版运行环境。
+- 发布文档和 README 已补充两个 Windows 包的选择规则。
+
+### English
+
+#### Windows Compatibility
+- Added a separate legacy Windows standalone package,
+  `InterferenceCalculator-Windows-legacy-vX.Y.Z.zip`, for older systems that
+  fail to start the current app with `api-ms-win-core-path-l1-1-0.dll` missing.
+- Kept `InterferenceCalculator-Windows-vX.Y.Z.zip` as the recommended package
+  for current Windows 10/11 systems instead of downgrading the normal runtime.
+- Updated the README and release documentation to explain which Windows package
+  to choose.
+
 ## [2.8.1] - 2026-07-08
 
 ### 中文
@@ -934,7 +957,8 @@ history and release documentation.
 - Spectrum axes are centered on the target peak and can be shown as `Δppm` or
   `Δm/z`.
 
-[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.8.1...HEAD
+[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.8.2...HEAD
+[2.8.2]: https://github.com/Tingfe/interference_calculator/compare/v2.8.1...v2.8.2
 [2.8.1]: https://github.com/Tingfe/interference_calculator/compare/v2.8.0...v2.8.1
 [2.8.0]: https://github.com/Tingfe/interference_calculator/compare/v2.7.0...v2.8.0
 [2.7.0]: https://github.com/Tingfe/interference_calculator/compare/v2.6.1...v2.7.0

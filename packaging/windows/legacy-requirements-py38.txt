@@ -1,0 +1,14 @@
+# Runtime stack used only for the legacy Windows standalone package.
+#
+# The normal Windows release is built with the current Python runtime. This
+# pinned stack keeps a Python 3.8 / PyInstaller 5 build path for older Windows
+# systems that can fail to start newer Python-built executables with
+# api-ms-win-core-path-l1-1-0.dll missing.
+numpy==1.24.4
+pandas==2.0.3
+openpyxl==3.1.5
+pyparsing==3.1.4
+PyQt5==5.15.10
+PyQt5-Qt5==5.15.2
+pyinstaller==5.13.2
+pyinstaller-hooks-contrib==2024.11

@@ -412,9 +412,86 @@ jobs:
           name: windows-app
           path: dist/InterferenceCalculator-Windows-*.zip
 
+  build-windows-legacy:
+    name: Build legacy Windows app
+    needs: [prepare, test]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+
+      - name: Install legacy app build dependencies
+        run: |
+          python -m pip install --upgrade "pip<25" "setuptools<76" wheel
+          pip install -r packaging/windows/legacy-requirements-py38.txt
+
+      - name: Build legacy Windows app directory
+        run: |
+          pyinstaller `
+            --name "InterferenceCalculator" `
+            --windowed `
+            --noupx `
+            --icon interference_calculator/icon.ico `
+            --add-data "interference_calculator/periodic_table.csv;interference_calculator" `
+            --add-data "interference_calculator/icon.svg;interference_calculator" `
+            --add-data "interference_calculator/icon.ico;interference_calculator" `
+            --add-data "interference_calculator/icon.icns;interference_calculator" `
+            --add-data "interference_calculator/display_button_icon.svg;interference_calculator" `
+            --add-data "interference_calculator/help_button_icon.svg;interference_calculator" `
+            --hidden-import PyQt5.QtSvg `
+            --hidden-import openpyxl `
+            --exclude-module PyQt5.QtNetwork `
+            --exclude-module PyQt5.QtMultimedia `
+            --exclude-module PyQt5.QtMultimediaWidgets `
+            --exclude-module PyQt5.QtQml `
+            --exclude-module PyQt5.QtQuick `
+            --exclude-module PyQt5.QtQuickWidgets `
+            --exclude-module PyQt5.QtWebEngine `
+            --exclude-module PyQt5.QtWebEngineWidgets `
+            --exclude-module PyQt5.QtWebChannel `
+            --exclude-module PyQt5.QtXml `
+            --exclude-module PyQt5.QtXmlPatterns `
+            --exclude-module PyQt5.QtSql `
+            --exclude-module PyQt5.QtTest `
+            --exclude-module PyQt5.QtPrintSupport `
+            --exclude-module PyQt5.QtHelp `
+            --exclude-module PyQt5.QtBluetooth `
+            --exclude-module PyQt5.QtNfc `
+            --exclude-module PyQt5.QtPositioning `
+            --exclude-module PyQt5.QtSensors `
+            --exclude-module PyQt5.QtSerialPort `
+            --exclude-module PyQt5.QtWebSockets `
+            --exclude-module PyQt5.QtDBus `
+            --exclude-module PyQt5.QtDesigner `
+            --exclude-module PyQt5.QtOpenGL `
+            --exclude-module PyQt5.QtOpenGLWidgets `
+            --exclude-module PyQt5.QtLocation `
+            --exclude-module PyQt5.QtPdf `
+            --exclude-module PyQt5.QtPdfWidgets `
+            --exclude-module PyQt5.QtScxml `
+            --exclude-module PyQt5.QtStateMachine `
+            --exclude-module PyQt5.QtTextToSpeech `
+            --exclude-module PyQt5.QtUiTools `
+            interference_calculator/ui.py
+
+      - name: Package legacy Windows app directory
+        run: |
+          Compress-Archive `
+            -Path "dist/InterferenceCalculator/*" `
+            -DestinationPath "dist/InterferenceCalculator-Windows-legacy-${{ needs.prepare.outputs.tag_name }}.zip" `
+            -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-legacy-app
+          path: dist/InterferenceCalculator-Windows-legacy-*.zip
+
   release:
     name: Publish GitHub Release
-    needs: [prepare, test, build-python, build-macos, build-windows]
+    needs: [prepare, test, build-python, build-macos, build-windows, build-windows-legacy]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
@@ -436,6 +513,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: windows-app
+          path: dist/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-legacy-app
           path: dist/
 
       - name: Publish release
@@ -523,6 +605,12 @@ jobs:
         if: steps.gitee-sync.outputs.enabled == 'true'
         with:
           name: windows-app
+          path: dist/
+
+      - uses: actions/download-artifact@v4
+        if: steps.gitee-sync.outputs.enabled == 'true'
+        with:
+          name: windows-legacy-app
           path: dist/
 
       - name: Upload assets to Gitee Release

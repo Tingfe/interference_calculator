@@ -14,7 +14,7 @@ copyright = '2026, Interference Calculator Team'
 author = 'Interference Calculator Team'
 
 # The full version, including alpha/beta/rc tags
-release = '2.8.1'
+release = '2.8.2'
 version = '2.8'
 
 # -- General configuration ---------------------------------------------------

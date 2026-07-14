@@ -96,7 +96,7 @@ v2.6.0 是一次全面优化发布，包含性能、架构、质量、文档和�
 项目信息
 --------
 
-当前版本：``2.8.1``
+当前版本：``2.8.2``
 
 原作者：Zan Peeters
 
@@ -154,6 +154,8 @@ v2.6.0 是一次全面优化发布，包含性能、架构、质量、文档和�
 - **Windows**：下载 ``InterferenceCalculator-Windows-*.zip``，解压后双击
   ``InterferenceCalculator.exe``。Windows 采用目录版打包，避免单文件 ``.exe``
   每次启动前解压运行时导致长时间无响应。
+  如果旧版 Windows 提示缺少 ``api-ms-win-core-path-l1-1-0.dll``，请改用同一
+  Release 中的 ``InterferenceCalculator-Windows-legacy-*.zip``。
 - **macOS**：下载 ``InterferenceCalculator-macOS-*.dmg``，打开后将应用拖入 ``Applications`` 文件夹，首次打开需在「安全性与隐私」中允许。
 
 **方式二：通过 PyPI 安装（需要 Python 3.9+）**
@@ -355,9 +357,10 @@ Python API
 
 Gitee 仓库用于代码同步和国内访问；正式二进制发布仍采用 GitHub Actions 自动化。
 更新 ``__version__`` 和中英文 ``CHANGELOG.md`` 后，先推送 GitHub ``main`` 与
-``vX.Y.Z`` 标签以自动运行测试、构建源码包 / wheel、Windows ``.zip`` 目录版应用和
-macOS ``.dmg``，并用当前版本的中英文 changelog 生成 GitHub Release；随后同步
-Gitee ``main`` 与对应标签。Gitee 的 ``.workflow`` 文件保留为平台模板，不是当前正式发布源。
+``vX.Y.Z`` 标签以自动运行测试、构建源码包 / wheel、当前 Windows ``.zip`` 目录版应用、
+legacy Windows ``.zip`` 目录版应用和 macOS ``.dmg``，并用当前版本的中英文
+changelog 生成 GitHub Release；随后同步 Gitee ``main`` 与对应标签。Gitee 的
+``.workflow`` 文件保留为平台模板，不是当前正式发布源。
 
 未配置 Apple 签名 secrets 时，发布流程会生成未签名、未公证的 macOS DMG
 （文件名包含 ``macOS-unsigned``）；配置完整 secrets 后会自动生成 Developer ID
@@ -525,7 +528,7 @@ import, target selection, release packaging, and startup experience:
 Project Metadata
 ----------------
 
-Current version: ``2.8.1``
+Current version: ``2.8.2``
 
 Original author: Zan Peeters
 
@@ -585,6 +588,9 @@ and run directly:
   double-click ``InterferenceCalculator.exe``. Windows is distributed as an app
   directory to avoid the long no-feedback startup caused by one-file ``.exe``
   runtime extraction.
+  If an older Windows system reports that ``api-ms-win-core-path-l1-1-0.dll``
+  is missing, use ``InterferenceCalculator-Windows-legacy-*.zip`` from the same
+  Release instead.
 - **macOS**: download ``InterferenceCalculator-macOS-*.dmg``, open it, and drag
   the app to ``Applications``. On first launch you may need to allow the app in
   "Security & Privacy".
@@ -843,8 +849,9 @@ Branch model:
 The Gitee repository is used for source syncing and China-friendly access.
 Official binary releases are still automated with GitHub Actions. After updating
 ``__version__`` and the bilingual ``CHANGELOG.md``, push GitHub ``main`` and the
-``vX.Y.Z`` tag to run tests, build the source package / wheel, Windows ``.zip``
-app directory, and macOS ``.dmg``, then create a GitHub Release from the
+``vX.Y.Z`` tag to run tests, build the source package / wheel, current Windows
+``.zip`` app directory, legacy Windows ``.zip`` app directory, and macOS
+``.dmg``, then create a GitHub Release from the
 matching bilingual changelog section. Sync Gitee ``main`` and the matching tag
 after the GitHub release succeeds. Gitee ``.workflow`` files are kept as platform
 templates and are not the current official release source.

@@ -55,6 +55,8 @@ For each release tag, the workflow creates a GitHub Release with:
 - source distribution (`.tar.gz`);
 - Python wheel (`.whl`);
 - Windows standalone app directory (`InterferenceCalculator-Windows-vX.Y.Z.zip`);
+- legacy Windows standalone app directory
+  (`InterferenceCalculator-Windows-legacy-vX.Y.Z.zip`);
 - macOS disk image (`InterferenceCalculator-macOS-vX.Y.Z.dmg` when signed, or
   `InterferenceCalculator-macOS-unsigned-vX.Y.Z.dmg` without Apple signing
   secrets);
@@ -73,6 +75,8 @@ unstable large-file uploads through the Gitee API.
 - 源码包（`.tar.gz`）；
 - Python wheel（`.whl`）；
 - Windows 免安装目录版应用（`InterferenceCalculator-Windows-vX.Y.Z.zip`）；
+- 旧版 Windows 免安装目录版应用
+  （`InterferenceCalculator-Windows-legacy-vX.Y.Z.zip`）；
 - macOS 磁盘映像（配置签名时为 `InterferenceCalculator-macOS-vX.Y.Z.dmg`；
   未配置 Apple 签名 secrets 时为
   `InterferenceCalculator-macOS-unsigned-vX.Y.Z.dmg`）；
