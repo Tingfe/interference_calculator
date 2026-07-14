@@ -96,7 +96,7 @@ v2.6.0 是一次全面优化发布，包含性能、架构、质量、文档和�
 项目信息
 --------
 
-当前版本：``2.8.2``
+当前版本：``2.8.3``
 
 原作者：Zan Peeters
 
@@ -528,7 +528,7 @@ import, target selection, release packaging, and startup experience:
 Project Metadata
 ----------------
 
-Current version: ``2.8.2``
+Current version: ``2.8.3``
 
 Original author: Zan Peeters
 

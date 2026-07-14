@@ -4,14 +4,14 @@
     The chemical formula can be output in a number of ways, including custom
     formatting using simple templates.
 """
-from importlib import resources
 from math import factorial, prod
 import re
 
 import pandas as pd
 import pyparsing as pp
+from interference_calculator.package_resources import resource_file
 
-_periodic_table_file = resources.files('interference_calculator').joinpath('periodic_table.csv')
+_periodic_table_file = resource_file('interference_calculator', 'periodic_table.csv')
 with _periodic_table_file.open(mode='r', encoding='utf-8') as fh:
     periodic_table = pd.read_csv(fh, comment='#')
 

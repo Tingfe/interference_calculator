@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.poetry]
 name = "interference-calculator"
-version = "2.8.2"
+version = "2.8.3"
 description = "Inorganic mass spectrometry interference calculator for GDMS, ICP-MS, and SIMS"
 authors = ["Interference Calculator Team <me@example.com>"]
 maintainers = ["Interference Calculator Team <me@example.com>"]

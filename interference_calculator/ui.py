@@ -36,7 +36,6 @@ class _LazyModule:
 np = _LazyModule("numpy")
 pd = _LazyModule("pandas")
 
-from importlib import resources
 from pyparsing import ParseException
 from interference_calculator.gdms_import import (
     GDMSImportDependencyError,
@@ -46,6 +45,7 @@ from interference_calculator.gdms_import import (
 )
 from interference_calculator.inorganic import SAMPLE_PROFILE_PRESETS
 from interference_calculator.molecule import Molecule, periodic_table
+from interference_calculator.package_resources import resource_path
 from interference_calculator.ui_help import *
 from interference_calculator import __version__
 from interference_calculator.config import ConfigManager
@@ -607,7 +607,7 @@ def _ui_font(point_size=None, weight=None):
     return font
 
 def _resource_path(name):
-    return str(resources.files('interference_calculator').joinpath(name))
+    return resource_path('interference_calculator', name)
 
 _icon = _resource_path('icon.svg')
 _display_button_icon = _resource_path('display_button_icon.svg')

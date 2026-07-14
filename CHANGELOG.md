@@ -7,6 +7,25 @@ This changelog focuses on product changes that matter to users. Internal
 implementation details, CI mechanics, and test-only changes are kept in commit
 history and release documentation.
 
+## [2.8.3] - 2026-07-14
+
+### 中文
+
+#### Windows 兼容性
+- 修复 legacy Windows 包启动后报
+  `module 'importlib.resources' has no attribute 'files'` 的问题。
+- 资源文件读取现在通过兼容层处理：当前 Python 运行时继续使用标准库，
+  legacy Python 3.8 运行时使用 `importlib_resources` backport。
+
+### English
+
+#### Windows Compatibility
+- Fixed the legacy Windows package failing at startup with
+  `module 'importlib.resources' has no attribute 'files'`.
+- Package resource lookup now uses a compatibility layer: current Python
+  runtimes continue to use the standard library, while the legacy Python 3.8
+  runtime uses the `importlib_resources` backport.
+
 ## [2.8.2] - 2026-07-14
 
 ### 中文
@@ -957,7 +976,8 @@ history and release documentation.
 - Spectrum axes are centered on the target peak and can be shown as `Δppm` or
   `Δm/z`.
 
-[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.8.2...HEAD
+[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.8.3...HEAD
+[2.8.3]: https://github.com/Tingfe/interference_calculator/compare/v2.8.2...v2.8.3
 [2.8.2]: https://github.com/Tingfe/interference_calculator/compare/v2.8.1...v2.8.2
 [2.8.1]: https://github.com/Tingfe/interference_calculator/compare/v2.8.0...v2.8.1
 [2.8.0]: https://github.com/Tingfe/interference_calculator/compare/v2.7.0...v2.8.0

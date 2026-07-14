@@ -442,6 +442,7 @@ jobs:
             --add-data "interference_calculator/display_button_icon.svg;interference_calculator" `
             --add-data "interference_calculator/help_button_icon.svg;interference_calculator" `
             --hidden-import PyQt5.QtSvg `
+            --hidden-import importlib_resources `
             --hidden-import openpyxl `
             --exclude-module PyQt5.QtNetwork `
             --exclude-module PyQt5.QtMultimedia `
