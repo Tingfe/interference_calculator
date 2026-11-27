@@ -7,6 +7,16 @@ This changelog focuses on product changes that matter to users. Internal
 implementation details, CI mechanics, and test-only changes are kept in commit
 history and release documentation.
 
+## [2.8.4] - 2026-11-27
+
+### 中文
+
+- 无机干扰谱图新增 X 轴放大和缩小按钮；Shift 加滚轮可横向缩放，重置视图同时恢复 X/Y 轴。
+
+### English
+
+- Added X-axis zoom controls to the inorganic interference spectrum. Shift plus mouse wheel zooms horizontally, and Reset View restores both axes.
+
 ## [2.8.3] - 2026-07-14
 
 ### 中文
@@ -976,7 +986,8 @@ history and release documentation.
 - Spectrum axes are centered on the target peak and can be shown as `Δppm` or
   `Δm/z`.
 
-[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.8.3...HEAD
+[Unreleased]: https://github.com/Tingfe/interference_calculator/compare/v2.8.4...HEAD
+[2.8.4]: https://github.com/Tingfe/interference_calculator/compare/v2.8.3...v2.8.4
 [2.8.3]: https://github.com/Tingfe/interference_calculator/compare/v2.8.2...v2.8.3
 [2.8.2]: https://github.com/Tingfe/interference_calculator/compare/v2.8.1...v2.8.2
 [2.8.1]: https://github.com/Tingfe/interference_calculator/compare/v2.8.0...v2.8.1

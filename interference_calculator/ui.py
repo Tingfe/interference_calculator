@@ -318,6 +318,8 @@ _UI_TEXT = {
         'gdms_fwhm': 'FWHM',
         'zoom_out_y': 'Zoom out (Y axis)',
         'zoom_in_y': 'Zoom in (Y axis)',
+        'zoom_out_x': 'Zoom out (X axis)',
+        'zoom_in_x': 'Zoom in (X axis)',
         'reset_view': 'Reset view',
         'show_imported_profiles': 'Profile shape',
         'show_imported_profiles_tooltip': (
@@ -519,6 +521,8 @@ _UI_TEXT = {
         'gdms_fwhm': 'FWHM',
         'zoom_out_y': '缩小 Y 轴',
         'zoom_in_y': '放大 Y 轴',
+        'zoom_out_x': '缩小 X 轴',
+        'zoom_in_x': '放大 X 轴',
         'reset_view': '重置视图',
         'show_imported_profiles': '实测峰形',
         'show_imported_profiles_tooltip': (
@@ -1462,6 +1466,18 @@ class Spectrum(widgets.QWidget):
         self._zoom_in_btn.clicked.connect(self._on_zoom_in)
         self.toolbar.addWidget(self._zoom_in_btn)
 
+        self._zoom_out_x_btn = widgets.QToolButton(self)
+        self._zoom_out_x_btn.setText('X−')
+        self._zoom_out_x_btn.setToolTip(_text(self.language, 'zoom_out_x'))
+        self._zoom_out_x_btn.clicked.connect(self._on_zoom_out_x)
+        self.toolbar.addWidget(self._zoom_out_x_btn)
+
+        self._zoom_in_x_btn = widgets.QToolButton(self)
+        self._zoom_in_x_btn.setText('X+')
+        self._zoom_in_x_btn.setToolTip(_text(self.language, 'zoom_in_x'))
+        self._zoom_in_x_btn.clicked.connect(self._on_zoom_in_x)
+        self.toolbar.addWidget(self._zoom_in_x_btn)
+
         self.toolbar.addSeparator()
 
         self._reset_btn = widgets.QToolButton(self)
@@ -1521,6 +1537,7 @@ class Spectrum(widgets.QWidget):
         self._plot_window = {}
         self.intensity_column = 'probability'
         self._y_zoom = 1.0           # multiplier on y upper bound
+        self._x_zoom = 1.0
         self._plot_floor = self._PLOT_FLOOR
         self._peak_points = []
         self._profile_apex_points = []
@@ -1565,6 +1582,7 @@ class Spectrum(widgets.QWidget):
             if self._selected_source_row not in source_rows:
                 self._selected_source_row = None
         self._y_zoom = 1.0
+        self._x_zoom = 1.0
         self._canvas.update()
 
     def plot_spectrum(self, data=None):
@@ -1584,6 +1602,8 @@ class Spectrum(widgets.QWidget):
     def _update_toolbar_tooltips(self):
         self._zoom_out_btn.setToolTip(_text(self.language, 'zoom_out_y'))
         self._zoom_in_btn.setToolTip(_text(self.language, 'zoom_in_y'))
+        self._zoom_out_x_btn.setToolTip(_text(self.language, 'zoom_out_x'))
+        self._zoom_in_x_btn.setToolTip(_text(self.language, 'zoom_in_x'))
         self._reset_btn.setToolTip(_text(self.language, 'reset_view'))
         self._profile_toggle_btn.setText(_text(self.language, 'show_imported_profiles'))
         self._profile_toggle_btn.setToolTip(_text(self.language, 'show_imported_profiles_tooltip'))
@@ -1600,8 +1620,17 @@ class Spectrum(widgets.QWidget):
         self._y_zoom = max(self._y_zoom / 1.5, 0.01)
         self._canvas.update()
 
+    def _on_zoom_out_x(self):
+        self._x_zoom = max(self._x_zoom / 1.5, 0.01)
+        self._canvas.update()
+
+    def _on_zoom_in_x(self):
+        self._x_zoom = min(self._x_zoom * 1.5, 100.0)
+        self._canvas.update()
+
     def _on_reset_view(self):
         self._y_zoom = 1.0
+        self._x_zoom = 1.0
         self._canvas.update()
 
     def _on_toggle_profiles(self):
@@ -2093,6 +2122,10 @@ class Spectrum(widgets.QWidget):
                 padding = (x_max - x_min) * 0.05
             x_min -= padding
             x_max += padding
+
+        x_mid = (x_min + x_max) / 2.0
+        x_half = (x_max - x_min) / (2.0 * self._x_zoom)
+        x_min, x_max = x_mid - x_half, x_mid + x_half
 
         y_hi = max(150.0, np.nanmax(y) * 8.0) * self._y_zoom
         y_lo = self._plot_floor
@@ -2589,6 +2622,13 @@ class _SpectrumCanvas(widgets.QWidget):
         if self._spectrum is None:
             return
         delta = event.angleDelta().y()
+        if event.modifiers() & QtCore.Qt.ShiftModifier:
+            if delta > 0:
+                self._spectrum._on_zoom_in_x()
+            elif delta < 0:
+                self._spectrum._on_zoom_out_x()
+            event.accept()
+            return
         if delta > 0:
             self._spectrum._on_zoom_in()
         elif delta < 0:
